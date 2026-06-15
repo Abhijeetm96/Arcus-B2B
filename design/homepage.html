@@ -1,0 +1,983 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ARCUS Construction Commerce</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Poppins:wght@700;800&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#1c1b1b",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed": "#261a00",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#fabd00",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-tertiary-fixed": "#1b1b1c",
+                        "on-tertiary-container": "#565555",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "primary-fixed-dim": "#fabd00",
+                        "on-secondary-container": "#656464",
+                        "inverse-on-surface": "#f1f1f1",
+                        "surface-container-high": "#e8e8e8",
+                        "on-primary-container": "#6d5100",
+                        "secondary": "#5f5e5e",
+                        "on-surface": "#1a1c1c",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "surface-tint": "#785900",
+                        "on-surface-variant": "#4f4632",
+                        "primary-fixed": "#ffdf9e",
+                        "tertiary-fixed": "#e5e2e1",
+                        "background": "#f9f9f9",
+                        "on-error-container": "#93000a",
+                        "on-background": "#1a1c1c",
+                        "outline": "#827660",
+                        "inverse-surface": "#2f3131",
+                        "secondary-fixed": "#e5e2e1",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#5b4300",
+                        "on-tertiary-fixed-variant": "#474746",
+                        "surface-container-low": "#f3f3f3",
+                        "secondary-container": "#e5e2e1",
+                        "tertiary-container": "#cdcaca",
+                        "primary-container": "#ffc107",
+                        "on-secondary-fixed-variant": "#474646",
+                        "primary": "#785900",
+                        "surface-dim": "#dadada",
+                        "surface-container-highest": "#e2e2e2",
+                        "surface-bright": "#f9f9f9",
+                        "outline-variant": "#d4c5ab",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "surface-container": "#eeeeee",
+                        "tertiary": "#5f5e5e",
+                        "surface": "#f9f9f9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "5xl": "96px",
+                        "lg": "16px",
+                        "md": "12px",
+                        "xxl": "32px",
+                        "xl": "24px",
+                        "4xl": "64px",
+                        "3xl": "48px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "headline-h2": ["Poppins"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-h1-mobile": ["Poppins"],
+                        "headline-h1": ["Poppins"],
+                        "label-caps": ["Inter"],
+                        "headline-h3": ["Poppins"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", { "lineHeight": "140%", "fontWeight": "500" }],
+                        "headline-h2": ["48px", { "lineHeight": "120%", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "150%", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "160%", "fontWeight": "400" }],
+                        "headline-h1-mobile": ["40px", { "lineHeight": "110%", "fontWeight": "800" }],
+                        "headline-h1": ["64px", { "lineHeight": "110%", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "label-caps": ["12px", { "lineHeight": "100%", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-h3": ["32px", { "lineHeight": "120%", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .nav-link-hover {
+                @apply relative after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full;
+            }
+            .glass-card {
+                @apply bg-surface/80 backdrop-blur-md border border-surface-variant shadow-sm;
+            }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden">
+<!-- TopNavBar (Shared Component) -->
+<header class="sticky top-0 w-full h-[88px] z-50 bg-surface dark:bg-surface-dim shadow-sm transition-all duration-300 ease-in-out border-b border-surface-variant">
+<div class="flex items-center justify-between px-lg max-w-[1440px] mx-auto w-full h-full gap-xl">
+<!-- Brand Logo -->
+<a class="flex items-center shrink-0" href="#">
+<img alt="ARCUS Groups" class="w-[160px] h-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzOq4Sh7N9NSRJPGZRkQk8555pFeFxwTU0RZZKd8YOcfqjlgNoyZll2b9tf_skJ1smtTfRd5onb6QcCakf9u5A3XMUvhH_bfNX39yr-mbi5KoF8JQEAkbIzWnSL7TDQuCnDnMrBfvRndOBmULuhNbY9BAJ1Ezne7W4J-3vJUt8mW1jBB-cY4gI1ZXS-kxt6ahvH3RZG0CYi2AANJGGjSSzMfqKQ5OIr09c8M_n0QfvljC7pUZEf1450MtLsllaGFiQ9Ts_7uFNUDA">
+</a>
+<!-- Search Bar -->
+<div class="flex-1 max-w-[480px] hidden lg:block">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-secondary z-10">search</span>
+<input class="w-full h-12 pl-[44px] pr-md rounded-lg border-2 border-surface-variant bg-surface-container-lowest focus:border-primary-container focus:ring-0 transition-all font-body-sm text-on-surface placeholder:text-secondary-fixed-dim outline-none shadow-sm" placeholder="Search cement, steel, tiles, plumbers..." type="text">
+<button class="absolute right-xs top-1/2 -translate-y-1/2 bg-surface-variant hover:bg-surface-dim text-on-surface rounded px-sm py-1 font-label-caps text-[10px] transition-colors">Search</button>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="hidden md:flex items-center gap-lg xl:gap-xl">
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed font-label-caps text-label-caps nav-link-hover hover:scale-105 transition-transform duration-200" href="#">Materials</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed font-label-caps text-label-caps nav-link-hover hover:scale-105 transition-transform duration-200" href="#">Services</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed font-label-caps text-label-caps nav-link-hover hover:scale-105 transition-transform duration-200" href="#">Contractors</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed font-label-caps text-label-caps nav-link-hover hover:scale-105 transition-transform duration-200" href="#">Brands</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed font-label-caps text-label-caps nav-link-hover hover:scale-105 transition-transform duration-200" href="#">Bulk Orders</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed font-label-caps text-label-caps nav-link-hover hover:scale-105 transition-transform duration-200" href="#">Projects</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed font-label-caps text-label-caps nav-link-hover hover:scale-105 transition-transform duration-200" href="#">Resources</a>
+</nav>
+<!-- User Actions -->
+<div class="flex items-center gap-sm shrink-0">
+<button class="hidden lg:flex items-center justify-center p-sm text-secondary hover:text-primary transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="hidden lg:flex items-center justify-center p-sm text-secondary hover:text-primary transition-colors relative">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="absolute -top-1 -right-1 bg-primary-container text-on-primary-fixed font-label-caps text-[10px] w-4 h-4 flex items-center justify-center rounded-full">3</span>
+</button>
+<div class="hidden lg:block w-px h-6 bg-surface-variant mx-sm"></div>
+<button class="hidden lg:block text-secondary hover:text-primary font-label-caps text-label-caps px-sm transition-colors">Login</button>
+<button class="hidden lg:flex items-center justify-center px-md h-10 bg-inverse-surface text-inverse-on-surface font-label-caps text-label-caps rounded-lg hover:bg-on-surface transition-all duration-200 shadow-sm whitespace-nowrap">
+                    Register
+                </button>
+<button class="md:hidden flex items-center justify-center p-sm text-on-surface">
+<span class="material-symbols-outlined text-[28px]">menu</span>
+</button>
+</div>
+</div>
+</header>
+<main>
+<!-- Hero Section -->
+<section class="relative w-full min-h-[850px] bg-surface flex items-center overflow-hidden pt-xxl lg:pt-0">
+<!-- Ambient Background Shapes -->
+<div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+<div class="absolute -top-[20%] -right-[10%] w-[60%] h-[80%] rounded-full bg-primary-container/10 blur-[120px]"></div>
+<div class="absolute bottom-[10%] -left-[10%] w-[50%] h-[60%] rounded-full bg-tertiary-container/20 blur-[100px]"></div>
+</div>
+<div class="max-w-[1440px] mx-auto px-lg w-full z-10 grid grid-cols-1 lg:grid-cols-12 gap-xl lg:gap-4xl items-center relative py-4xl">
+<!-- Left Content -->
+<div class="lg:col-span-6 flex flex-col gap-xl">
+<div class="inline-flex items-center gap-sm bg-surface-container-highest px-md py-sm rounded-full w-fit border border-surface-variant shadow-sm">
+<span class="material-symbols-outlined text-primary-container text-[20px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">India's Construction Commerce Platform</span>
+</div>
+<h1 class="font-headline-h1-mobile md:font-headline-h1 text-headline-h1-mobile md:text-headline-h1 text-on-surface max-w-2xl leading-tight">
+                        Build Faster.<br>
+                        Procure Smarter.<br>
+<span class="text-[#FFC107]">Deliver Better.</span>
+</h1>
+<p class="font-body-lg text-body-lg text-secondary max-w-xl">
+                        Procure materials, hire contractors, manage deliveries and complete projects faster with an uncompromisingly professional platform designed for the heavy-duty demands of B2B construction.
+                    </p>
+<!-- Quick Search -->
+<div class="relative max-w-xl mt-sm group">
+<span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-secondary z-10 text-[24px]">search</span>
+<input class="w-full h-16 pl-[52px] pr-[120px] rounded-xl border-2 border-surface-variant bg-surface-container-lowest focus:border-primary-container focus:ring-4 focus:ring-primary-container/10 transition-all font-body-md text-on-surface placeholder:text-secondary-fixed-dim outline-none shadow-md" placeholder="Search by product, brand, or service..." type="text">
+<button class="absolute right-sm top-1/2 -translate-y-1/2 h-12 px-lg bg-inverse-surface text-inverse-on-surface font-label-caps rounded-lg hover:bg-on-surface transition-colors">Search</button>
+</div>
+<div class="flex flex-col sm:flex-row gap-md mt-sm">
+<button class="h-14 px-xl bg-primary-container text-on-primary-fixed font-label-caps text-label-caps rounded-lg hover:bg-inverse-primary hover:-translate-y-1 transition-all duration-200 shadow-[0_4px_20px_rgba(255,193,7,0.3)] flex items-center justify-center gap-sm">
+                            Get Started
+                            <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<button class="h-14 px-xl bg-surface-container-lowest border-2 border-on-surface text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-on-surface hover:text-on-primary hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-sm">
+                            Request Bulk Quote
+                        </button>
+</div>
+<!-- Trust Metrics (In Hero) -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-md mt-xl pt-lg border-t border-surface-variant">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">inventory</span>
+</div>
+<div>
+<p class="font-headline-h3 text-[18px] text-on-surface">10,000+</p>
+<p class="font-label-caps text-[10px] text-secondary">Products</p>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[20px]">factory</span>
+</div>
+<div>
+<p class="font-headline-h3 text-[18px] text-on-surface">500+</p>
+<p class="font-label-caps text-[10px] text-secondary">Suppliers</p>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-secondary-container/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[20px]">location_city</span>
+</div>
+<div>
+<p class="font-headline-h3 text-[18px] text-on-surface">100+</p>
+<p class="font-label-caps text-[10px] text-secondary">Cities</p>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-error-container/20 flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-[20px]">support_agent</span>
+</div>
+<div>
+<p class="font-headline-h3 text-[18px] text-on-surface">24/7</p>
+<p class="font-label-caps text-[10px] text-secondary">Support</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Content (Floating Dashboard Mockup) -->
+<div class="lg:col-span-6 relative mt-4xl lg:mt-0 hidden md:block perspective-1000">
+<div class="relative w-full max-w-[620px] h-[700px] bg-surface-container-lowest rounded-xl shadow-[0_30px_80px_-20px_rgba(0,0,0,0.15)] border border-surface-variant p-lg flex flex-col gap-md overflow-hidden transform rotate-y-[-5deg] rotate-x-[2deg] hover:rotate-y-0 hover:rotate-x-0 transition-transform duration-700 ease-out z-10 ml-auto">
+<!-- Mockup Header -->
+<div class="flex items-center justify-between pb-sm border-b border-surface-variant">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant">dashboard</span>
+</div>
+<div>
+<h3 class="font-body-sm text-body-sm text-on-surface font-bold">Project Overview</h3>
+<p class="font-label-caps text-[10px] text-secondary">ID: PRJ-9824-X</p>
+</div>
+</div>
+<div class="flex gap-xs">
+<div class="w-3 h-3 rounded-full bg-error-container"></div>
+<div class="w-3 h-3 rounded-full bg-primary-container"></div>
+<div class="w-3 h-3 rounded-full bg-[#10B981]"></div>
+</div>
+</div>
+<!-- Mockup Grid -->
+<div class="grid grid-cols-2 gap-md h-full overflow-y-auto pr-2 custom-scrollbar">
+<!-- Material Orders -->
+<div class="col-span-1 bg-surface rounded-lg p-md border border-surface-variant flex flex-col gap-sm relative overflow-hidden group">
+<div class="absolute right-0 top-0 w-16 h-16 bg-primary-container/10 rounded-bl-full -z-10 group-hover:scale-150 transition-transform"></div>
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-primary-fixed-dim">inventory_2</span>
+<span class="material-symbols-outlined text-[16px] text-secondary">more_horiz</span>
+</div>
+<h4 class="font-body-sm text-body-sm text-on-surface font-bold mt-auto">Material Orders</h4>
+<div class="flex justify-between items-end">
+<span class="font-headline-h3 text-[24px] font-bold text-on-surface">1,240</span>
+<span class="font-label-caps text-[10px] text-[#10B981] bg-[#10B981]/10 px-xs rounded">+12%</span>
+</div>
+</div>
+<!-- Delivery Tracking (Map Mockup) -->
+<div class="col-span-1 bg-surface rounded-lg p-0 border border-surface-variant flex flex-col relative overflow-hidden group h-[120px]">
+<div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMjAwIj48cGF0aCBkPSJNMCA1MCBRIDEwMCAxMDAgMjAwIDUwIFQgNDAwIDUwIiBmaWxsPSJub25lIiBzdHJva2U9IiNlNWEwMGIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iNCA0Ii8+PC9zdmc+')] bg-cover opacity-50"></div>
+<div class="p-md flex flex-col h-full z-10 bg-gradient-to-t from-surface to-transparent">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-[#10B981]">local_shipping</span>
+<div class="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></div>
+</div>
+<h4 class="font-body-sm text-body-sm text-on-surface font-bold mt-auto">Active Deliveries</h4>
+<div class="flex justify-between items-end">
+<span class="font-headline-h3 text-[24px] font-bold text-on-surface">48</span>
+<span class="font-label-caps text-[10px] text-primary bg-primary-container/20 px-xs rounded">In Transit</span>
+</div>
+</div>
+</div>
+<!-- Live Pricing Graph Mockup -->
+<div class="col-span-2 bg-inverse-surface rounded-lg p-md border border-on-tertiary-fixed-variant flex flex-col gap-sm">
+<div class="flex justify-between items-center text-on-primary">
+<h4 class="font-body-sm text-body-sm font-bold">Live Steel Pricing</h4>
+<span class="material-symbols-outlined text-primary-container text-[18px]">show_chart</span>
+</div>
+<div class="flex-1 mt-sm relative flex items-end gap-1 h-[80px]">
+<div class="w-full bg-surface-tint h-[20%] rounded-t-sm"></div>
+<div class="w-full bg-surface-tint h-[30%] rounded-t-sm"></div>
+<div class="w-full bg-surface-tint h-[25%] rounded-t-sm"></div>
+<div class="w-full bg-surface-tint h-[45%] rounded-t-sm"></div>
+<div class="w-full bg-surface-tint h-[60%] rounded-t-sm"></div>
+<div class="w-full bg-primary-container h-[85%] rounded-t-sm relative">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-on-primary text-inverse-surface font-label-caps text-[9px] px-1 rounded">₹65k</div>
+</div>
+<div class="w-full bg-surface-tint h-[70%] rounded-t-sm"></div>
+</div>
+</div>
+<!-- Service Bookings -->
+<div class="col-span-1 bg-surface rounded-lg p-md border border-surface-variant flex flex-col gap-sm">
+<div class="flex items-center gap-sm mb-sm">
+<span class="material-symbols-outlined text-secondary">engineering</span>
+<h4 class="font-body-sm text-[12px] font-bold">Contractors</h4>
+</div>
+<div class="flex flex-col gap-xs">
+<div class="flex items-center gap-sm bg-surface-container-low p-xs rounded">
+<div class="w-6 h-6 rounded bg-surface-variant flex items-center justify-center text-[10px] font-bold">PL</div>
+<div class="flex-1">
+<p class="font-body-sm text-[10px] font-bold leading-none">Plumbing Team A</p>
+<p class="font-label-caps text-[8px] text-secondary">Site 4 • Tomorrow</p>
+</div>
+</div>
+<div class="flex items-center gap-sm bg-surface-container-low p-xs rounded">
+<div class="w-6 h-6 rounded bg-surface-variant flex items-center justify-center text-[10px] font-bold">EL</div>
+<div class="flex-1">
+<p class="font-body-sm text-[10px] font-bold leading-none">ElectroCorp</p>
+<p class="font-label-caps text-[8px] text-secondary">Site 2 • Ongoing</p>
+</div>
+</div>
+</div>
+</div>
+<!-- RFQ Status -->
+<div class="col-span-1 bg-surface rounded-lg p-md border border-surface-variant flex flex-col gap-sm">
+<div class="flex items-center gap-sm mb-sm">
+<span class="material-symbols-outlined text-secondary">request_quote</span>
+<h4 class="font-body-sm text-[12px] font-bold">Recent RFQs</h4>
+</div>
+<div class="flex flex-col gap-xs">
+<div class="flex justify-between items-center py-xs border-b border-surface-variant">
+<div class="flex items-center gap-sm">
+<div class="w-2 h-2 rounded-full bg-primary-container"></div>
+<span class="font-body-sm text-[10px] text-on-surface truncate max-w-[80px]">UltraTech Cement</span>
+</div>
+<span class="font-label-caps text-[8px] text-secondary">Pending</span>
+</div>
+<div class="flex justify-between items-center py-xs border-b border-surface-variant">
+<div class="flex items-center gap-sm">
+<div class="w-2 h-2 rounded-full bg-[#10B981]"></div>
+<span class="font-body-sm text-[10px] text-on-surface truncate max-w-[80px]">Tata Tiscon TMT</span>
+</div>
+<span class="font-label-caps text-[8px] text-[#10B981]">Quoted</span>
+</div>
+<div class="flex justify-between items-center py-xs">
+<div class="flex items-center gap-sm">
+<div class="w-2 h-2 rounded-full bg-error"></div>
+<span class="font-body-sm text-[10px] text-on-surface truncate max-w-[80px]">Asian Paints 20L</span>
+</div>
+<span class="font-label-caps text-[8px] text-error">Expired</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Decorative elements behind mockup -->
+<div class="absolute -top-lg -right-lg w-32 h-32 bg-[radial-gradient(#c8c6c5_2px,transparent_2px)] [background-size:12px_12px] z-0"></div>
+<div class="absolute -bottom-lg -left-lg w-48 h-48 bg-[radial-gradient(#c8c6c5_2px,transparent_2px)] [background-size:12px_12px] z-0"></div>
+</div>
+</div>
+</section>
+<!-- Product Categories Section -->
+<section class="w-full py-4xl bg-[#F9FAFB] border-t border-surface-variant">
+<div class="max-w-[1440px] mx-auto px-lg w-full flex flex-col gap-xl">
+<div class="flex flex-col items-center text-center gap-sm">
+<h2 class="font-headline-h2 text-headline-h2 text-on-surface">Product Categories</h2>
+<p class="font-body-lg text-body-lg text-secondary">Everything You Need To Build</p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-lg mt-lg">
+<!-- Category Cards -->
+<a class="flex flex-col items-center gap-md bg-surface p-lg rounded-xl border border-surface-variant shadow-sm hover:shadow-lg hover:-translate-y-2 hover:border-primary-container transition-all duration-300 group" href="#">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center group-hover:bg-primary-container/10 transition-colors">
+<span class="material-symbols-outlined text-[32px] text-secondary group-hover:text-primary transition-colors">foundation</span>
+</div>
+<div class="text-center">
+<h3 class="font-body-sm text-body-sm font-bold text-on-surface">Cement</h3>
+<p class="font-label-caps text-[10px] text-secondary mt-xs">1,200+ Products</p>
+</div>
+</a>
+<a class="flex flex-col items-center gap-md bg-surface p-lg rounded-xl border border-surface-variant shadow-sm hover:shadow-lg hover:-translate-y-2 hover:border-primary-container transition-all duration-300 group" href="#">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center group-hover:bg-primary-container/10 transition-colors">
+<span class="material-symbols-outlined text-[32px] text-secondary group-hover:text-primary transition-colors">architecture</span>
+</div>
+<div class="text-center">
+<h3 class="font-body-sm text-body-sm font-bold text-on-surface">Steel</h3>
+<p class="font-label-caps text-[10px] text-secondary mt-xs">850+ Products</p>
+</div>
+</a>
+<a class="flex flex-col items-center gap-md bg-surface p-lg rounded-xl border border-surface-variant shadow-sm hover:shadow-lg hover:-translate-y-2 hover:border-primary-container transition-all duration-300 group" href="#">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center group-hover:bg-primary-container/10 transition-colors">
+<span class="material-symbols-outlined text-[32px] text-secondary group-hover:text-primary transition-colors">electrical_services</span>
+</div>
+<div class="text-center">
+<h3 class="font-body-sm text-body-sm font-bold text-on-surface">Electrical</h3>
+<p class="font-label-caps text-[10px] text-secondary mt-xs">3,400+ Products</p>
+</div>
+</a>
+<a class="flex flex-col items-center gap-md bg-surface p-lg rounded-xl border border-surface-variant shadow-sm hover:shadow-lg hover:-translate-y-2 hover:border-primary-container transition-all duration-300 group" href="#">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center group-hover:bg-primary-container/10 transition-colors">
+<span class="material-symbols-outlined text-[32px] text-secondary group-hover:text-primary transition-colors">plumbing</span>
+</div>
+<div class="text-center">
+<h3 class="font-body-sm text-body-sm font-bold text-on-surface">Plumbing</h3>
+<p class="font-label-caps text-[10px] text-secondary mt-xs">2,100+ Products</p>
+</div>
+</a>
+<a class="flex flex-col items-center gap-md bg-surface p-lg rounded-xl border border-surface-variant shadow-sm hover:shadow-lg hover:-translate-y-2 hover:border-primary-container transition-all duration-300 group" href="#">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center group-hover:bg-primary-container/10 transition-colors">
+<span class="material-symbols-outlined text-[32px] text-secondary group-hover:text-primary transition-colors">format_paint</span>
+</div>
+<div class="text-center">
+<h3 class="font-body-sm text-body-sm font-bold text-on-surface">Paints</h3>
+<p class="font-label-caps text-[10px] text-secondary mt-xs">1,500+ Products</p>
+</div>
+</a>
+<a class="flex flex-col items-center gap-md bg-surface p-lg rounded-xl border border-surface-variant shadow-sm hover:shadow-lg hover:-translate-y-2 hover:border-primary-container transition-all duration-300 group" href="#">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center group-hover:bg-primary-container/10 transition-colors">
+<span class="material-symbols-outlined text-[32px] text-secondary group-hover:text-primary transition-colors">grid_view</span>
+</div>
+<div class="text-center">
+<h3 class="font-body-sm text-body-sm font-bold text-on-surface">Tiles</h3>
+<p class="font-label-caps text-[10px] text-secondary mt-xs">2,800+ Products</p>
+</div>
+</a>
+<a class="flex flex-col items-center gap-md bg-surface p-lg rounded-xl border border-surface-variant shadow-sm hover:shadow-lg hover:-translate-y-2 hover:border-primary-container transition-all duration-300 group" href="#">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center group-hover:bg-primary-container/10 transition-colors">
+<span class="material-symbols-outlined text-[32px] text-secondary group-hover:text-primary transition-colors">hardware</span>
+</div>
+<div class="text-center">
+<h3 class="font-body-sm text-body-sm font-bold text-on-surface">Hardware</h3>
+<p class="font-label-caps text-[10px] text-secondary mt-xs">4,000+ Products</p>
+</div>
+</a>
+<a class="flex flex-col items-center gap-md bg-surface p-lg rounded-xl border border-surface-variant shadow-sm hover:shadow-lg hover:-translate-y-2 hover:border-primary-container transition-all duration-300 group" href="#">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center group-hover:bg-primary-container/10 transition-colors">
+<span class="material-symbols-outlined text-[32px] text-secondary group-hover:text-primary transition-colors">health_and_safety</span>
+</div>
+<div class="text-center">
+<h3 class="font-body-sm text-body-sm font-bold text-on-surface">Safety</h3>
+<p class="font-label-caps text-[10px] text-secondary mt-xs">900+ Products</p>
+</div>
+</a>
+</div>
+</div>
+</section><section class="w-full py-4xl bg-surface border-t border-surface-variant">
+<div class="max-w-[1440px] mx-auto px-lg w-full flex flex-col gap-xl">
+<div class="flex flex-col items-center text-center gap-sm">
+<h2 class="font-headline-h2 text-headline-h2 text-on-surface">Top Selling Products</h2>
+<p class="font-body-lg text-body-lg text-secondary">High-demand materials for professional builds</p>
+</div>
+<div class="flex flex-col gap-xxl">
+<!-- Category: Cement -->
+<div class="flex flex-col gap-lg">
+<div class="flex items-center gap-md">
+<div class="h-px flex-1 bg-surface-variant"></div>
+<h3 class="font-headline-h3 text-[24px] text-on-surface px-md">Cement</h3>
+<div class="h-px flex-1 bg-surface-variant"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<!-- Product Card 1 -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-md flex flex-col gap-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 group">
+<div class="h-48 bg-surface-container rounded-lg flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-[48px] text-secondary opacity-20">inventory_2</span>
+</div>
+<div class="flex flex-col gap-xs">
+<div class="flex justify-between items-start">
+<h4 class="font-body-md font-bold text-on-surface">UltraTech Cement</h4>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary-container text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-caps text-[12px]">4.8</span>
+</div>
+</div>
+<p class="font-headline-h3 text-[20px] text-primary">₹450 <span class="text-body-sm text-secondary font-normal">/ Bag</span></p>
+<div class="inline-flex items-center gap-xs bg-primary-container/10 text-on-primary-fixed-variant px-sm py-xs rounded w-fit mt-xs">
+<span class="material-symbols-outlined text-[14px]">receipt_long</span>
+<span class="font-label-caps text-[10px]">GST Invoice Available</span>
+</div>
+</div>
+<button class="w-full mt-md py-md bg-inverse-surface text-inverse-on-surface font-label-caps rounded-lg hover:bg-on-surface transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+              Add to Cart
+            </button>
+</div>
+<!-- Product Card 2 -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-md flex flex-col gap-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 group">
+<div class="h-48 bg-surface-container rounded-lg flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-[48px] text-secondary opacity-20">inventory_2</span>
+</div>
+<div class="flex flex-col gap-xs">
+<div class="flex justify-between items-start">
+<h4 class="font-body-md font-bold text-on-surface">Ambuja Cement</h4>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary-container text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-caps text-[12px]">4.7</span>
+</div>
+</div>
+<p class="font-headline-h3 text-[20px] text-primary">₹445 <span class="text-body-sm text-secondary font-normal">/ Bag</span></p>
+<div class="inline-flex items-center gap-xs bg-primary-container/10 text-on-primary-fixed-variant px-sm py-xs rounded w-fit mt-xs">
+<span class="material-symbols-outlined text-[14px]">receipt_long</span>
+<span class="font-label-caps text-[10px]">GST Invoice Available</span>
+</div>
+</div>
+<button class="w-full mt-md py-md bg-inverse-surface text-inverse-on-surface font-label-caps rounded-lg hover:bg-on-surface transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+              Add to Cart
+            </button>
+</div>
+<!-- Product Card 3 -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-md flex flex-col gap-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 group">
+<div class="h-48 bg-surface-container rounded-lg flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-[48px] text-secondary opacity-20">inventory_2</span>
+</div>
+<div class="flex flex-col gap-xs">
+<div class="flex justify-between items-start">
+<h4 class="font-body-md font-bold text-on-surface">ACC Cement</h4>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary-container text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-caps text-[12px]">4.6</span>
+</div>
+</div>
+<p class="font-headline-h3 text-[20px] text-primary">₹440 <span class="text-body-sm text-secondary font-normal">/ Bag</span></p>
+<div class="inline-flex items-center gap-xs bg-primary-container/10 text-on-primary-fixed-variant px-sm py-xs rounded w-fit mt-xs">
+<span class="material-symbols-outlined text-[14px]">receipt_long</span>
+<span class="font-label-caps text-[10px]">GST Invoice Available</span>
+</div>
+</div>
+<button class="w-full mt-md py-md bg-inverse-surface text-inverse-on-surface font-label-caps rounded-lg hover:bg-on-surface transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+              Add to Cart
+            </button>
+</div>
+</div>
+</div>
+<!-- Category: Steel -->
+<div class="flex flex-col gap-lg">
+<div class="flex items-center gap-md">
+<div class="h-px flex-1 bg-surface-variant"></div>
+<h3 class="font-headline-h3 text-[24px] text-on-surface px-md">Steel</h3>
+<div class="h-px flex-1 bg-surface-variant"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<!-- Product Card 1 -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-md flex flex-col gap-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 group">
+<div class="h-48 bg-surface-container rounded-lg flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-[48px] text-secondary opacity-20">architecture</span>
+</div>
+<div class="flex flex-col gap-xs">
+<div class="flex justify-between items-start">
+<h4 class="font-body-md font-bold text-on-surface">Tata Tiscon</h4>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary-container text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-caps text-[12px]">4.9</span>
+</div>
+</div>
+<p class="font-headline-h3 text-[20px] text-primary">₹68,000 <span class="text-body-sm text-secondary font-normal">/ Ton</span></p>
+<div class="inline-flex items-center gap-xs bg-primary-container/10 text-on-primary-fixed-variant px-sm py-xs rounded w-fit mt-xs">
+<span class="material-symbols-outlined text-[14px]">receipt_long</span>
+<span class="font-label-caps text-[10px]">GST Invoice Available</span>
+</div>
+</div>
+<button class="w-full mt-md py-md bg-inverse-surface text-inverse-on-surface font-label-caps rounded-lg hover:bg-on-surface transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+              Add to Cart
+            </button>
+</div>
+<!-- Product Card 2 -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-md flex flex-col gap-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 group">
+<div class="h-48 bg-surface-container rounded-lg flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-[48px] text-secondary opacity-20">architecture</span>
+</div>
+<div class="flex flex-col gap-xs">
+<div class="flex justify-between items-start">
+<h4 class="font-body-md font-bold text-on-surface">JSW Steel</h4>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary-container text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-caps text-[12px]">4.8</span>
+</div>
+</div>
+<p class="font-headline-h3 text-[20px] text-primary">₹66,500 <span class="text-body-sm text-secondary font-normal">/ Ton</span></p>
+<div class="inline-flex items-center gap-xs bg-primary-container/10 text-on-primary-fixed-variant px-sm py-xs rounded w-fit mt-xs">
+<span class="material-symbols-outlined text-[14px]">receipt_long</span>
+<span class="font-label-caps text-[10px]">GST Invoice Available</span>
+</div>
+</div>
+<button class="w-full mt-md py-md bg-inverse-surface text-inverse-on-surface font-label-caps rounded-lg hover:bg-on-surface transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+              Add to Cart
+            </button>
+</div>
+<!-- Product Card 3 -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-md flex flex-col gap-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 group">
+<div class="h-48 bg-surface-container rounded-lg flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-[48px] text-secondary opacity-20">architecture</span>
+</div>
+<div class="flex flex-col gap-xs">
+<div class="flex justify-between items-start">
+<h4 class="font-body-md font-bold text-on-surface">SAIL Steel</h4>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary-container text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-caps text-[12px]">4.7</span>
+</div>
+</div>
+<p class="font-headline-h3 text-[20px] text-primary">₹65,200 <span class="text-body-sm text-secondary font-normal">/ Ton</span></p>
+<div class="inline-flex items-center gap-xs bg-primary-container/10 text-on-primary-fixed-variant px-sm py-xs rounded w-fit mt-xs">
+<span class="material-symbols-outlined text-[14px]">receipt_long</span>
+<span class="font-label-caps text-[10px]">GST Invoice Available</span>
+</div>
+</div>
+<button class="w-full mt-md py-md bg-inverse-surface text-inverse-on-surface font-label-caps rounded-lg hover:bg-on-surface transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+              Add to Cart
+            </button>
+</div>
+</div>
+</div>
+<!-- Category: Electrical -->
+<div class="flex flex-col gap-lg">
+<div class="flex items-center gap-md">
+<div class="h-px flex-1 bg-surface-variant"></div>
+<h3 class="font-headline-h3 text-[24px] text-on-surface px-md">Electrical</h3>
+<div class="h-px flex-1 bg-surface-variant"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<!-- Product Card 1 -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-md flex flex-col gap-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 group">
+<div class="h-48 bg-surface-container rounded-lg flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-[48px] text-secondary opacity-20">electrical_services</span>
+</div>
+<div class="flex flex-col gap-xs">
+<div class="flex justify-between items-start">
+<h4 class="font-body-md font-bold text-on-surface">Finolex Wire</h4>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary-container text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-caps text-[12px]">4.8</span>
+</div>
+</div>
+<p class="font-headline-h3 text-[20px] text-primary">₹1,250 <span class="text-body-sm text-secondary font-normal">/ Coil</span></p>
+<div class="inline-flex items-center gap-xs bg-primary-container/10 text-on-primary-fixed-variant px-sm py-xs rounded w-fit mt-xs">
+<span class="material-symbols-outlined text-[14px]">receipt_long</span>
+<span class="font-label-caps text-[10px]">GST Invoice Available</span>
+</div>
+</div>
+<button class="w-full mt-md py-md bg-inverse-surface text-inverse-on-surface font-label-caps rounded-lg hover:bg-on-surface transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+              Add to Cart
+            </button>
+</div>
+<!-- Product Card 2 -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-md flex flex-col gap-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 group">
+<div class="h-48 bg-surface-container rounded-lg flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-[48px] text-secondary opacity-20">electrical_services</span>
+</div>
+<div class="flex flex-col gap-xs">
+<div class="flex justify-between items-start">
+<h4 class="font-body-md font-bold text-on-surface">Havells MCB</h4>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary-container text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-caps text-[12px]">4.9</span>
+</div>
+</div>
+<p class="font-headline-h3 text-[20px] text-primary">₹850 <span class="text-body-sm text-secondary font-normal">/ Unit</span></p>
+<div class="inline-flex items-center gap-xs bg-primary-container/10 text-on-primary-fixed-variant px-sm py-xs rounded w-fit mt-xs">
+<span class="material-symbols-outlined text-[14px]">receipt_long</span>
+<span class="font-label-caps text-[10px]">GST Invoice Available</span>
+</div>
+</div>
+<button class="w-full mt-md py-md bg-inverse-surface text-inverse-on-surface font-label-caps rounded-lg hover:bg-on-surface transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+              Add to Cart
+            </button>
+</div>
+<!-- Product Card 3 -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-md flex flex-col gap-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 group">
+<div class="h-48 bg-surface-container rounded-lg flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-[48px] text-secondary opacity-20">electrical_services</span>
+</div>
+<div class="flex flex-col gap-xs">
+<div class="flex justify-between items-start">
+<h4 class="font-body-md font-bold text-on-surface">Anchor Switch</h4>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary-container text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-caps text-[12px]">4.7</span>
+</div>
+</div>
+<p class="font-headline-h3 text-[20px] text-primary">₹45 <span class="text-body-sm text-secondary font-normal">/ Unit</span></p>
+<div class="inline-flex items-center gap-xs bg-primary-container/10 text-on-primary-fixed-variant px-sm py-xs rounded w-fit mt-xs">
+<span class="material-symbols-outlined text-[14px]">receipt_long</span>
+<span class="font-label-caps text-[10px]">GST Invoice Available</span>
+</div>
+</div>
+<button class="w-full mt-md py-md bg-inverse-surface text-inverse-on-surface font-label-caps rounded-lg hover:bg-on-surface transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+              Add to Cart
+            </button>
+</div>
+</div>
+</div>
+</div>
+<div class="flex justify-center mt-xl">
+<button class="h-14 px-xxl bg-primary-container text-on-primary-fixed font-label-caps text-label-caps rounded-lg hover:bg-inverse-primary hover:-translate-y-1 transition-all duration-200 shadow-md flex items-center justify-center gap-sm">
+        View All Products
+        <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Services Section -->
+<section class="w-full py-4xl bg-surface">
+<div class="max-w-[1440px] mx-auto px-lg w-full flex flex-col gap-xl">
+<div class="flex flex-col gap-sm">
+<h2 class="font-headline-h2 text-headline-h2 text-on-surface">Expert Services</h2>
+<p class="font-body-lg text-body-lg text-secondary">Hire Verified Construction Professionals</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
+<!-- Service Cards -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col">
+<div class="h-48 bg-surface-dim relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
+<img alt="Plumbing Services" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9WL9qpICjVNzYuFtHP757fUi9mbJ5l25PjCC0fSwtR405W7ztmQyNL5xDnfichRI9J2CLMoocSoZgUMs1FWBY02qzv03r1Z47H8_LW-l3YbBSUxqKKdQCbe75Mk2sRcAVS0vRUkbu2-RpE0pA77RgWXCgt46E_dqoWUTZ1y1uvproA9u9iG-x2XEptJ3wrnXC2AgfA1U8sO4sVRZ9dtjMIk1LtgEweG0peZ81VUBbydzJxHEB17tzU-Kdk0k4kydWi0548ZdgT0M">
+<div class="absolute bottom-md left-md z-20">
+<h3 class="font-headline-h3 text-[24px] text-white">Plumbers</h3>
+</div>
+</div>
+<div class="p-md flex flex-col gap-sm flex-1">
+<p class="font-body-sm text-secondary line-clamp-2">Experienced plumbing professionals for residential and commercial projects. Pipe installation, repair, and maintenance.</p>
+<div class="flex items-center gap-xs mt-auto">
+<span class="material-symbols-outlined text-primary-container text-[16px]">star</span>
+<span class="font-label-caps text-[12px] font-bold">4.8</span>
+<span class="font-label-caps text-[12px] text-secondary">(120+ verified pros)</span>
+</div>
+<button class="w-full mt-sm py-sm border border-outline-variant rounded hover:bg-surface-container transition-colors font-label-caps">Book Now</button>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col">
+<div class="h-48 bg-surface-dim relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
+<img alt="Carpentry Services" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDod9usySwzNXDejHZcE11gZeAh2DkJtUNRIL_nTJGAfWnemJND2MTdAPJEdiswkPt10MdkIkaY-9nUHRjiMYB8w6OuHygSuNWmqzd9_LHTPUZ4M-8ZBHGX8wsY9EuN5GZmMgNicwaXLiWqZI3OgF-6O978Cwaggolxtg0gGokF0v8OJcy3T7EYPuYhvxTKWaiV99m4WFCmSkFtu1gqw9Oe9pNGYq_uZy80zSpQ6G1tOJNTnjgLQUpGSpTEHv_XzSRxsNjehcCba2Q">
+<div class="absolute bottom-md left-md z-20">
+<h3 class="font-headline-h3 text-[24px] text-white">Carpenters</h3>
+</div>
+</div>
+<div class="p-md flex flex-col gap-sm flex-1">
+<p class="font-body-sm text-secondary line-clamp-2">Skilled carpenters for structural woodwork, custom furniture, cabinetry, and finishing.</p>
+<div class="flex items-center gap-xs mt-auto">
+<span class="material-symbols-outlined text-primary-container text-[16px]">star</span>
+<span class="font-label-caps text-[12px] font-bold">4.9</span>
+<span class="font-label-caps text-[12px] text-secondary">(85+ verified pros)</span>
+</div>
+<button class="w-full mt-sm py-sm border border-outline-variant rounded hover:bg-surface-container transition-colors font-label-caps">Book Now</button>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col">
+<div class="h-48 bg-surface-dim relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
+<img alt="Electrical Services" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOP2epZ8lqMkOHmbsu5azj5Q7gTdonEchG7VJDjYQ3nIbn3cxttTaZc8eeP02zFnaSef7Rpzb9RnhV8-QG_Mi1zwejByslRhwtBMkPSus9jVbnhYTtKPBw5A7UMBMdulnBksBr1IWgLMJW7AiwplWc_fkSAv2PvH7N8TkqEAdzInse_vcPhXFEnxR7O_tn6xjzycC4EAuYRsMDtSd8HUoWH7pe-Q3uBGwyirReqaMLy_23X5IJhiVvLxwUudd52cl0OtpgTmuuAlw">
+<div class="absolute bottom-md left-md z-20">
+<h3 class="font-headline-h3 text-[24px] text-white">Electricians</h3>
+</div>
+</div>
+<div class="p-md flex flex-col gap-sm flex-1">
+<p class="font-body-sm text-secondary line-clamp-2">Certified electricians for wiring, panel installation, lighting, and industrial electrical systems.</p>
+<div class="flex items-center gap-xs mt-auto">
+<span class="material-symbols-outlined text-primary-container text-[16px]">star</span>
+<span class="font-label-caps text-[12px] font-bold">4.7</span>
+<span class="font-label-caps text-[12px] text-secondary">(150+ verified pros)</span>
+</div>
+<button class="w-full mt-sm py-sm border border-outline-variant rounded hover:bg-surface-container transition-colors font-label-caps">Book Now</button>
+</div>
+</div>
+<!-- CTA Card -->
+<div class="bg-primary-container border border-primary-container rounded-xl overflow-hidden shadow-sm hover:-translate-y-1 transition-transform group flex flex-col items-center justify-center p-xl text-center md:col-span-2 lg:col-span-3 min-h-[160px]">
+<h3 class="font-headline-h3 text-on-primary-fixed mb-sm">Need a specialized contractor?</h3>
+<p class="font-body-md text-on-primary-fixed-variant mb-md max-w-2xl">We have hundreds of verified painters, civil contractors, masons, and project managers ready for your next big build.</p>
+<button class="px-xl py-md bg-inverse-surface text-inverse-on-surface font-label-caps rounded-lg hover:bg-on-surface transition-colors flex items-center gap-sm">
+                    View All Services
+                    <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- RFQ Section -->
+<section class="w-full py-4xl bg-[#111827] text-white">
+<div class="max-w-[1440px] mx-auto px-lg w-full grid grid-cols-1 lg:grid-cols-2 gap-4xl items-center">
+<div class="flex flex-col gap-xl">
+<div class="flex flex-col gap-sm">
+<h2 class="font-headline-h2 text-headline-h2 text-white">Request a Bulk Quote</h2>
+<p class="font-body-lg text-body-lg text-gray-400">Get custom pricing for large orders directly from top manufacturers and distributors.</p>
+</div>
+<div class="flex flex-col gap-md">
+<div class="flex items-start gap-md">
+<div class="w-8 h-8 rounded-full bg-primary-container/20 flex items-center justify-center shrink-0 mt-1">
+<span class="material-symbols-outlined text-primary-container text-[18px]">check</span>
+</div>
+<div>
+<h4 class="font-body-sm font-bold text-white text-[16px]">Factory-Direct Pricing</h4>
+<p class="font-body-sm text-gray-400 mt-xs">Bypass middlemen and get the best possible rates for high-volume material requirements.</p>
+</div>
+</div>
+<div class="flex items-start gap-md">
+<div class="w-8 h-8 rounded-full bg-primary-container/20 flex items-center justify-center shrink-0 mt-1">
+<span class="material-symbols-outlined text-primary-container text-[18px]">check</span>
+</div>
+<div>
+<h4 class="font-body-sm font-bold text-white text-[16px]">Dedicated Account Manager</h4>
+<p class="font-body-sm text-gray-400 mt-xs">A single point of contact to handle negotiations, logistics, and delivery scheduling.</p>
+</div>
+</div>
+<div class="flex items-start gap-md">
+<div class="w-8 h-8 rounded-full bg-primary-container/20 flex items-center justify-center shrink-0 mt-1">
+<span class="material-symbols-outlined text-primary-container text-[18px]">check</span>
+</div>
+<div>
+<h4 class="font-body-sm font-bold text-white text-[16px]">Flexible Payment Terms</h4>
+<p class="font-body-sm text-gray-400 mt-xs">Credit options and milestone-based payments available for verified enterprise buyers.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest text-on-surface rounded-xl p-xl shadow-2xl">
+<h3 class="font-headline-h3 text-[24px] mb-lg border-b border-surface-variant pb-md">Submit Requirements</h3>
+<form class="flex flex-col gap-md">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<div class="flex flex-col gap-xs">
+<label class="font-label-caps text-[10px] text-secondary">Product Category *</label>
+<select class="w-full rounded border-surface-variant bg-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container text-body-sm">
+<option>Select Category</option>
+<option>Cement</option>
+<option>Steel (TMT)</option>
+<option>Bricks &amp; Blocks</option>
+<option>Aggregates</option>
+</select>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-caps text-[10px] text-secondary">Estimated Quantity *</label>
+<input class="w-full rounded border-surface-variant bg-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container text-body-sm" placeholder="e.g., 500 Tons, 1000 Bags" type="text">
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-caps text-[10px] text-secondary">Delivery Location *</label>
+<input class="w-full rounded border-surface-variant bg-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container text-body-sm" placeholder="City, Pincode" type="text">
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-caps text-[10px] text-secondary">Expected Timeline *</label>
+<select class="w-full rounded border-surface-variant bg-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container text-body-sm">
+<option>Immediate (1-3 Days)</option>
+<option>Within 1 Week</option>
+<option>Within 1 Month</option>
+<option>Planning Phase</option>
+</select>
+</div>
+<div class="flex flex-col gap-xs md:col-span-2">
+<label class="font-label-caps text-[10px] text-secondary">Additional Details</label>
+<textarea class="w-full rounded border-surface-variant bg-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container text-body-sm h-24 resize-none" placeholder="Specific brands preferred, quality grades, unloading requirements..."></textarea>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-caps text-[10px] text-secondary">Contact Name *</label>
+<input class="w-full rounded border-surface-variant bg-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container text-body-sm" placeholder="Full Name" type="text">
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-caps text-[10px] text-secondary">Phone Number *</label>
+<input class="w-full rounded border-surface-variant bg-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container text-body-sm" placeholder="+91" type="tel">
+</div>
+</div>
+<button class="w-full h-14 mt-md bg-[#FFC107] text-on-primary-fixed font-label-caps text-[14px] rounded hover:bg-[#ffcd38] transition-colors shadow-md" type="button">
+                        Submit Request
+                    </button>
+<p class="text-center font-label-caps text-[10px] text-secondary mt-sm">Our procurement experts will contact you within 2 hours.</p>
+</form>
+</div>
+</div>
+</section>
+<!-- Trust Section -->
+<section class="w-full py-xxl bg-surface border-b border-surface-variant">
+<div class="max-w-[1440px] mx-auto px-lg w-full">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-lg">
+<div class="flex flex-col items-center text-center gap-sm p-md">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary-fixed-dim mb-xs">
+<span class="material-symbols-outlined text-[24px]">verified_user</span>
+</div>
+<h4 class="font-body-sm font-bold text-on-surface">100% Verified Suppliers</h4>
+<p class="font-label-caps text-[10px] text-secondary normal-case leading-relaxed">Every seller undergoes strict KYC and quality checks.</p>
+</div>
+<div class="flex flex-col items-center text-center gap-sm p-md">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary-fixed-dim mb-xs">
+<span class="material-symbols-outlined text-[24px]">payments</span>
+</div>
+<h4 class="font-body-sm font-bold text-on-surface">Secure Payments</h4>
+<p class="font-label-caps text-[10px] text-secondary normal-case leading-relaxed">Escrow-backed payments ensure your money is safe until delivery.</p>
+</div>
+<div class="flex flex-col items-center text-center gap-sm p-md">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary-fixed-dim mb-xs">
+<span class="material-symbols-outlined text-[24px]">local_shipping</span>
+</div>
+<h4 class="font-body-sm font-bold text-on-surface">Fast Reliable Delivery</h4>
+<p class="font-label-caps text-[10px] text-secondary normal-case leading-relaxed">Optimized logistics network for on-time site deliveries.</p>
+</div>
+<div class="flex flex-col items-center text-center gap-sm p-md">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary-fixed-dim mb-xs">
+<span class="material-symbols-outlined text-[24px]">assignment_return</span>
+</div>
+<h4 class="font-body-sm font-bold text-on-surface">Easy Returns &amp; Claims</h4>
+<p class="font-label-caps text-[10px] text-secondary normal-case leading-relaxed">Hassle-free dispute resolution for damaged or incorrect goods.</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer (Shared Component) -->
+<footer class="w-full bg-[#0F172A] text-gray-300">
+<div class="max-w-[1440px] mx-auto px-lg w-full py-4xl">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-xl lg:gap-lg">
+<!-- Brand Column -->
+<div class="lg:col-span-2 flex flex-col gap-lg pr-lg">
+<img alt="ARCUS" class="h-[60px] w-auto object-contain self-start brightness-0 invert" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqBwJtirfPlGNUtzdI7SQ5R3Tmv0YXqhE9wlhdB_XAV1csS9rOg4wqMs1gPmFdwUmqzs5C4QbR-li6sidyY-w0hooAvpl4OlBpI89rl5ROTTT2G96fmEdhw1Cnm3lqMxIPGamUImR5v2NSlL11nu4GC-70fHIjyPvO2orMTZb3RfYFjfV-uJ5Kjl_87HJo0XpIItXqj3rZmPfPiforXSiRUUNDnwIQLEjdlgrLVuzoNxh_dWUlgvzTECxEpuMmlJ1idBZ_4nXTFR8">
+<p class="font-body-md text-[14px] leading-relaxed max-w-sm">
+                    The premium B2B construction commerce platform. Procure materials, hire contractors, and build faster with uncompromising reliability designed for scale.
+                </p>
+<div class="flex items-center gap-md mt-sm">
+<a class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary-container hover:text-on-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">link</span>
+</a>
+<a class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary-container hover:text-on-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</a>
+<a class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary-container hover:text-on-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+</a>
+</div>
+</div>
+<!-- Links Columns -->
+<div class="flex flex-col gap-md">
+<h4 class="font-body-sm font-bold text-white mb-sm tracking-wide">Company</h4>
+<a class="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit" href="#">About ARCUS</a>
+<a class="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit" href="#">Careers</a>
+<a class="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit" href="#">Press &amp; Media</a>
+<a class="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit" href="#">Contact Us</a>
+</div>
+<div class="flex flex-col gap-md">
+<h4 class="font-body-sm font-bold text-white mb-sm tracking-wide">Products</h4>
+<a class="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit" href="#">Building Materials</a>
+<a class="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit" href="#">Tools &amp; Equipment</a>
+<a class="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit" href="#">Safety Gear</a>
+<a class="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit" href="#">Bulk Ordering</a>
+</div>
+<div class="flex flex-col gap-md">
+<h4 class="font-body-sm font-bold text-white mb-sm tracking-wide">Services</h4>
+<a class="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit" href="#">Hire Contractors</a>
+<a class="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit" href="#">Equipment Rental</a>
+<a class="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit" href="#">Project Management</a>
+<a class="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit" href="#">Logistics Support</a>
+</div>
+<div class="flex flex-col gap-md">
+<h4 class="font-body-sm font-bold text-white mb-sm tracking-wide">Support</h4>
+<a class="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit" href="#">Help Center</a>
+<a class="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit" href="#">Track Order</a>
+<a class="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit" href="#">Return Policy</a>
+<a class="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit" href="#">Supplier Guidelines</a>
+</div>
+</div>
+</div>
+<!-- Bottom Strip -->
+<div class="w-full border-t border-gray-800 py-lg bg-[#0B1120]">
+<div class="max-w-[1440px] mx-auto px-lg w-full flex flex-col md:flex-row items-center justify-between gap-md">
+<p class="font-label-caps text-[10px] text-gray-500">
+                    © 2024 ARCUS Construction Commerce Pvt. Ltd. All rights reserved. | GSTIN: 29AABCU9876R1Z5
+                </p>
+<div class="flex items-center gap-lg">
+<a class="font-label-caps text-[10px] text-gray-500 hover:text-white transition-colors" href="#">Terms of Service</a>
+<a class="font-label-caps text-[10px] text-gray-500 hover:text-white transition-colors" href="#">Privacy Policy</a>
+<a class="font-label-caps text-[10px] text-gray-500 hover:text-white transition-colors" href="#">Sitemap</a>
+</div>
+</div>
+</div>
+</footer>
+
+
+</body></html>
