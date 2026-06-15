@@ -120,7 +120,7 @@ export default function Hero() {
 
         {/* Right Content (Floating Dashboard Mockup) */}
         <div className="lg:col-span-6 relative mt-4xl lg:mt-0 hidden md:block perspective-1000">
-          <div className="relative w-full max-w-[620px] h-[700px] bg-surface-container-lowest rounded-xl shadow-[0_30px_80px_-20px_rgba(0,0,0,0.15)] border border-surface-variant p-lg flex flex-col gap-md overflow-hidden transition-transform duration-700 ease-out z-10 ml-auto rotate-y-[-5deg] hover:rotate-0">
+          <div className="relative w-full max-w-[620px] h-[700px] bg-surface-container-lowest rounded-xl shadow-[0_30px_80px_-20px_rgba(0,0,0,0.15)] border border-surface-variant p-lg flex flex-col gap-md overflow-hidden transform rotate-y-[-5deg] rotate-x-[2deg] hover:rotate-y-0 hover:rotate-x-0 transition-transform duration-700 ease-out z-10 ml-auto">
             {/* Mockup Header */}
             <div className="flex items-center justify-between pb-sm border-b border-surface-variant">
               <div className="flex items-center gap-md">

@@ -9,9 +9,9 @@ import Footer from './components/Footer'
 
 function App() {
   return (
-    <div className="flex flex-col min-h-screen bg-background text-on-background font-body-md antialiased overflow-x-hidden">
+    <>
       <Navbar />
-      <main className="flex-grow">
+      <main>
         <Hero />
         <Categories />
         <Products />
@@ -20,7 +20,7 @@ function App() {
         <Trust />
       </main>
       <Footer />
-    </div>
+    </>
   )
 }
 
