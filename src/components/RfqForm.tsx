@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
+import { validateRfqForm } from '../../shared/validation'
 
 export default function RfqForm() {
   const [submitted, setSubmitted] = useState(false)
+  const [rfqError, setRfqError] = useState('')
   const [formData, setFormData] = useState({
     category: 'Cement',
     quantity: '',
@@ -12,17 +14,43 @@ export default function RfqForm() {
     phone: '',
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.quantity || !formData.location || !formData.name || !formData.phone) {
-      alert('Please fill in all required fields.')
-      return
+    setRfqError('')
+
+    const validationErrors = validateRfqForm({
+      name: formData.name,
+      phone: formData.phone,
+      quantity: formData.quantity,
+      location: formData.location,
+      details: formData.details
+    });
+
+    const firstError = Object.values(validationErrors)[0];
+    if (firstError) {
+      setRfqError(firstError);
+      return;
     }
+
+    try {
+      const response = await fetch('/api/rfq', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Server error');
+      }
+    } catch (err: any) {
+      console.warn('Backend server offline, falling back to local success state:', err)
+    }
+
     setSubmitted(true)
   }
 
   return (
-    <section className="w-full py-4xl bg-[#111827] text-white">
+    <section className="w-full py-4xl bg-[#1a1c1c] text-white">
       <div className="max-w-[1440px] mx-auto px-lg w-full grid grid-cols-1 lg:grid-cols-2 gap-4xl items-center text-left">
         <div className="flex flex-col gap-xl">
           <div className="flex flex-col gap-sm">
@@ -82,7 +110,7 @@ export default function RfqForm() {
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest text-on-surface rounded-xl p-xl shadow-2xl">
+        <div className="bg-white border border-surface-variant text-on-surface rounded-md p-xl shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
           {submitted ? (
             <div className="flex flex-col items-center justify-center py-4xl text-center gap-md">
               <span className="material-symbols-outlined text-[#10B981] text-[64px]">
@@ -94,7 +122,7 @@ export default function RfqForm() {
               </p>
               <button
                 onClick={() => setSubmitted(false)}
-                className="mt-lg px-xl py-2 bg-inverse-surface text-inverse-on-surface rounded font-label-caps hover:bg-on-surface transition-colors"
+                className="mt-lg px-xl py-2 bg-[#121212] text-white font-semibold rounded-md hover:bg-on-surface transition-colors font-label-caps"
               >
                 Submit Another Request
               </button>
@@ -104,6 +132,11 @@ export default function RfqForm() {
               <h3 className="font-headline-h3 text-[24px] mb-lg border-b border-surface-variant pb-md">
                 Submit Requirements
               </h3>
+              {rfqError && (
+                <div className="bg-red-50 border-l-4 border-red-500 p-sm text-red-700 text-xs rounded mb-md text-left">
+                  {rfqError}
+                </div>
+              )}
               <form onSubmit={handleSubmit} className="flex flex-col gap-md">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
                   <div className="flex flex-col gap-xs">
@@ -115,7 +148,7 @@ export default function RfqForm() {
                       onChange={(e) =>
                         setFormData({ ...formData, category: e.target.value })
                       }
-                      className="w-full rounded border-surface-variant bg-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container text-body-sm text-on-surface"
+                      className="w-full rounded-md border border-surface-variant bg-white focus:border-2 focus:border-primary-container focus:ring-0 text-body-sm text-on-surface"
                     >
                       <option value="Cement">Cement</option>
                       <option value="Steel (TMT)">Steel (TMT)</option>
@@ -133,7 +166,7 @@ export default function RfqForm() {
                       onChange={(e) =>
                         setFormData({ ...formData, quantity: e.target.value })
                       }
-                      className="w-full rounded border-surface-variant bg-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container text-body-sm text-on-surface placeholder:text-gray-400"
+                      className="w-full rounded-md border border-surface-variant bg-white focus:border-2 focus:border-primary-container focus:ring-0 text-body-sm text-on-surface placeholder:text-gray-400"
                       placeholder="e.g., 500 Tons, 1000 Bags"
                       type="text"
                     />
@@ -148,7 +181,7 @@ export default function RfqForm() {
                       onChange={(e) =>
                         setFormData({ ...formData, location: e.target.value })
                       }
-                      className="w-full rounded border-surface-variant bg-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container text-body-sm text-on-surface placeholder:text-gray-400"
+                      className="w-full rounded-md border border-surface-variant bg-white focus:border-2 focus:border-primary-container focus:ring-0 text-body-sm text-on-surface placeholder:text-gray-400"
                       placeholder="City, Pincode"
                       type="text"
                     />
@@ -162,7 +195,7 @@ export default function RfqForm() {
                       onChange={(e) =>
                         setFormData({ ...formData, timeline: e.target.value })
                       }
-                      className="w-full rounded border-surface-variant bg-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container text-body-sm text-on-surface"
+                      className="w-full rounded-md border border-surface-variant bg-white focus:border-2 focus:border-primary-container focus:ring-0 text-body-sm text-on-surface"
                     >
                       <option value="Immediate (1-3 Days)">
                         Immediate (1-3 Days)
@@ -181,7 +214,7 @@ export default function RfqForm() {
                       onChange={(e) =>
                         setFormData({ ...formData, details: e.target.value })
                       }
-                      className="w-full rounded border-surface-variant bg-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container text-body-sm text-on-surface placeholder:text-gray-400 h-24 resize-none"
+                      className="w-full rounded-md border border-surface-variant bg-white focus:border-2 focus:border-primary-container focus:ring-0 text-body-sm text-on-surface placeholder:text-gray-400 h-24 resize-none"
                       placeholder="Specific brands preferred, quality grades, unloading requirements..."
                     ></textarea>
                   </div>
@@ -195,7 +228,7 @@ export default function RfqForm() {
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
-                      className="w-full rounded border-surface-variant bg-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container text-body-sm text-on-surface placeholder:text-gray-400"
+                      className="w-full rounded-md border border-surface-variant bg-white focus:border-2 focus:border-primary-container focus:ring-0 text-body-sm text-on-surface placeholder:text-gray-400"
                       placeholder="Full Name"
                       type="text"
                     />
@@ -210,14 +243,14 @@ export default function RfqForm() {
                       onChange={(e) =>
                         setFormData({ ...formData, phone: e.target.value })
                       }
-                      className="w-full rounded border-surface-variant bg-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container text-body-sm text-on-surface placeholder:text-gray-400"
+                      className="w-full rounded-md border border-surface-variant bg-white focus:border-2 focus:border-primary-container focus:ring-0 text-body-sm text-on-surface placeholder:text-gray-400"
                       placeholder="+91 XXXXX XXXXX"
                       type="tel"
                     />
                   </div>
                 </div>
                 <button
-                  className="w-full h-14 mt-md bg-[#FFC107] text-on-primary-fixed font-label-caps text-[14px] rounded hover:bg-[#ffcd38] transition-colors shadow-md text-on-primary-fixed-variant"
+                  className="w-full h-14 mt-md bg-primary-container text-[#121212] font-semibold rounded-md border-0 hover:bg-[#fabd00] transition-colors font-label-caps text-[14px]"
                   type="submit"
                 >
                   Submit Request

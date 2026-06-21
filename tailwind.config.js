@@ -60,9 +60,11 @@ export default {
         "surface": "#f9f9f9"
       },
       borderRadius: {
-        "DEFAULT": "0.25rem",
-        "lg": "0.5rem",
-        "xl": "0.75rem",
+        "sm": "0.25rem",
+        "DEFAULT": "0.5rem",
+        "md": "0.75rem",
+        "lg": "1.0rem",
+        "xl": "1.5rem",
         "full": "9999px"
       },
       spacing: {

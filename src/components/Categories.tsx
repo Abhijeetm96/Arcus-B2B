@@ -2,22 +2,23 @@ interface Category {
   name: string
   icon: string
   count: string
+  href: string
 }
 
 const categories: Category[] = [
-  { name: 'Cement', icon: 'foundation', count: '1,200+ Products' },
-  { name: 'Steel', icon: 'architecture', count: '850+ Products' },
-  { name: 'Electrical', icon: 'electrical_services', count: '3,400+ Products' },
-  { name: 'Plumbing', icon: 'plumbing', count: '2,100+ Products' },
-  { name: 'Paints', icon: 'format_paint', count: '1,500+ Products' },
-  { name: 'Tiles', icon: 'grid_view', count: '2,800+ Products' },
-  { name: 'Hardware', icon: 'hardware', count: '4,000+ Products' },
-  { name: 'Safety', icon: 'health_and_safety', count: '900+ Products' },
+  { name: 'Plumbing',   icon: 'plumbing',           count: '2,100+ Products', href: '#/materials/plumbing' },
+  { name: 'Electrical', icon: 'electrical_services', count: '3,400+ Products', href: '#/materials/electrical' },
+  { name: 'Interior',   icon: 'weekend',             count: '2,800+ Products', href: '#/materials/tiles-flooring' },
+  { name: 'Paints',     icon: 'format_paint',        count: '1,500+ Products', href: '#/materials/paints-chemicals' },
+  { name: 'Cement',     icon: 'foundation',          count: '1,200+ Products', href: '#/materials/cement-concrete' },
+  { name: 'Steel',      icon: 'architecture',        count: '850+ Products',   href: '#/materials/steel-structural' },
+  { name: 'Hardware',   icon: 'hardware',            count: '4,000+ Products', href: '#/materials/hardware-tools' },
+  { name: 'Safety',     icon: 'health_and_safety',   count: '900+ Products',   href: '#/materials/building-materials' },
 ]
 
 export default function Categories() {
   return (
-    <section className="w-full py-4xl bg-[#F9FAFB] border-t border-surface-variant">
+    <section className="w-full py-4xl bg-background border-t border-surface-variant">
       <div className="max-w-[1440px] mx-auto px-lg w-full flex flex-col gap-xl">
         <div className="flex flex-col items-center text-center gap-sm">
           <h2 className="font-headline-h2 text-headline-h2 text-on-surface">
@@ -31,8 +32,8 @@ export default function Categories() {
           {categories.map((category) => (
             <a
               key={category.name}
-              className="flex flex-col items-center gap-md bg-surface p-lg rounded-xl border border-surface-variant shadow-sm hover:shadow-lg hover:-translate-y-2 hover:border-primary-container transition-all duration-300 group"
-              href="#"
+              className="flex flex-col items-center gap-md bg-white p-lg rounded-md border border-surface-variant shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.1)] hover:-translate-y-2 hover:border-primary transition-all duration-300 group"
+              href={category.href}
             >
               <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center group-hover:bg-primary-container/10 transition-colors">
                 <span className="material-symbols-outlined text-[32px] text-secondary group-hover:text-primary transition-colors">

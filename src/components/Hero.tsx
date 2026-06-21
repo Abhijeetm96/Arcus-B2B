@@ -36,20 +36,20 @@ export default function Hero() {
               search
             </span>
             <input
-              className="w-full h-16 pl-[52px] pr-[120px] rounded-xl border-2 border-surface-variant bg-surface-container-lowest focus:border-primary-container focus:ring-4 focus:ring-primary-container/10 transition-all font-body-md text-on-surface placeholder:text-secondary-fixed-dim outline-none shadow-md"
+              className="w-full h-16 pl-[52px] pr-[120px] rounded-md border border-surface-variant bg-white focus:border-2 focus:border-primary-container focus:ring-0 transition-all font-body-md text-on-surface placeholder:text-secondary-fixed-dim outline-none shadow-md"
               placeholder="Search by product, brand, or service..."
               type="text"
             />
-            <button className="absolute right-sm top-1/2 -translate-y-1/2 h-12 px-lg bg-inverse-surface text-inverse-on-surface font-label-caps rounded-lg hover:bg-on-surface transition-colors">
+            <button className="absolute right-sm top-1/2 -translate-y-1/2 h-12 px-lg bg-[#121212] text-white font-semibold rounded-md hover:bg-on-surface transition-colors">
               Search
             </button>
           </div>
           <div className="flex flex-col sm:flex-row gap-md mt-sm">
-            <button className="h-14 px-xl bg-primary-container text-on-primary-fixed font-label-caps text-label-caps rounded-lg hover:bg-inverse-primary hover:-translate-y-1 transition-all duration-200 shadow-[0_4px_20px_rgba(255,193,7,0.3)] flex items-center justify-center gap-sm">
+            <button className="h-14 px-xl bg-primary-container text-[#121212] font-semibold rounded-md border-0 hover:bg-[#fabd00] hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-sm">
               Get Started
               <span className="material-symbols-outlined">arrow_forward</span>
             </button>
-            <button className="h-14 px-xl bg-surface-container-lowest border-2 border-on-surface text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-on-surface hover:text-on-primary hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-sm">
+            <button className="h-14 px-xl bg-transparent border-2 border-[#1E1E1E] text-[#1E1E1E] font-semibold rounded-md hover:bg-[#1E1E1E] hover:text-white hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-sm">
               Request Bulk Quote
             </button>
           </div>
@@ -120,7 +120,7 @@ export default function Hero() {
 
         {/* Right Content (Floating Dashboard Mockup) */}
         <div className="lg:col-span-6 relative mt-4xl lg:mt-0 hidden md:block perspective-1000">
-          <div className="relative w-full max-w-[620px] h-[700px] bg-surface-container-lowest rounded-xl shadow-[0_30px_80px_-20px_rgba(0,0,0,0.15)] border border-surface-variant p-lg flex flex-col gap-md overflow-hidden transform rotate-y-[-5deg] rotate-x-[2deg] hover:rotate-y-0 hover:rotate-x-0 transition-transform duration-700 ease-out z-10 ml-auto">
+          <div className="relative w-full max-w-[620px] h-[700px] bg-white rounded-md shadow-[0_10px_30px_rgba(0,0,0,0.1)] border border-surface-variant p-lg flex flex-col gap-md overflow-hidden transform rotate-y-[-5deg] rotate-x-[2deg] hover:rotate-y-0 hover:rotate-x-0 transition-transform duration-700 ease-out z-10 ml-auto">
             {/* Mockup Header */}
             <div className="flex items-center justify-between pb-sm border-b border-surface-variant">
               <div className="flex items-center gap-md">
@@ -147,7 +147,7 @@ export default function Hero() {
             {/* Mockup Grid */}
             <div className="grid grid-cols-2 gap-md h-full overflow-y-auto pr-2 custom-scrollbar">
               {/* Material Orders */}
-              <div className="col-span-1 bg-surface rounded-lg p-md border border-surface-variant flex flex-col gap-sm relative overflow-hidden group">
+              <div className="col-span-1 bg-white rounded-md p-md border border-surface-variant flex flex-col gap-sm relative overflow-hidden group shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
                 <div className="absolute right-0 top-0 w-16 h-16 bg-primary-container/10 rounded-bl-full -z-10 group-hover:scale-150 transition-transform"></div>
                 <div className="flex justify-between items-start">
                   <span className="material-symbols-outlined text-primary-fixed-dim">
@@ -164,13 +164,13 @@ export default function Hero() {
                   <span className="font-headline-h3 text-[24px] font-bold text-on-surface leading-none">
                     1,240
                   </span>
-                  <span className="font-label-caps text-[10px] text-[#10B981] bg-[#10B981]/10 px-xs rounded leading-none">
+                  <span className="font-label-caps text-[10px] text-[#10B981] bg-[#10B981]/10 px-xs rounded-md leading-none">
                     +12%
                   </span>
                 </div>
               </div>
               {/* Delivery Tracking */}
-              <div className="col-span-1 bg-surface rounded-lg p-0 border border-surface-variant flex flex-col relative overflow-hidden group h-[120px]">
+              <div className="col-span-1 bg-white rounded-md p-0 border border-surface-variant flex flex-col relative overflow-hidden group h-[120px] shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMjAwIj48cGF0aCBkPSJNMCA1MCBRIDEwMCAxMDAgMjAwIDUwIFQgNDAwIDUwIiBmaWxsPSJub25lIiBzdHJva2U9IiNlNWEwMGIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iNCA0Ii8+PC9zdmc+')] bg-cover opacity-50"></div>
                 <div className="p-md flex flex-col h-full z-10 bg-gradient-to-t from-surface to-transparent">
                   <div className="flex justify-between items-start">
@@ -186,14 +186,14 @@ export default function Hero() {
                     <span className="font-headline-h3 text-[24px] font-bold text-on-surface leading-none">
                       48
                     </span>
-                    <span className="font-label-caps text-[10px] text-primary bg-primary-container/20 px-xs rounded leading-none">
+                    <span className="font-label-caps text-[10px] text-primary bg-primary-container/10 px-xs rounded-md leading-none">
                       In Transit
                     </span>
                   </div>
                 </div>
               </div>
               {/* Live Pricing Graph Mockup */}
-              <div className="col-span-2 bg-inverse-surface rounded-lg p-md border border-on-tertiary-fixed-variant flex flex-col gap-sm">
+              <div className="col-span-2 bg-inverse-surface rounded-md p-md border border-on-tertiary-fixed-variant flex flex-col gap-sm">
                 <div className="flex justify-between items-center text-on-primary">
                   <h4 className="font-body-sm text-body-sm font-bold">
                     Live Steel Pricing
@@ -209,7 +209,7 @@ export default function Hero() {
                   <div className="w-full bg-surface-tint h-[45%] rounded-t-sm"></div>
                   <div className="w-full bg-surface-tint h-[60%] rounded-t-sm"></div>
                   <div className="w-full bg-primary-container h-[85%] rounded-t-sm relative">
-                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-on-primary text-inverse-surface font-label-caps text-[9px] px-1 rounded">
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-on-primary text-inverse-surface font-label-caps text-[9px] px-1 rounded-md">
                       ₹65k
                     </div>
                   </div>
@@ -217,7 +217,7 @@ export default function Hero() {
                 </div>
               </div>
               {/* Service Bookings */}
-              <div className="col-span-1 bg-surface rounded-lg p-md border border-surface-variant flex flex-col gap-sm">
+              <div className="col-span-1 bg-white rounded-md p-md border border-surface-variant flex flex-col gap-sm shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
                 <div className="flex items-center gap-sm mb-sm justify-start">
                   <span className="material-symbols-outlined text-secondary">
                     engineering
@@ -227,8 +227,8 @@ export default function Hero() {
                   </h4>
                 </div>
                 <div className="flex flex-col gap-xs">
-                  <div className="flex items-center gap-sm bg-surface-container-low p-xs rounded text-left">
-                    <div className="w-6 h-6 rounded bg-surface-variant flex items-center justify-center text-[10px] font-bold shrink-0">
+                  <div className="flex items-center gap-sm bg-surface-container-low p-xs rounded-md text-left">
+                    <div className="w-6 h-6 rounded-md bg-surface-variant flex items-center justify-center text-[10px] font-bold shrink-0">
                       PL
                     </div>
                     <div className="flex-1 min-w-0">
@@ -240,8 +240,8 @@ export default function Hero() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-sm bg-surface-container-low p-xs rounded text-left">
-                    <div className="w-6 h-6 rounded bg-surface-variant flex items-center justify-center text-[10px] font-bold shrink-0">
+                  <div className="flex items-center gap-sm bg-surface-container-low p-xs rounded-md text-left">
+                    <div className="w-6 h-6 rounded-md bg-surface-variant flex items-center justify-center text-[10px] font-bold shrink-0">
                       EL
                     </div>
                     <div className="flex-1 min-w-0">
@@ -256,7 +256,7 @@ export default function Hero() {
                 </div>
               </div>
               {/* RFQ Status */}
-              <div className="col-span-1 bg-surface rounded-lg p-md border border-surface-variant flex flex-col gap-sm">
+              <div className="col-span-1 bg-white rounded-md p-md border border-surface-variant flex flex-col gap-sm shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
                 <div className="flex items-center gap-sm mb-sm justify-start">
                   <span className="material-symbols-outlined text-secondary">
                     request_quote
@@ -273,7 +273,7 @@ export default function Hero() {
                         UltraTech Cement
                       </span>
                     </div>
-                    <span className="font-label-caps text-[8px] text-secondary shrink-0">
+                    <span className="font-label-caps text-[8px] text-primary bg-primary-container/10 px-xs rounded-md font-bold shrink-0">
                       Pending
                     </span>
                   </div>
@@ -284,7 +284,7 @@ export default function Hero() {
                         Tata Tiscon TMT
                       </span>
                     </div>
-                    <span className="font-label-caps text-[8px] text-[#10B981] shrink-0">
+                    <span className="font-label-caps text-[8px] text-[#10B981] bg-[#10B981]/10 px-xs rounded-md font-bold shrink-0">
                       Quoted
                     </span>
                   </div>
@@ -295,7 +295,7 @@ export default function Hero() {
                         Asian Paints 20L
                       </span>
                     </div>
-                    <span className="font-label-caps text-[8px] text-error shrink-0">
+                    <span className="font-label-caps text-[8px] text-error bg-error/10 px-xs rounded-md font-bold shrink-0">
                       Expired
                     </span>
                   </div>

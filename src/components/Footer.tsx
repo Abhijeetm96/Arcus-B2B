@@ -1,14 +1,14 @@
 export default function Footer() {
   return (
-    <footer className="w-full bg-[#0F172A] text-gray-300">
+    <footer className="w-full bg-[#1a1c1c] text-gray-300">
       <div className="max-w-[1440px] mx-auto px-lg w-full py-4xl text-left">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-xl lg:gap-lg">
           {/* Brand Column */}
           <div className="lg:col-span-2 flex flex-col gap-lg pr-lg">
             <img
               alt="ARCUS"
-              className="h-[60px] w-auto object-contain self-start brightness-0 invert"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqBwJtirfPlGNUtzdI7SQ5R3Tmv0YXqhE9wlhdB_XAV1csS9rOg4wqMs1gPmFdwUmqzs5C4QbR-li6sidyY-w0hooAvpl4OlBpI89rl5ROTTT2G96fmEdhw1Cnm3lqMxIPGamUImR5v2NSlL11nu4GC-70fHIjyPvO2orMTZb3RfYFjfV-uJ5Kjl_87HJo0XpIItXqj3rZmPfPiforXSiRUUNDnwIQLEjdlgrLVuzoNxh_dWUlgvzTECxEpuMmlJ1idBZ_4nXTFR8"
+              className="h-[60px] w-auto object-contain self-start"
+              src="/logo.png"
             />
             <p className="font-body-md text-[14px] leading-relaxed max-w-sm">
               The premium B2B construction commerce platform. Procure materials, hire contractors, and build faster with uncompromising reliability designed for scale.
@@ -72,27 +72,27 @@ export default function Footer() {
             </h4>
             <a
               className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
-              href="#"
+              href="#/materials"
+            >
+              All Materials
+            </a>
+            <a
+              className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
+              href="#/brands"
+            >
+              Partner Brands
+            </a>
+            <a
+              className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
+              href="#/materials/building-materials"
             >
               Building Materials
             </a>
             <a
               className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
-              href="#"
+              href="#/materials/hardware-tools"
             >
               Tools & Equipment
-            </a>
-            <a
-              className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
-              href="#"
-            >
-              Safety Gear
-            </a>
-            <a
-              className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
-              href="#"
-            >
-              Bulk Ordering
             </a>
           </div>
 
@@ -102,27 +102,32 @@ export default function Footer() {
             </h4>
             <a
               className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
-              href="#"
+              href="#/services"
             >
               Hire Contractors
             </a>
             <a
               className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
-              href="#"
+              href="#/services/equipment-rental"
             >
               Equipment Rental
             </a>
             <a
               className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
-              href="#"
+              href="#/services/architecture-design"
             >
-              Project Management
+              Architecture & Design
             </a>
             <a
               className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
-              href="#"
+              href="#/"
+              onClick={() => {
+                setTimeout(() => {
+                  document.getElementById('rfq-form-section')?.scrollIntoView({ behavior: 'smooth' })
+                }, 100)
+              }}
             >
-              Logistics Support
+              Request Custom RFQ
             </a>
           </div>
 
@@ -138,7 +143,7 @@ export default function Footer() {
             </a>
             <a
               className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
-              href="#"
+              href="#/account"
             >
               Track Order
             </a>
@@ -159,7 +164,7 @@ export default function Footer() {
       </div>
 
       {/* Bottom Strip */}
-      <div className="w-full border-t border-gray-800 py-lg bg-[#0B1120]">
+      <div className="w-full border-t border-surface-variant/20 py-lg bg-[#121212]">
         <div className="max-w-[1440px] mx-auto px-lg w-full flex flex-col md:flex-row items-center justify-between gap-md">
           <p className="font-label-caps text-[10px] text-gray-500 text-left">
             © 2024 ARCUS Construction Commerce Pvt. Ltd. All rights reserved. | GSTIN: 29AABCU9876R1Z5

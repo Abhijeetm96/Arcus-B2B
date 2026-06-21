@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en" style="width: 1280px; height: 4766px; overflow: hidden; position: relative;"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ARCUS Materials Hub | Premium Construction Procurement</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Poppins:wght@700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Poppins:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "on-tertiary-fixed-variant": "#474746",
+                "on-tertiary-fixed": "#1b1b1c",
+                "on-tertiary": "#ffffff",
+                "on-error": "#ffffff",
+                "outline": "#827660",
+                "surface-bright": "#f9f9f9",
+                "inverse-surface": "#2f3131",
+                "on-secondary-fixed": "#1c1b1b",
+                "on-secondary": "#ffffff",
+                "tertiary": "#5f5e5e",
+                "on-secondary-container": "#656464",
+                "surface-container-high": "#e8e8e8",
+                "on-surface": "#1a1c1c",
+                "inverse-on-surface": "#f1f1f1",
+                "outline-variant": "#d4c5ab",
+                "error": "#ba1a1a",
+                "on-tertiary-container": "#565555",
+                "secondary-container": "#e5e2e1",
+                "on-primary": "#ffffff",
+                "error-container": "#ffdad6",
+                "surface-container-low": "#f3f3f3",
+                "primary": "#785900",
+                "surface-dim": "#dadada",
+                "on-primary-fixed-variant": "#5b4300",
+                "background": "#f9f9f9",
+                "inverse-primary": "#fabd00",
+                "secondary-fixed-dim": "#c8c6c5",
+                "surface-container-lowest": "#ffffff",
+                "on-primary-fixed": "#261a00",
+                "tertiary-container": "#cdcaca",
+                "surface-container-highest": "#e2e2e2",
+                "on-secondary-fixed-variant": "#474646",
+                "on-primary-container": "#6d5100",
+                "secondary-fixed": "#e5e2e1",
+                "primary-fixed-dim": "#fabd00",
+                "surface-variant": "#e2e2e2",
+                "primary-fixed": "#ffdf9e",
+                "tertiary-fixed": "#e5e2e1",
+                "on-background": "#1a1c1c",
+                "surface-tint": "#785900",
+                "secondary": "#5f5e5e",
+                "surface": "#f9f9f9",
+                "on-error-container": "#93000a",
+                "primary-container": "#ffc107",
+                "on-surface-variant": "#4f4632",
+                "surface-container": "#eeeeee",
+                "tertiary-fixed-dim": "#c8c6c5"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "xxl": "20px",
+                "full": "9999px"
+            },
+            "spacing": {
+                "5xl": "96px",
+                "4xl": "64px",
+                "xl": "24px",
+                "3xl": "48px",
+                "sm": "8px",
+                "xs": "4px",
+                "md": "12px",
+                "xxl": "32px",
+                "lg": "16px"
+            },
+            "fontFamily": {
+                "body-md": ["Inter"],
+                "headline-h1-mobile": ["Poppins"],
+                "body-sm": ["Inter"],
+                "headline-h3": ["Poppins"],
+                "headline-h1": ["Poppins"],
+                "headline-h2": ["Poppins"],
+                "label-caps": ["Inter"],
+                "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                "body-md": ["16px", {"lineHeight": "150%", "fontWeight": "400"}],
+                "headline-h1-mobile": ["40px", {"lineHeight": "110%", "fontWeight": "800"}],
+                "body-sm": ["14px", {"lineHeight": "140%", "fontWeight": "500"}],
+                "headline-h3": ["32px", {"lineHeight": "120%", "fontWeight": "700"}],
+                "headline-h1": ["64px", {"lineHeight": "110%", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                "headline-h2": ["48px", {"lineHeight": "120%", "fontWeight": "700"}],
+                "label-caps": ["12px", {"lineHeight": "100%", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                "body-lg": ["18px", {"lineHeight": "160%", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .structural-grid {
+            background-image: radial-gradient(circle, #827660 0.5px, transparent 0.5px);
+            background-size: 24px 24px;
+            opacity: 0.05;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 w-full z-50 bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline shadow-sm">
+</nav>
+<!-- Hero Section -->
+<header class="relative pt-32 pb-4xl bg-[#F8F9FA] overflow-hidden">
+<div class="absolute inset-0 structural-grid pointer-events-none"></div>
+<div class="max-w-[1440px] mx-auto px-xl relative z-10 flex flex-col md:flex-row items-center gap-4xl">
+<div class="flex-1 space-y-xl">
+<h1 class="font-headline-h1 text-headline-h1 text-on-surface leading-tight">Construction Materials For Every Project</h1>
+<p class="font-body-lg text-[20px] text-on-surface-variant max-w-2xl">Source construction materials from verified suppliers across India. Compare products, discover brands, and procure smarter with ARCUS.</p>
+<div class="flex flex-wrap gap-lg pt-md">
+<button class="bg-[#FFC107] text-[#121212] font-semibold px-xxl py-lg rounded-xl shadow-md hover:scale-[1.02] transition-transform">Explore Categories</button>
+<button class="border-2 border-[#1E1E1E] text-[#1E1E1E] font-semibold px-xxl py-lg rounded-xl hover:bg-[#1E1E1E] hover:text-white transition-colors">Raise RFQ</button>
+</div>
+<div class="grid grid-cols-3 gap-xl pt-3xl border-t border-outline-variant">
+<div>
+<div class="font-headline-h3 text-primary">10,000+</div>
+<div class="font-body-sm text-on-surface-variant uppercase tracking-wider">Products</div>
+</div>
+<div>
+<div class="font-headline-h3 text-primary">5,000+</div>
+<div class="font-body-sm text-on-surface-variant uppercase tracking-wider">Suppliers</div>
+</div>
+<div>
+<div class="font-headline-h3 text-primary">500+</div>
+<div class="font-body-sm text-on-surface-variant uppercase tracking-wider">Cities</div>
+</div>
+</div>
+</div>
+<div class="flex-1 w-full h-[500px] relative">
+<div class="w-full h-full bg-white rounded-xxl shadow-xl overflow-hidden border border-outline-variant">
+<img alt="Industrial Construction Materials" class="w-full h-full object-cover grayscale-[20%] hover:grayscale-0 transition-all duration-700" data-alt="A sophisticated 3D industrial visualization showcasing stacked raw construction materials including high-grade cement bags, structural steel beams, and heavy-duty industrial pipes. The scene is illuminated by crisp, architectural lighting in a bright, modern studio setting with a clean light-mode aesthetic. The color palette features metallic greys, concrete textures, and subtle gold accents, reflecting a professional and high-trust B2B environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJgWxtoJFKHXgSoz2uW-UBKzL1M3tzfKl2nlRtOrzyFokvM6cd3l_EDLJlXpNYZBlqcVP5VGr3Gxl7fzbJW3cOH_swhAgx4OEYL8CTcQFKVjR3QSXYoquVTJLg-W0SpXi-olrEaFVTaAXKaWKjjuemKBeLubWH3PSWRLds3KZImw25MsOcByKLowaYe4q__Kl76d9GSV3kNS9GetPuWB1HoMBHTorRQPtoT-N6QIP1gXpV8Yba7AfciNKw66MFmiUMaMS1UnrzwPo"/>
+</div>
+<!-- Float Badge -->
+<div class="absolute -bottom-lg -left-lg bg-inverse-surface text-white p-xl rounded-xl shadow-2xl flex items-center gap-md">
+<span class="material-symbols-outlined text-primary-container text-3xl">verified</span>
+<div>
+<p class="font-bold">Verified Suppliers Only</p>
+<p class="text-xs opacity-70">Strict compliance &amp; quality checks</p>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Material Categories -->
+<section class="py-5xl max-w-[1440px] mx-auto px-xl transition-all duration-1000 opacity-100 translate-y-0">
+<div class="mb-4xl space-y-md">
+<h2 class="font-headline-h2 text-headline-h2">Browse Categories</h2>
+<p class="text-on-surface-variant text-body-lg max-w-xl">Deep inventory across every major vertical in industrial and commercial construction.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl"><!-- Plumbing -->
+<div class="group h-[340px] bg-white rounded-xxl border border-outline-variant p-xl flex flex-col justify-between hover:shadow-lg transition-shadow overflow-hidden relative">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
+<div>
+<span class="material-symbols-outlined text-primary text-4xl mb-lg">plumbing</span>
+<h3 class="font-headline-h3 text-2xl mb-md">Plumbing</h3>
+<ul class="text-on-surface-variant text-body-sm space-y-xs">
+<li>• Pipes &amp; Fittings</li>
+<li>• Water Tanks</li>
+<li>• Valves &amp; Pumps</li>
+<li>• Bathroom Fittings</li>
+</ul>
+</div>
+<button class="flex items-center gap-sm text-primary font-bold group-hover:gap-md transition-all">
+View Category <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+<!-- Electrical -->
+<div class="group h-[340px] bg-white rounded-xxl border border-outline-variant p-xl flex flex-col justify-between hover:shadow-lg transition-shadow overflow-hidden relative">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
+<div>
+<span class="material-symbols-outlined text-primary text-4xl mb-lg">bolt</span>
+<h3 class="font-headline-h3 text-2xl mb-md">Electrical</h3>
+<ul class="text-on-surface-variant text-body-sm space-y-xs">
+<li>• Wires &amp; Cables</li>
+<li>• Switches &amp; Sockets</li>
+<li>• Protection Devices</li>
+<li>• Lighting &amp; Fans</li>
+</ul>
+</div>
+<button class="flex items-center gap-sm text-primary font-bold group-hover:gap-md transition-all">
+View Category <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+<!-- Cement & Concrete -->
+<div class="group h-[340px] bg-white rounded-xxl border border-outline-variant p-xl flex flex-col justify-between hover:shadow-lg transition-shadow overflow-hidden relative">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
+<div>
+<span class="material-symbols-outlined text-primary text-4xl mb-lg">architecture</span>
+<h3 class="font-headline-h3 text-2xl mb-md">Cement &amp; Concrete</h3>
+<ul class="text-on-surface-variant text-body-sm space-y-xs">
+<li>• OPC &amp; PPC Cement</li>
+<li>• Ready Mix Concrete</li>
+<li>• Concrete Products</li>
+</ul>
+</div>
+<button class="flex items-center gap-sm text-primary font-bold group-hover:gap-md transition-all">
+View Category <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+<!-- Steel & Structural -->
+<div class="group h-[340px] bg-white rounded-xxl border border-outline-variant p-xl flex flex-col justify-between hover:shadow-lg transition-shadow overflow-hidden relative">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
+<div>
+<span class="material-symbols-outlined text-primary text-4xl mb-lg">construction</span>
+<h3 class="font-headline-h3 text-2xl mb-md">Steel &amp; Structural</h3>
+<ul class="text-on-surface-variant text-body-sm space-y-xs">
+<li>• TMT Bars (Fe500+)</li>
+<li>• Angles &amp; Channels</li>
+<li>• Beams &amp; Mesh</li>
+</ul>
+</div>
+<button class="flex items-center gap-sm text-primary font-bold group-hover:gap-md transition-all">
+View Category <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+<!-- Paints & Chemicals -->
+<div class="group h-[340px] bg-white rounded-xxl border border-outline-variant p-xl flex flex-col justify-between hover:shadow-lg transition-shadow overflow-hidden relative">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
+<div>
+<span class="material-symbols-outlined text-primary text-4xl mb-lg">format_paint</span>
+<h3 class="font-headline-h3 text-2xl mb-md">Paints &amp; Chemicals</h3>
+<ul class="text-on-surface-variant text-body-sm space-y-xs">
+<li>• Interior &amp; Exterior</li>
+<li>• Waterproofing</li>
+<li>• Adhesives &amp; Grouts</li>
+</ul>
+</div>
+<button class="flex items-center gap-sm text-primary font-bold group-hover:gap-md transition-all">
+View Category <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+<!-- Tiles & Flooring -->
+<div class="group h-[340px] bg-white rounded-xxl border border-outline-variant p-xl flex flex-col justify-between hover:shadow-lg transition-shadow overflow-hidden relative">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
+<div>
+<span class="material-symbols-outlined text-primary text-4xl mb-lg">layers</span>
+<h3 class="font-headline-h3 text-2xl mb-md">Tiles &amp; Flooring</h3>
+<ul class="text-on-surface-variant text-body-sm space-y-xs">
+<li>• Vitrified &amp; Ceramic</li>
+<li>• Granite &amp; Marble</li>
+<li>• Wooden &amp; Vinyl</li>
+</ul>
+</div>
+<button class="flex items-center gap-sm text-primary font-bold group-hover:gap-md transition-all">
+View Category <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+<!-- Hardware & Tools -->
+<div class="group h-[340px] bg-white rounded-xxl border border-outline-variant p-xl flex flex-col justify-between hover:shadow-lg transition-shadow overflow-hidden relative">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
+<div>
+<span class="material-symbols-outlined text-primary text-4xl mb-lg">handyman</span>
+<h3 class="font-headline-h3 text-2xl mb-md">Hardware &amp; Tools</h3>
+<ul class="text-on-surface-variant text-body-sm space-y-xs">
+<li>• Fasteners &amp; Screws</li>
+<li>• Hand &amp; Power Tools</li>
+<li>• Safety Equipment</li>
+</ul>
+</div>
+<button class="flex items-center gap-sm text-primary font-bold group-hover:gap-md transition-all">
+View Category <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+<!-- Building Materials -->
+<div class="group h-[340px] bg-white rounded-xxl border border-outline-variant p-xl flex flex-col justify-between hover:shadow-lg transition-shadow overflow-hidden relative">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
+<div>
+<span class="material-symbols-outlined text-primary text-4xl mb-lg">home_work</span>
+<h3 class="font-headline-h3 text-2xl mb-md">Building Materials</h3>
+<ul class="text-on-surface-variant text-body-sm space-y-xs">
+<li>• Bricks &amp; Blocks</li>
+<li>• Roofing &amp; Doors</li>
+<li>• Plywood &amp; Laminates</li>
+</ul>
+</div>
+<button class="flex items-center gap-sm text-primary font-bold group-hover:gap-md transition-all">
+View Category <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div></div>
+</section>
+<!-- Procurement Banner -->
+<section class="bg-[#0A0A0A] py-4xl overflow-hidden relative transition-all duration-1000 opacity-100 translate-y-0">
+<div class="absolute right-0 top-0 h-full w-1/3 bg-primary/10 skew-x-12 translate-x-1/2"></div>
+<div class="max-w-[1440px] mx-auto px-xl flex flex-col md:flex-row items-center justify-between gap-xl relative z-10">
+<div class="space-y-md">
+<h2 class="font-headline-h2 text-white">Need Materials In Bulk?</h2>
+<p class="text-surface-variant text-body-lg max-w-xl">Get competitive quotes from verified suppliers across India. Our bulk procurement desk handles negotiation and logistics for you.</p>
+</div>
+<button class="bg-[#FFC107] text-[#121212] font-semibold px-4xl py-lg rounded-xl shadow-xl hover:scale-105 transition-transform shrink-0">Raise RFQ</button>
+</div>
+</section>
+<!-- Top Selling Products -->
+<section class="py-5xl max-w-[1440px] mx-auto px-xl transition-all duration-1000 opacity-100 translate-y-0">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-3xl gap-xl">
+<div class="space-y-md">
+<h2 class="font-headline-h2 text-headline-h2">Top Selling Products</h2>
+<p class="text-on-surface-variant">The most procured items this month across Indian construction sites.</p>
+</div>
+<!-- Simple Tab System (Pure HTML/CSS for speed) -->
+<div class="flex gap-md overflow-x-auto pb-sm">
+<button class="whitespace-nowrap px-lg py-md bg-primary text-white rounded-lg font-semibold">Cement</button>
+<button class="whitespace-nowrap px-lg py-md bg-surface-container hover:bg-surface-container-high transition-colors rounded-lg font-semibold">Steel</button>
+<button class="whitespace-nowrap px-lg py-md bg-surface-container hover:bg-surface-container-high transition-colors rounded-lg font-semibold">Plumbing</button>
+<button class="whitespace-nowrap px-lg py-md bg-surface-container hover:bg-surface-container-high transition-colors rounded-lg font-semibold">Electrical</button>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-xl">
+<!-- Product Card -->
+<div class="bg-white rounded-xxl border border-outline-variant p-lg hover:shadow-md transition-shadow group">
+<div class="aspect-square bg-surface-container rounded-xl mb-lg overflow-hidden">
+<img alt="Cement Bag" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="A premium close-up of a high-quality 50kg cement bag resting on a clean, industrial pallet. The shot uses shallow depth of field to highlight the texture of the packaging and the professional branding. Soft, natural light fills the scene, reflecting a corporate and high-trust atmosphere with a color palette of whites, greys, and industrial neutrals." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmE946Ww05fZI_xWgWdQhAUNhyXzQ67oHglBVK7Kml8Y87KlGSSC14drLqlGjeBXkwtzLNo5YeGB2DhX3BII_KHcR8zV4EdoQ1x56TYu_pKDf2_SBPIjOg8JT33THJhl6TFjd5Z4UcpRS1a0HXfZFS0YIPkiMZW0oVkCrd4K1wXDafm8cYd7HsQCe2-4pKzvlER0V4BKiMTsQspQN8FQvur732L5ZPsLIO9dLw3v5rYRiUplwllsR-bv5Pap4LpDNekvGvvdVYLso"/>
+</div>
+<div class="space-y-xs">
+<span class="text-xs font-bold text-primary uppercase tracking-tighter">UltraTech Cement</span>
+<h4 class="font-bold text-lg leading-tight">UltraTech OPC 53 Grade Cement</h4>
+<p class="text-on-surface-variant text-body-sm line-clamp-2">Premium 53 grade cement for high-strength foundations and structural work.</p>
+<div class="pt-md flex items-center justify-between">
+<span class="text-xl font-extrabold">₹385 <span class="text-xs font-normal text-on-surface-variant">/ Bag</span></span>
+<button class="bg-primary-container p-sm rounded-lg hover:opacity-80">
+<span class="material-symbols-outlined">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Repeat for 3 more products -->
+<div class="bg-white rounded-xxl border border-outline-variant p-lg hover:shadow-md transition-shadow group">
+<div class="aspect-square bg-surface-container rounded-xl mb-lg overflow-hidden">
+<img alt="TMT Bars" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Macro photography of bundled TMT steel bars in an industrial warehouse. The lighting is moody yet bright, catching the ribbed texture of the structural steel. The aesthetic is purely industrial and modern, using a color palette of steel blues and metallic greys, emphasizing strength and reliability in B2B procurement." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNtXD0KwSX7wvT0wmEArXCCc8qtTw8EtEKUx5bM439rJGKsuZ8R2ngND87e4qkIKdYe_BZsBpkZS1yUFoJ2Mgzb1e6sAVOsk6fBqoJSt3kjokjMIXXOLdrtGh8RTSovAzIAxZoeOrSTq86u8nUa894k30HkrnTk13x3YCPub_PhdBJGZe693M8r-T48CIgEeR5flYJ67TI9rJlI3-qBpNCqq4eAJTBj2YaMS02S5v-GSGCqgyL1-aoFuOknSFXwE7UMnkDjGBRx0Q"/>
+</div>
+<div class="space-y-xs">
+<span class="text-xs font-bold text-primary uppercase tracking-tighter">Tata Tiscon</span>
+<h4 class="font-bold text-lg leading-tight">Tata Tiscon SD TMT Rebars</h4>
+<p class="text-on-surface-variant text-body-sm line-clamp-2">Superior ductility and earthquake resistance for mega structures.</p>
+<div class="pt-md flex items-center justify-between">
+<span class="text-xl font-extrabold">₹68,500 <span class="text-xs font-normal text-on-surface-variant">/ Ton</span></span>
+<button class="bg-primary-container p-sm rounded-lg hover:opacity-80">
+<span class="material-symbols-outlined">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-xxl border border-outline-variant p-lg hover:shadow-md transition-shadow group">
+<div class="aspect-square bg-surface-container rounded-xl mb-lg overflow-hidden">
+<img alt="Pipes" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="A clean, studio-lit arrangement of high-grade CPVC pipes and fittings on a minimalist surface. The lighting is crisp and even, highlighting the smooth orange and white surfaces of the plumbing materials. The scene communicates quality and precision, suitable for a professional construction materials marketplace." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAu8UwGbXRMkJDbkaqn_t5deE-4IuHyiyCmkQmVJdk3ks6h1_77g8WuuYXyFzSnbpOMocRe-d1YfTqED1yb1u9CZuZE3MiPygYZ4Oa4gpYgMwmbNhd3OeXbfz6DbqMSbhPEbOlDB4c0Z_6tRjzDtqwHaCUI5kPz86NWpMdym3s25S-sSEl5ZRLkZZY5tDjz5chW2F8JSdepViU8dQPNgvhjq1B0d1LBbyCmJnOqIbWWDSOAAgk9Y51ZmfE145kH61yQ5iD8U1SgfV8"/>
+</div>
+<div class="space-y-xs">
+<span class="text-xs font-bold text-primary uppercase tracking-tighter">Astral Pipes</span>
+<h4 class="font-bold text-lg leading-tight">Astral CPVC Pro Pipes (1")</h4>
+<p class="text-on-surface-variant text-body-sm line-clamp-2">High-temperature plumbing solutions for residential projects.</p>
+<div class="pt-md flex items-center justify-between">
+<span class="text-xl font-extrabold">₹215 <span class="text-xs font-normal text-on-surface-variant">/ Meter</span></span>
+<button class="bg-primary-container p-sm rounded-lg hover:opacity-80">
+<span class="material-symbols-outlined">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-xxl border border-outline-variant p-lg hover:shadow-md transition-shadow group">
+<div class="aspect-square bg-surface-container rounded-xl mb-lg overflow-hidden">
+<img alt="Tiles" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="A stack of premium, large-format vitrified floor tiles with a modern marble texture. The lighting is high-key and elegant, showcasing the glossy finish and sophisticated patterns. The color palette revolves around cool greys and clean whites, reflecting a premium industrial-modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3UHDGpNWx0gbxhTi-ujhLudyNB9SvmqHldP0vVA1K_YM0KfnxV9uL_CyI97dN-n6B4oWMcDaAFm7RsgdKjzX4MZrqVVfmrTNnemsjtDy-c-sIg9lSMnCgCf-xOSftaq5kVyn2Qq9TH_E-q5cIrMd0eYlHHSzIVx2EcZx8YNQTgZ4B5t8r3VtCLent9fGrTJ3OCMjeOgxSaNjvBGIliVmjZ4dWHCKmE25IFFj3_GcpgdMdTfwCmAIk6vVdKq-HGVJaoePOsFT-3mU"/>
+</div>
+<div class="space-y-xs">
+<span class="text-xs font-bold text-primary uppercase tracking-tighter">Kajaria</span>
+<h4 class="font-bold text-lg leading-tight">Vitrified Floor Tiles (60x60)</h4>
+<p class="text-on-surface-variant text-body-sm line-clamp-2">Stain-resistant high-gloss finish for commercial spaces.</p>
+<div class="pt-md flex items-center justify-between">
+<span class="text-xl font-extrabold">₹48 <span class="text-xs font-normal text-on-surface-variant">/ Sqft</span></span>
+<button class="bg-primary-container p-sm rounded-lg hover:opacity-80">
+<span class="material-symbols-outlined">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Construction Calculators -->
+<section class="py-5xl bg-surface-container-low transition-all duration-1000 opacity-100 translate-y-0">
+<div class="max-w-[1440px] mx-auto px-xl">
+<div class="mb-3xl text-center">
+<h2 class="font-headline-h2 text-headline-h2">Construction Calculators</h2>
+<p class="text-on-surface-variant text-body-lg">Estimate material requirements with architectural precision.</p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-lg">
+<!-- Calculator Card -->
+<div class="bg-white p-xl rounded-xxl border border-outline-variant text-center hover:bg-primary-container transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-4xl mb-md group-hover:text-on-primary-fixed">architecture</span>
+<p class="font-bold">Cement</p>
+</div>
+<div class="bg-white p-xl rounded-xxl border border-outline-variant text-center hover:bg-primary-container transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-4xl mb-md group-hover:text-on-primary-fixed">layers</span>
+<p class="font-bold">Concrete</p>
+</div>
+<div class="bg-white p-xl rounded-xxl border border-outline-variant text-center hover:bg-primary-container transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-4xl mb-md group-hover:text-on-primary-fixed">grid_view</span>
+<p class="font-bold">Brick</p>
+</div>
+<div class="bg-white p-xl rounded-xxl border border-outline-variant text-center hover:bg-primary-container transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-4xl mb-md group-hover:text-on-primary-fixed">format_paint</span>
+<p class="font-bold">Paint</p>
+</div>
+<div class="bg-white p-xl rounded-xxl border border-outline-variant text-center hover:bg-primary-container transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-4xl mb-md group-hover:text-on-primary-fixed">dine_lamp</span>
+<p class="font-bold">Tile</p>
+</div>
+<div class="bg-white p-xl rounded-xxl border border-outline-variant text-center hover:bg-primary-container transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-4xl mb-md group-hover:text-on-primary-fixed">reorder</span>
+<p class="font-bold">Steel</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Knowledge Center -->
+<section class="py-5xl max-w-[1440px] mx-auto px-xl transition-all duration-1000 opacity-100 translate-y-0">
+<div class="flex justify-between items-end mb-3xl">
+<h2 class="font-headline-h2 text-headline-h2">Knowledge Center</h2>
+<button class="text-primary font-bold flex items-center gap-sm">View All Guides <span class="material-symbols-outlined">trending_flat</span></button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-xl">
+<article class="space-y-lg group">
+<div class="aspect-video bg-surface-container rounded-xxl overflow-hidden border border-outline-variant">
+<img alt="Market Guide" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="A wide-angle architectural shot of a modern glass skyscraper under construction, reflecting the sky. The lighting is golden hour, creating deep contrast and professional reflections. The style is ultra-modern and corporate, emphasizing large-scale construction excellence and industrial growth." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqnIM85OKjAu1RHwN2yCgsIJLAkprWkhYwxdxSDGMorsiHoapyDtxH8JiKyVbg16EyPLjtwQfN6kXKnmf_Ytgia1zPnqj8ZwVj_uDq-1hNIA2TKdSIWugL_Rf-5CyVgGy63YX7FNry7lOq3NAgoqqMUtNObWu1y22kIIJPQzRx0v7KUgDiAcPZzzVxT09BjUlhnLSksnPqhasL1A2Ztbzm2d7p_GVouO6hU0p-k5wYWN17HNcyaRTNjCAnFR6kRaUFdkzB8ZQ1CLg"/>
+</div>
+<div class="space-y-sm">
+<span class="text-xs font-bold text-primary uppercase">Market Analysis</span>
+<h3 class="font-bold text-xl group-hover:text-primary transition-colors">2024 Steel Procurement Trends in Indian Construction</h3>
+<p class="text-on-surface-variant text-body-sm line-clamp-3">Understand the shifting dynamics of steel prices and the impact of domestic logistics on tier-2 city developments.</p>
+</div>
+</article>
+<article class="space-y-lg group">
+<div class="aspect-video bg-surface-container rounded-xxl overflow-hidden border border-outline-variant">
+<img alt="Buying Guide" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="A technical, detailed shot of construction blueprints laid out on a professional workstation, with architect tools and raw concrete samples nearby. The lighting is professional studio lighting, emphasizing clarity and structural detail. The aesthetic is clean and industrial, focused on the planning and material selection phase of construction." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkL1ETT1f7N4o2eaXxWTGQje0qRJj7dJlfxcyDN0uHEnLn6qOW65ENH5yjpf-Uvyy8AybUNvHBZQluS5HA1QRx8MFZNCaYV2t-UVxeoq9tNOHkYXarde8e8AWWcshDHV6WECxTws1aw1pCYCaDB4F7qIpT23al2fMgaVLDzc7IkiASxKWRLg6yd23JU3EUKJqAZK7bcAAIZMvDGBcpBIqkbEnJfCJMPs5YlZ3XTEzsMCpUR2sO_KhlALpwdC1ZVkMaYFwutaQCRtc"/>
+</div>
+<div class="space-y-sm">
+<span class="text-xs font-bold text-primary uppercase">Buying Guide</span>
+<h3 class="font-bold text-xl group-hover:text-primary transition-colors">Choosing the Right Grade of Cement for Commercial Buildings</h3>
+<p class="text-on-surface-variant text-body-sm line-clamp-3">A comprehensive breakdown of OPC 43 vs 53 and when to utilize specialized PPC variants for long-term durability.</p>
+</div>
+</article>
+<article class="space-y-lg group">
+<div class="aspect-video bg-surface-container rounded-xxl overflow-hidden border border-outline-variant">
+<img alt="Industry Report" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="A futuristic view of a high-tech logistics control center monitoring construction material deliveries across a digital map of India. The lighting is moody with technological glows, evoking a sense of efficiency and advanced supply chain management. The style is clean, corporate, and technologically forward-thinking." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAo9VYGm6Nntv-3dn68atB8q7XPpb0Q-m-98Zy3p4WXhuffGadqLJDTlujNxQhKgpuB6y_h7wUAgCct6pW_wxpeNgAimT3GUNOv_4mMbTDIYqSbFiFaf6om3nhLZ2gPBms772q2aztPp-PfOJecbK8371orMco067_op2EEZneVeWLj7s2GDn8JmRpljdJiQc6h56JV2QgZGRkidk6KBnHBdRcboZqhVjefY69ysFJWGL4YR0IUPF0XcVscrA3KvYIupBzbUhjVBHQ"/>
+</div>
+<div class="space-y-sm">
+<span class="text-xs font-bold text-primary uppercase">Industry Report</span>
+<h3 class="font-bold text-xl group-hover:text-primary transition-colors">Logistics Optimization for Multi-Site Projects</h3>
+<p class="text-on-surface-variant text-body-sm line-clamp-3">How centralized procurement hubs are reducing delivery timelines by 25% for urban infrastructure contractors.</p>
+</div>
+</article>
+</div>
+</section>
+<!-- Final CTA Section -->
+<section class="py-5xl bg-gradient-to-br from-inverse-surface to-black text-white relative overflow-hidden transition-all duration-1000 opacity-100 translate-y-0">
+<div class="absolute inset-0 structural-grid opacity-10"></div>
+<div class="max-w-[1440px] mx-auto px-xl text-center relative z-10 space-y-xl">
+<h2 class="font-headline-h2 text-headline-h2">Ready To Procure Smarter?</h2>
+<p class="text-surface-variant text-body-lg max-w-2xl mx-auto">Join 10,000+ construction companies optimizing their material procurement with ARCUS.</p>
+<div class="flex flex-wrap justify-center gap-lg pt-md">
+<button class="bg-primary text-on-primary-fixed px-4xl py-lg rounded-xl font-bold hover:scale-105 transition-transform">Get Started Today</button>
+<button class="border border-outline text-white px-4xl py-lg rounded-xl font-bold hover:bg-white hover:text-black transition-colors">Contact Support</button>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-inverse-surface dark:bg-surface-container-lowest">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-xl px-xl py-4xl max-w-[1440px] mx-auto">
+<div class="space-y-lg">
+<span class="font-headline-h3 text-headline-h3 font-extrabold text-primary">ARCUS</span>
+<p class="text-surface-variant text-body-sm">The digital infrastructure for India's construction commerce. Empowering procurement officers with verified data and transparent pricing.</p>
+</div>
+<div>
+<h4 class="font-bold mb-lg text-white">Resources</h4>
+<ul class="space-y-sm">
+<li class=""><a class="font-body-sm text-surface-variant hover:text-primary-fixed-dim transition-colors" href="#">Materials Hub</a></li>
+<li class=""><a class="font-body-sm text-surface-variant hover:text-primary-fixed-dim transition-colors" href="#">Safety Data</a></li>
+<li class=""><a class="font-body-sm text-surface-variant hover:text-primary-fixed-dim transition-colors" href="#">Logistics</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold mb-lg text-white">Company</h4>
+<ul class="space-y-sm">
+<li class=""><a class="font-body-sm text-surface-variant hover:text-primary-fixed-dim transition-colors" href="#">Terms of Service</a></li>
+<li class=""><a class="font-body-sm text-surface-variant hover:text-primary-fixed-dim transition-colors" href="#">Privacy Policy</a></li>
+<li class=""><a class="font-body-sm text-surface-variant hover:text-primary-fixed-dim transition-colors" href="#">Contact Support</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold mb-lg text-white">Connect</h4>
+<div class="flex gap-md">
+<span class="material-symbols-outlined text-surface-variant cursor-pointer hover:text-primary">language</span>
+<span class="material-symbols-outlined text-surface-variant cursor-pointer hover:text-primary">mail</span>
+<span class="material-symbols-outlined text-surface-variant cursor-pointer hover:text-primary">call</span>
+</div>
+</div>
+</div>
+<div class="max-w-[1440px] mx-auto px-xl py-xl border-t border-white/10 text-center">
+<p class="font-body-sm text-body-sm text-surface-variant">© 2024 ARCUS Construction Technologies. All rights reserved.</p>
+</div>
+</footer>
+<script>
+        // Micro-interaction: Reveal content on scroll
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-10');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section').forEach(section => {
+            section.classList.add('transition-all', 'duration-1000', 'opacity-0', 'translate-y-10');
+            observer.observe(section);
+        });
+
+        // Search bar interaction placeholder
+        const searchInit = () => {
+            console.log("ARCUS Materials Search Initialized");
+        };
+        searchInit();
+    </script>
+<div aria-hidden="true" data-snapdom-sandbox="true" id="snapdom-sandbox" style="position: absolute; left: -9999px; top: -9999px; width: 0px; height: 0px; overflow: hidden;"></div></body></html>
