@@ -51,6 +51,29 @@ The React application avoids external routing dependencies by using a custom has
   - `segments[3]` = `'53-grade'`
   This structure allows deep-nested routing for material categories and maintenance trades.
 
+#### 🗺️ Routing & Navigation Flowchart
+```mermaid
+graph TD
+    A[Browser Hash Change event] --> B[App.tsx Listener]
+    B --> C[Extract cleanHash segment array]
+    C --> D{segments[0]}
+    D -->|"" / default| E[Render Landing page: Hero, Categories, Products, Services, RFQ, Trust]
+    D -->|"checkout"| F{segments[1] == "success"}
+    F -->|Yes| G[Render CheckoutSuccess Component]
+    F -->|No| H[Render Checkout Component]
+    D -->|"auth"| I[Render AuthPage Component]
+    D -->|"bulk-orders"| J[Render BulkOrders Component]
+    D -->|"projects"| K[Render Projects Component]
+    D -->|"resources"| L[Render Resources Component]
+    D -->|"account"| M[Render IndividualDashboard Component]
+    D -->|"business-dashboard"| N[Render BusinessDashboard Component]
+    D -->|"professional-dashboard"| O[Render ProfessionalDashboard Component]
+    D -->|"admin"| P[Render AdminDashboard Component]
+    D -->|"materials"| Q[Render MaterialsHub Component]
+    D -->|"services"| R[Render ServicesHub Component]
+    D -->|"products"| S[Render ProductDetail Component]
+```
+
 ### Application State Contexts (`src/context/`)
 
 #### 1. Authentication State (`AuthContext.tsx`)
@@ -422,6 +445,72 @@ This section outlines the internal state, props interfaces, and event handlers f
   - **Cement Calculator**: Evaluates required cement bags, sand volume, and gravel volume based on area (sq. ft.) and slab thickness (inches) using the volumetric concrete ratio formula.
   - **Steel Weight Calculator**: Calculates reinforcement bar weights (kg) using the diameter (mm) and length (meters) formula:
     $$\text{Weight} = \frac{D^2}{162} \times L$$
+
+---
+
+## 🔄 Interactive Workflows & User Journeys
+
+This section details the step-by-step interactive flows and user journeys across the ARCUS platform.
+
+### 1. B2C Retail User Journey
+- **Registration**: Users submit name, email, password, and location in the signup view.
+- **Verification Flow**: On submission, the backend generates a 6-digit OTP code, registers the user as unverified, and logs the code to the Express console. The frontend directs the user to the Verification view.
+- **Verification**: User inputs the code. The system checks the code and marks the user as verified. A JWT token is generated and stored locally, and the user is redirected to their account page.
+
+```mermaid
+flowchart TD
+    Start[User Submits Registration Form] --> Valid{Validator Check}
+    Valid -->|Invalid| ShowError[Display Validation Error]
+    Valid -->|Valid| Normal[Normalize Inputs]
+    Normal --> DB{Email/Phone Registered?}
+    DB -->|Yes| ErrorMsg[Show Email/Phone Exists]
+    DB -->|No| Create[Create User with isVerified: false]
+    Create --> GenOTP[Generate 6-digit OTP code]
+    GenOTP --> PrintOTP[Print Code to Console]
+    PrintOTP --> ShowVerify[Show OTP Verification Modal]
+    ShowVerify --> InputOTP[User Inputs 6-digit code]
+    InputOTP --> Match{OTP Matches & Unexpired?}
+    Match -->|No| Fail[Increment attempts / Max 3 fails]
+    Fail --> ShowVerify
+    Match -->|Yes| VerifyUser[Set User isVerified: true]
+    VerifyUser --> DelOTP[Delete OTP record]
+    DelOTP --> Token[Sign & Return JWT Token]
+    Token --> Dashboard[Redirect to role-based dashboard]
+```
+
+### 2. B2B Commercial Builder Journey
+- **GST Verification**: During registration, builders input their 15-character GSTIN. Clicking the "Verify GST" trigger contacts the server, retrieves the legal trade name, address, and status, and auto-populates the registration fields.
+- **Verification**: The contact person's mobile OTP is verified, and the account is activated.
+- **Commercial Dashboard**: The builder is redirected to the Business Dashboard, granting access to B2B tiered pricing, RFQ submissions, and input tax breakdowns.
+
+### 3. Service Contractor Journey
+- **Service Listings**: Professionals register by selecting a specific service category (e.g. Plumbing) and inputting experience details.
+- **Lead Generation**: Their profile is compiled and added to search results. They can manage review scores, lead listings, and schedule bookings from the Professional Dashboard.
+
+### 4. Advanced Checkout Mechanics
+- **Address Parsing & Splitting**: When selecting a saved address (e.g., `"Flat 402, Block A, Prestige Shantiniketan, Suburb, Bangalore - 560048"`), splits the string by comma and hyphen, and maps the components to inputs.
+- **Billing Address Toggle**: Renders dynamic billing form inputs when the "Billing same as shipping" checkbox is unchecked.
+- **Coupons Engine**: Evaluates coupon codes. If the role matches, applies the discount to the checkout totals.
+
+```mermaid
+flowchart TD
+    A[Cart Page] --> B[Checkout Button]
+    B --> C[Autofill Saved Address]
+    C --> D[Parse and Split Address Components]
+    D --> E{Billing same as Shipping?}
+    E -->|Yes| F[Set Billing Address = Shipping Address]
+    E -->|No| G[Render Billing Address Fields]
+    G --> H[Autofill/Input Billing Address]
+    F --> I[Validate Input Fields]
+    H --> I
+    I --> J{Validate Coupon Code}
+    J -->|Invalid| K[Show Coupon Error]
+    J -->|Valid Coupon: Retail WELCOME5 / B2B ARCUS10| L[Apply Discount to Total]
+    L --> M[Place Order Button]
+    M --> N[Save Order to Database]
+    N --> O[Clear Cart State]
+    O --> P[Redirect to CheckoutSuccess Page]
+```
 
 ---
 
