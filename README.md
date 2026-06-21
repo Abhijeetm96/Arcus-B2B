@@ -1,6 +1,6 @@
 # 🏗️ ARCUS: B2B & B2C Construction Commerce Platform
 
-ARCUS is an enterprise-grade, full-stack construction commerce marketplace and procurement portal designed to streamline materials procurement, professional construction service bookings, and Request for Quote (RFQ) processes. Engineered with a React + TypeScript frontend and a Node.js + Express backend, ARCUS bridges the gap between retail property developers, commercial builders, material suppliers, and independent contractors through specialized, validation-secured user experiences.
+ARCUS is an enterprise-grade, full-stack construction commerce marketplace and procurement portal designed to streamline building materials procurement, professional construction service bookings, and Request for Quote (RFQ) processes. Engineered with a React 19 + TypeScript + Vite frontend and a Node.js + Express backend, ARCUS bridges the gap between retail property developers, commercial builders, material suppliers, and independent contractors through specialized, validation-secured user experiences.
 
 ---
 
@@ -10,7 +10,7 @@ The construction and building material industry has historically struggled with 
 
 ARCUS addresses these challenges by consolidating the entire lifecycle of construction into a single, unified digital marketplace. The platform divides its operational domain into three main pillars:
 1. **Supply Chain & Procurement**: Facilitating both direct retail sales (B2C) and bulk commercial transactions (B2B) for essential building materials.
-2. **Work Contract Management**: Connecting property owners and builders with verified construction professionals (Plumbers, Electricians, Carpenters, Architects) through rating-based directories and booking workflows.
+2. **Work Contract Management**: Connecting property owners and builders with verified construction professionals (Plumbers, Electricians, Carpenters, Painters, Architects) through rating-based directories and booking workflows.
 3. **RFQs & Bids Engine**: Providing a digitized Request for Quote pipeline where builders can post large project specifications and suppliers can dynamically bid on bulk supply orders.
 
 ---
@@ -19,50 +19,55 @@ ARCUS addresses these challenges by consolidating the entire lifecycle of constr
 
 ARCUS is organized as a unified, full-stack monorepo featuring a decoupled React frontend application and an Express backend API.
 
-### Directory Structure & File Inventory
+### File and Directory Inventory
 - **`shared/`**: Houses the centralized validation engine (`validation.ts`) shared between client-side form controls and server-side request sanitizers to ensure a single source of validation truth.
 - **`server/`**: The Express application running on Node.js.
   - `src/index.ts`: Defines the HTTP API endpoints, registers rate-limiting and authorization middleware, and routes business logic.
   - `src/db.ts`: Orchestrates the local data repository utilizing a structured JSON database, modeling entity mutations and seed lists.
   - `data/db.json`: Local database file storing active records.
+  - `nodemon.json`: Nodemon file-watcher configuration to ignore specific data updates and prevent restart loops.
 - **`src/`**: The React SPA compiled with Vite.
-  - `src/App.tsx`: Acts as the central router, parsing URL segments from hash changes (`#/route/param`) to mount corresponding views.
-  - `src/index.css`: Houses custom design tokens, typographic scales, responsive CSS grids, and HSL-based color definitions.
-  - `src/context/`: Contains React Context Providers managing global application states like active user sessions (`AuthContext.tsx`) and cart contents (`CartContext.tsx`).
+  - `src/App.tsx`: Central routing engine that parses URL segments from hash changes to mount corresponding views.
+  - `src/index.css`: Custom design tokens, typographic scales, responsive CSS grids, and HSL-based color definitions.
+  - `src/context/`: Context Providers managing global states like sessions (`AuthContext.tsx`) and cart contents (`CartContext.tsx`).
   - `src/components/`: Modular presentation and interactive layout components.
 
 ---
 
-## 📦 Modular Component Inventory
+## 🎛️ Routing and State Management Architecture
 
-### 💻 Navigation & Main Interface
-- **`Navbar.tsx`**: Provides the main header navigation, including responsive mobile drawer menus, dynamic cart counters, account dashboard shortcuts, and triggers for login/registration forms.
-- **`Hero.tsx`**: Renders the landing screen visual showcase featuring glassmorphic call-to-action cards, value propositions, and quick category access points.
-- **`Categories.tsx`**: Displays the core category landing cards for quick navigation into specific materials and professional directories.
-- **`Footer.tsx`**: Contains platform links, corporate compliance statements, and subscription fields.
-- **`Trust.tsx`**: Renders trust indicators including SSL security, verified ratings, and commercial partnerships.
+### Frontend Navigation Engine (`App.tsx`)
+The React application avoids external routing dependencies by using a custom hash-based router in `src/App.tsx`. 
+- **Hash Detection**: A `useEffect` hook listens to `hashchange` events on the `window` object and updates the `currentHash` state.
+- **Segment Parsing**: The path string is stripped of leading hashes and split into segment arrays using `/`.
+  ```typescript
+  const cleanHash = currentHash.replace(/^#\/?/, '').split('?')[0];
+  const segments = cleanHash.split('/');
+  ```
+- **State Propagation**: The array segments (e.g., `segments[0]`, `segments[1]`) are mapped directly to props passed to sub-hubs. For example, `#//materials/cement/opc/53-grade` resolves into:
+  - `segments[0]` = `'materials'`
+  - `segments[1]` = `'cement'`
+  - `segments[2]` = `'opc'`
+  - `segments[3]` = `'53-grade'`
+  This structure allows deep-nested routing for material categories and maintenance trades.
 
-### 🧱 Materials Procurement
-- **`MaterialsHub.tsx`**: The main materials catalog. Handles hierarchical category routing (Category -> Subcategory -> Leaf Item), active search filtering, and brand indexing.
-- **`ProductDetail.tsx`**: Renders detailed pages (PDP) for catalog products. Features image carousels, custom dimension matrices (e.g. CPVC pipe length/thickness schedules), user reviews, and instant cart additions.
-- **`BrandsHub.tsx`**: Displays brand-specific product inventories, helping users browse products from recognized suppliers like UltraTech, Ambuja, Jaquar, and Finolex.
-- **`BulkOrders.tsx`**: Dedicated page for commercial bulk orders. Features quantity price-break estimators and custom quote requests with automatic dispatch tracking.
+### Application State Contexts (`src/context/`)
 
-### 👷 Services & Contracting
-- **`ServicesHub.tsx`**: The main directory of verified construction service providers. Users can filter contractors (Plumbers, Electricians, Carpenters, Architects) by experience, base price, rating, and covered regions, or initiate active bookings.
-- **`Services.tsx`**: A quick-landing component highlighting popular local maintenance services and booking schedules.
+#### 1. Authentication State (`AuthContext.tsx`)
+Manages the user login state, registration requests, verification steps, and profile cache:
+- **`user` State**: Null or the authenticated `User` object.
+- **`login(email, password)`**: Post credentials to the `/api/auth/login` endpoint. If successful, stores the JSON Web Token in `localStorage` under `arcus_token` and calls `refreshUser()`.
+- **`register(userData)`**: Sends details to `/api/auth/register`. If verification is required, returns user data to initiate the OTP flow.
+- **`logout()`**: Clears the token from storage, sets `user` to null, and redirects the browser to the home page (`#/`).
+- **`refreshUser()`**: Retrieves user details from `/api/auth/me` using the stored bearer token to update profile parameters.
 
-### 📝 RFQ Management
-- **`RfqForm.tsx`**: Allows users to compile detailed RFQs. Captures material lists, required quantity brackets, desired delivery dates, and specific project addresses.
-
-### 💳 Checkout & Order Processing
-- **`Checkout.tsx`**: Coordinates the checkout pipeline. Autofills addresses from saved user profiles, parses street details to split them into localized address components, validates inputs, applies role-based promotional coupons (`ARCUS10` vs `WELCOME5`), and processes order submissions.
-
-### 👤 Dashboards
-- **`IndividualDashboard`**: Allows B2C buyers to view their order status, compile saved address entries, track maintenance service bookings, and check their loyalty points.
-- **`BusinessDashboard`**: Provides B2B buyers with access to active RFQ bids, tax invoices showing GST breakdowns, corporate order histories, and saved project locations.
-- **`ProfessionalDashboard`**: Allows independent service contractors to configure their business name, update categories, write bios, upload portfolios, view incoming booking requests, and manage reviews.
-- **`AdminDashboard`**: Provides platform administrators with views to review active users, audit tax details, manage vendor statuses, and inspect global order logs.
+#### 2. Cart State (`CartContext.tsx`)
+Manages shopping cart operations:
+- **`cartItems` State**: Array of active products containing item information, chosen quantities, and unit price schedules.
+- **`addToCart(product, quantity)`**: Appends a product to the cart. If the product already exists, it updates the quantity while verifying stock limits.
+- **`removeFromCart(productId)`**: Discards an item from the active cart.
+- **`updateQuantity(productId, quantity)`**: Updates the quantity of a product in the cart.
+- **`clearCart()`**: Flushes the cart state (typically called on checkout completion).
 
 ---
 
@@ -121,7 +126,7 @@ Represents bulk procurement requests posted by builders:
 
 ---
 
-## 🛡️ Centralized Validation & Sanitization Engine
+## 🔒 Centralized Validation & Sanitization Engine
 
 The validation engine resides in [`shared/validation.ts`](file:///d:/Claude%20Code/Arcus/shared/validation.ts) and is designed to validate inputs before they enter the application logic or persist in the database.
 
@@ -136,7 +141,7 @@ The validation engine resides in [`shared/validation.ts`](file:///d:/Claude%20Co
   export const INDIAN_PHONE_REGEX = /^[6-9]\d{9}$/;
   ```
   Indian mobile numbers must be exactly 10 digits and start with numbers between 6 and 9.
-- **GSTIN (Goods and Services Tax IN)**:
+- **GSTIN (Goods and Services Tax ID)**:
   ```typescript
   export const GST_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
   ```
@@ -153,6 +158,16 @@ The validation engine resides in [`shared/validation.ts`](file:///d:/Claude%20Co
 Normalization prepares inputs into a standard form to ensure uniform database queries:
 - **Phone Normalization**:
   The `normalizePhone(input)` function removes all non-numeric characters (hyphens, spaces, parenthesis, periods). It then strips the Indian country code `+91` or `91` (if the input length exceeds 10 digits) and deletes leading zeroes.
+  ```typescript
+  export function normalizePhone(input: string): string {
+    if (!input || typeof input !== 'string') return '';
+    let digits = input.replace(/[\s\-\(\)\.]/g, '');
+    if (digits.startsWith('+91')) digits = digits.slice(3);
+    else if (digits.startsWith('91') && digits.length > 10) digits = digits.slice(2);
+    if (digits.startsWith('0') && digits.length > 10) digits = digits.slice(1);
+    return digits;
+  }
+  ```
 - **GSTIN Normalization**:
   Strips white spaces and converts characters to uppercase.
 - **Email Normalization**:
@@ -165,43 +180,248 @@ To prevent Cross-Site Scripting (XSS) and SQL Injection (SQLi), inputs are passe
 
 ---
 
-## 📈 Interactive Workflows & User Journeys
+## 📡 Complete REST API Documentation
 
-### 1. The B2C Retail Journey
-```
-[Registration Form] ➔ [Normalize Phone/Email] ➔ [Create User (unverified)] ➔ [Send OTP]
-                                                                          │
-[Individual Dashboard] 💳 🔀 [Verify OTP (6-digits)] ➔ [Session Token] 🎛️ ┘
-```
-1. **Registration**: The user fills in their name, normalized phone number, email, password, and location in the registration panel.
-2. **Email Verification**: Upon submission, the API registers the user in an unverified state, generates a 6-digit OTP code, and logs it to the server console. The frontend redirects the user to the OTP verification screen.
-3. **Login & Session**: Entering the correct OTP logs the user in, stores their authentication token, and redirects them to their profile page.
-4. **Checkout**: The user adds products to their cart from the Materials Hub. During checkout, they fill in shipping address fields and apply the retail coupon code `WELCOME5` to get a 5% discount.
+The Express server exposes the following endpoints, registered in `server/src/index.ts`:
 
-### 2. The B2B Commercial Builder Journey
-```
-[Input GSTIN] ➔ [Click Verify] ➔ [API Status Hook] ➔ [Auto-populate Details]
-                                                             │
-[Verify OTP] ➔ [Dashboard Activated] ➔ [Bulk Materials Hub] ➔┘
-```
-1. **GST Verification**: During registration, the builder enters their 15-character GSTIN. Clicking "Verify GST" sends an API request to retrieve the legal trading name, verified office address, and registration status.
-2. **Auto-population**: The verified details are autofills into the form fields. The builder then fills in their personal contact details and password.
-3. **Activation**: Entering the OTP verifies the account, and the builder is redirected to the Business Dashboard.
-4. **B2B Procurement**: The builder can browse B2B pricing tiers, submit RFQs, and request bulk shipping quotes.
+### 🔐 Authentication Endpoints
 
-### 3. The Service Contractor Journey
-1. **Profile Setup**: Independent professionals register by providing their category (Plumbing, Electrical, Interior Design), years of experience, business name, and optional website/portfolio links.
-2. **Lead Routing**: Once registered, their profiles appear in the Services Hub search results.
-3. **Leads Management**: The professional can log into their dashboard to view incoming job bookings, check rating logs left by customers, and update their portfolio descriptions.
+#### `POST /api/auth/register`
+Creates a new user account (unverified by default).
+- **Request Body**:
+  ```json
+  {
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "phone": "+91 98765 43210",
+    "password": "Password123",
+    "role": "Individual",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "companyName": "Optional",
+    "gstNumber": "Optional"
+  }
+  ```
+- **Process**:
+  1. Validates inputs against standard constraints.
+  2. Normalizes phone (`9876543210`) and email (`jane@example.com`).
+  3. Checks for existing users with the same email, phone, or GST number.
+  4. Hashes the password and adds the user record to the database with `isVerified: false`.
+  5. Generates a 6-digit OTP code, saves it to the database, and prints it to the console.
+- **Responses**:
+  - `201 Created`: `{ "message": "Verification code dispatched.", "email": "jane@example.com" }`
+  - `400 Bad Request`: `{ "error": "Email is already registered." }`
 
-### 4. Advanced Checkout Mechanics
-- **Address Parsing & Splitting**: When selecting a saved address from their profile, a parser splits the single string into fields:
-  - `addressLine1` (street and building details, retaining suburb names like "Whitefield" or "HSR Layout")
-  - `city`
-  - `state`
-  - `zipCode`
-- **Billing Address Toggle**: A checkbox determines if the shipping address matches the billing address. Unchecking it displays a separate billing address form that features saved address selection and splitting rules.
-- **Coupons Engine**: Validates code compliance against user roles. `ARCUS10` provides a 10% discount on B2B orders with a valid GSTIN, while `WELCOME5` is applied to individual retail accounts.
+#### `POST /api/auth/verify-email-otp`
+Verifies the user's email address using the 6-digit code.
+- **Request Body**:
+  ```json
+  {
+    "email": "jane@example.com",
+    "otp": "123456"
+  }
+  ```
+- **Process**:
+  1. Locates the unverified user and their active OTP record.
+  2. Increments failed attempts counter if the code is invalid. If attempts exceed 3, it deletes the OTP and returns an error.
+  3. If the code matches and is not expired, it sets `isVerified: true` on the user record.
+  4. Deletes the used OTP record.
+  5. Generates a JSON Web Token (JWT) signed with the server secret.
+- **Responses**:
+  - `200 OK`: `{ "token": "jwt_token_here", "user": { "id": "uuid", "name": "Jane Doe", "role": "Individual" } }`
+  - `400 Bad Request`: `{ "error": "Invalid or expired verification code." }`
+
+#### `POST /api/auth/resend-email-otp`
+Generates and sends a new verification code.
+- **Request Body**: `{ "email": "jane@example.com" }`
+- **Responses**:
+  - `200 OK`: `{ "message": "A new verification code has been dispatched." }`
+  - `400 Bad Request`: `{ "error": "Account is already verified or not found." }`
+
+#### `POST /api/auth/login`
+Authenticates user credentials.
+- **Request Body**: `{ "email": "jane@example.com", "password": "Password123" }`
+- **Responses**:
+  - `200 OK`: `{ "token": "jwt_token_here", "user": { "id": "uuid", ... } }`
+  - `400 Bad Request`: `{ "error": "email_not_verified", "email": "jane@example.com" }` (if email is not verified yet)
+  - `401 Unauthorized`: `{ "error": "Invalid credentials." }`
+
+#### `GET /api/auth/me`
+Retrieves the authenticated user's profile.
+- **Headers**: `Authorization: Bearer <token>`
+- **Responses**:
+  - `200 OK`: `{ "id": "uuid", "name": "Jane Doe", ... }`
+  - `401 Unauthorized`: `{ "error": "Unauthorized" }`
+
+---
+
+### 🏢 Business Verification Endpoints
+
+#### `GET /api/auth/verify-gst/:gstin`
+Validates a GST number and returns verified registration details.
+- **URL Parameter**: `gstin` (normalized to uppercase)
+- **Process**:
+  1. Validates the GSTIN structure.
+  2. Runs a request against a mock registry or returns a mock response with details:
+     - State code mapping (e.g. `29` -> `Karnataka`).
+     - Business name (Legal and trade name).
+     - Full registered address.
+     - Taxpayer type and status (`Active`).
+- **Responses**:
+  - `200 OK`:
+    ```json
+    {
+      "gstNumber": "29CFJPR5489A1ZY",
+      "legalName": "Arcus Infra Projects Ltd",
+      "tradeName": "Arcus Construction",
+      "status": "Active",
+      "state": "Karnataka",
+      "address": "402, Shantiniketan, Whitefield, Bengaluru, 560048"
+    }
+    ```
+  - `400 Bad Request`: `{ "error": "Invalid GSTIN format." }`
+  - `404 Not Found`: `{ "error": "GSTIN not found in registry." }`
+
+---
+
+### 📦 Materials Catalog Endpoints
+
+#### `GET /api/products`
+Retrieves all items in the product catalog.
+- **Query Parameters**: `category` (optional), `brand` (optional), `search` (optional)
+- **Responses**: `200 OK`: `[ { "id": "ambuja-cement", "name": "Ambuja Cement", ... } ]`
+
+#### `GET /api/products/:id`
+Retrieves details for a specific product.
+- **URL Parameter**: `id` (product slug)
+- **Responses**:
+  - `200 OK`: `{ "id": "ambuja-cement", "price": 450, ... }`
+  - `404 Not Found`: `{ "error": "Product not found." }`
+
+---
+
+### 💳 Order Processing Endpoints
+
+#### `POST /api/orders`
+Creates a new order from the checkout details.
+- **Headers**: `Authorization: Bearer <token>`
+- **Request Body**:
+  ```json
+  {
+    "items": [ { "productId": "ambuja-cement", "qty": 10 } ],
+    "shippingAddress": "123 Test Street, Bengaluru, Karnataka - 560001",
+    "billingAddress": "123 Test Street, Bengaluru, Karnataka - 560001",
+    "paymentMethod": "UPI",
+    "gstNumber": "29CFJPR5489A1ZY"
+  }
+  ```
+- **Responses**:
+  - `201 Created`: `{ "message": "Order created successfully.", "orderId": "order_uuid" }`
+  - `400 Bad Request`: `{ "error": "Validation errors." }`
+
+---
+
+## 📂 Detailed Front-End Component Layout & Logic
+
+This section outlines the internal state, props interfaces, and event handlers for the key React components.
+
+### 1. `Navbar.tsx`
+- **Responsibility**: Displays main navigation controls, cart indicator drawer, and responsive trigger actions.
+- **State Properties**:
+  - `isMobileMenuOpen` (boolean): Controls mobile overlay drawer.
+  - `isCartOpen` (boolean): Toggles the slide-out cart sidebar.
+  - `searchQuery` (string): Handles dynamic search queries.
+- **Sub-layouts**:
+  - **Slide-out Cart Panel**: Maps over `cartItems` from `useCart()`, displaying quantities, pricing totals, and a checkout button.
+
+### 2. `Hero.tsx`
+- **Responsibility**: Brand presentation header.
+- **Features**:
+  - Renders rotating banners highlighting materials catalog and verified contractors.
+  - Includes trust metrics (e.g. active products, cover cities, delivery count) with pulsing micro-animations.
+
+### 3. `MaterialsHub.tsx`
+- **Responsibility**: Serves as the dynamic product search browser.
+- **Inputs**: `categorySlug`, `subcategorySlug`, `leafSlug` parsed from URL path segments.
+- **State Properties**:
+  - `selectedFilters` (object): Tracks chosen parameters (e.g., Brand, Grade).
+  - `searchVal` (string): Tracks user query before debouncing.
+  - `priceRange` (array): Minimum and maximum price filters.
+- **Key Methods**:
+  - Resolves path segments dynamically: If `categorySlug` is present, filters inventory to show matching products. If `leafSlug` is provided, displays options for CPVC dimensions.
+
+### 4. `ProductDetail.tsx`
+- **Responsibility**: Renders product information.
+- **State Properties**:
+  - `selectedSpec` (string): Chosen variant specification (e.g., 3-meter CPVC pipe vs 6-meter).
+  - `qty` (number): Chosen quantity (validated using `validateQuantity`).
+  - `activeTab` (string): Toggle between 'Overview', 'Specifications', and 'Reviews'.
+  - `reviewText` (string): Submission field for customer reviews.
+- **Process**:
+  - Fetches product data using product ID from `/api/products/:id`.
+  - Calculates tier price breaks for B2B users.
+
+### 5. `ServicesHub.tsx`
+- **Responsibility**: Contractor search interface.
+- **State Properties**:
+  - `category` (string): Filter trade category (Plumbing, Electrical, Carpentry).
+  - `experienceFilter` (number): Minimum experience threshold.
+  - `budgetFilter` (string): Budget bracket ('Low' | 'Medium' | 'High').
+  - `showBookingModal` (boolean): Toggles the booking trigger form.
+  - `bookingForm` (object): Form inputs for booking dates, descriptions, and contacts.
+- **Process**:
+  - Queries local providers directory matching categories. Renders top-rated partner badges, rating scores, starting prices, and booking forms.
+
+### 6. `Checkout.tsx`
+- **Responsibility**: Coordinates address validation, billing toggles, discount calculations, and order creation.
+- **State Properties**:
+  - `shippingAddress1`, `shippingCity`, `shippingState`, `shippingZipCode` (strings): Shipping details.
+  - `billingSameAsShipping` (boolean): Controls billing forms visibility.
+  - `billingAddress1`, `billingCity`, `billingState`, `billingZipCode` (strings): Billing details.
+  - `couponCode` (string): Applied code.
+  - `couponError` / `couponSuccess` (strings): Status text.
+- **Key Methods**:
+  - **Address Splitting**: When selecting a saved address (e.g., `"Flat 402, Block A, Prestige Shantiniketan, Whitefield, Bengaluru - 560048"`), splits the string by comma and hyphen, and maps the components to inputs while preserving suburb names.
+  - **Coupon Application**: Evaluates input code against user roles. B2B accounts are allowed to apply `ARCUS10` (10% discount), and B2C accounts can apply `WELCOME5` (5% discount).
+
+### 7. `Dashboards.tsx`
+- **Responsibility**: Central container for user dashboards.
+- **Inner Sub-Tabs**:
+  - **Overview**: Displays profile summaries, recent order details, and active RFQ cards.
+  - **Orders**: Lists past orders. Clicking an order displays item breakdowns, shipping and billing addresses, and payment methods.
+  - **RFQs**: Enables posting and monitoring RFQ lists. Shows received supplier quotes and provides a bidding simulator.
+  - **Settings**: Manage profile properties. Contains forms to add, edit, or delete shipping address books, or update emails and phones using OTP dispatches.
+
+### 8. `RfqForm.tsx`
+- **Responsibility**: Renders the RFQ creation layout.
+- **Form Fields**:
+  - `name` (string): Contact name.
+  - `phone` (string): Contact mobile.
+  - `quantity` (number): Quantity required.
+  - `location` (string): Delivery destination address.
+  - `details` (string): Technical specifications.
+- **Process**:
+  - Validates fields using `validateRfqForm`.
+  - Dispatches creation requests to `/api/orders` or `/api/rfqs` on submit.
+
+### 9. `BulkOrders.tsx`
+- **Responsibility**: Handles bulk commercial orders.
+- **Features**:
+  - Displays tiered price discount tables for bulk quantity thresholds.
+  - Generates RFQ logs for bulk order requests.
+
+### 10. `Projects.tsx`
+- **Responsibility**: Project coordination dashboard.
+- **Features**:
+  - Tracks construction schedules, phases (e.g., Excavation, Foundation, Brickwork), and timelines.
+  - Displays material requirement checklists for each project phase.
+
+### 11. `Resources.tsx`
+- **Responsibility**: Interactive building calculators.
+- **Features**:
+  - **Cement Calculator**: Evaluates required cement bags, sand volume, and gravel volume based on area (sq. ft.) and slab thickness (inches) using the volumetric concrete ratio formula.
+  - **Steel Weight Calculator**: Calculates reinforcement bar weights (kg) using the diameter (mm) and length (meters) formula:
+    $$\text{Weight} = \frac{D^2}{162} \times L$$
 
 ---
 
@@ -228,6 +448,7 @@ To prevent Cross-Site Scripting (XSS) and SQL Injection (SQLi), inputs are passe
    ```
    - The server will start on `http://localhost:5000`.
    - In development, verification emails are mocked, and OTP codes are output directly to the server terminal.
+   - **Nodemon Reset Loop Fix**: Ignored `server/data/db.json` updates in `server/nodemon.json` to prevent backend server restarts mid-registration.
 
 ### Frontend Application Setup (Vite/React)
 1. **Navigate to the root directory**:
