@@ -60,170 +60,21 @@ The ARCUS platform is designed to digitize the construction ecosystem:
 
 ## 📊 Module Status Dashboard
 
-### Authentication & OTP
-Status: 🟡 In Progress
-Implemented Features:
-* 2-Step OTP Verification Flow (dispatching mock 6-digit codes to Express console log).
-* Secure registration & login APIs for B2C, B2B, and Professionals.
-* Timer cleanup logic (`redirectTimerRef` unmount handler) preventing redirects from breaking other screens.
-* Session management using JWT signatures on headers.
-* Basic client/server role validation (Individual, Business, Professional, Admin).
-* Bypass test code support (`123456`) in dev environments.
-Missing Features:
-* Social Login OAuth integration (currently Google and LinkedIn buttons show client alerts only).
-* Direct verification email dispatch (currently mocks OTP to server console logs, no active SMTP integration).
-* Database password reset functionality (forgot password step mocks transitions without modifying stored user hashes).
-Future Enhancements:
-* Support for biometric verification (WebAuthn/Passkeys).
-* Add two-factor authentication (2FA) via authenticator apps (TOTP).
-* Integrate password strength checker in real-time UI.
-Priority: Critical
+Below is the living product roadmap and implementation status tracker for all ARCUS subsystems. 
 
-### Materials Marketplace
-Status: 🟢 Ready
-Implemented Features:
-* Dynamic hierarchical catalog categories, subcategories, and leaf levels list.
-* Keyword product search based on title.
-* Interactive Product Detail Page (PDP) displaying CPVC dimensional schedules, specifications, and client reviews.
-* Brand Directory Hub filtering items by manufacturer.
-* Basic cart operations (quantity modification, additions, and local state persistence).
-Missing Features:
-* Advanced side-filter panel (no dynamic sorting or filtering by technical properties like grade, diameter, color).
-* Related products recommendations section on PDP.
-* Product bundles (e.g. CPVC pipe kit + CPVC adhesive glue bundle packages).
-* Live inventory management (items have static mock counts, no actual vendor stock sync).
-Future Enhancements:
-* Real-time price tracking graphs showing trends of steel and cement.
-* Integrated barcode scanner for bulk yard inventory matching.
-Priority: High
-
-### Services Marketplace
-Status: 🟢 Ready
-Implemented Features:
-* Trades categorization (Plumbing, Electrical, Carpentry, Painting, Civil, Architecture, Interior Design).
-* Professional profile views with contractor ratings, starting rates, and covered regions.
-* Booking quote submission forms.
-* Ratings and review score logs displays.
-Missing Features:
-* Direct messaging / chat module between builders and professionals.
-* Calendar and scheduling system (booking inputs a text date without checking contractor calendar availability).
-* Portfolio media uploading (currently professionals can only write text URLs).
-Future Enhancements:
-* Integrated escrow payments system for service contract milestones.
-* Geolocation matching to suggest contractors closest to the project coordinates.
-Priority: High
-
-### RFQ Engine
-Status: 🟡 In Progress
-Implemented Features:
-* RFQ submission form capturing contact, quantities, delivery locations, and details.
-* Automated supplier bids simulator in the user dashboard.
-* RFQ list tracker displaying posted dates and materials list.
-Missing Features:
-* Direct supplier bidding workspace (suppliers cannot log in to place manual bids).
-* Quote side-by-side comparison tables with export options.
-* RFQ status notifications (SMS or email alerts when new bids are received).
-Future Enhancements:
-* Automate reverse auction schedules for bulk purchases.
-Priority: High
-
-### BuildPoints & Loyalty Engine
-Status: 🔴 Not Started
-Implemented Features:
-* Dashboard loyalty overview displaying current BuildPoints balance.
-* Role-based checkout discount validations (Redeems coupon code `WELCOME5` for B2C, `ARCUS10` for B2B).
-Missing Features:
-* Automatic point calculation on orders (order placement does not dynamically increment points balance in database).
-* Monthly accelerators or multipliers for high-volume purchases.
-* Referral rewards programs.
-* Tiered upgrades (Silver, Gold, Platinum benefits) based on spending history.
-Future Enhancements:
-* Partner store point redemptions.
-Priority: Medium
-
-### Procurement Dashboard
-Status: 🟢 Ready
-Implemented Features:
-* Comprehensive order histories listing products, quantities, tax breakdowns, and addresses.
-* Suburb-preserving street address split parser.
-* Billing same as shipping address forms toggle.
-* Tax invoice rendering with verified GSTIN numbers.
-Missing Features:
-* Spend analytics visualization (spend charts, monthly cost analytics graphs).
-* PDF receipt and tax invoice downloader.
-* Saved suppliers listings.
-* Saved/favorite products listing.
-Future Enhancements:
-* Purchase requisition authorization flows (multi-level company approvals).
-Priority: High
-
-### Admin Panel
-Status: 🟡 In Progress
-Implemented Features:
-* Master user registry showing registration list, roles, and verification flags.
-* Global transactional logs audit view.
-* Custom database cleanup endpoints for testing.
-Missing Features:
-* CRUD interface for product inventory catalog management.
-* Category tree and brand mappings control panel.
-* Vendor applications and profile verification dashboard.
-* Active RFQ list inspection controls.
-Future Enhancements:
-* Export platform audit logs in Excel/CSV formats.
-Priority: Medium
-
-### Analytics Console
-Status: 🔴 Not Started
-Implemented Features:
-* Placeholder navigation links.
-Missing Features:
-* All analytics dashboard components (graphs, data grids).
-* Materials consumption volume forecasting.
-* Automated project cost estimates.
-Future Enhancements:
-* Generative AI analytics summary reports of site spending.
-Priority: Low
-
-### Checkout & Address Management System
-Status: 🟢 Ready
-Implemented Features:
-* Storing shipping and billing addresses in user profiles.
-* Suburb-retaining address components parser.
-* Billing address check toggles.
-* Auto-filling shipping and billing fields on selection.
-Missing Features:
-* Address geolocation lookup using Maps API.
-* Address validation checks against postal directories.
-Future Enhancements:
-* Direct pin drop mapping coordinates tool.
-Priority: High
-
-### Security & Validation Layer
-Status: 🟢 Ready
-Implemented Features:
-* Centralized input validators for Indian phone numbers, emails, PIN codes, GSTINs, and password complexity.
-* SQL injection scanner removing query syntax keywords.
-* XSS scrubber removing HTML script tags.
-* Express API rate limiters restricting auth, profile, and registration dispatches.
-Missing Features:
-* Parametrized SQL query protection (local DB uses JSON strings, not ORMs).
-* Permanent IP blacklist bans (rate limiters reset on server restart).
-Future Enhancements:
-* Audit logs tracking all blocks triggered by the security middleware.
-Priority: Critical
-
-### Technical Resources & Calculators Hub
-Status: 🟢 Ready
-Implemented Features:
-* Slab Concrete Cement Calculator converting area and slab thickness to bag and material volumes.
-* Steel Weight Reinforcement Calculator based on bar diameters and lengths.
-* Technical building checklists and standards guides.
-Missing Features:
-* Interactive structural load estimators.
-* Project estimations summary exports.
-Future Enhancements:
-* Save calculator estimate logs directly to the user's project board.
-Priority: Medium
+| Module | Frontend | Backend | Database | Implemented Features | Missing Features | Future Enhancements | Priority |
+| :--- | :---: | :---: | :---: | :--- | :--- | :--- | :---: |
+| **Authentication & OTP** | 🟡 In Progress | 🟡 In Progress | 🟢 Ready | • Login & Registration views<br/>• 6-digit OTP verification panel<br/>• Unmount timer ref cleanup<br/>• Session token storage | • Social logins (Google/LinkedIn)<br/>• Real SMTP email delivery<br/>• Active DB password reset | • Passkey biometric logins<br/>• Authenticator App 2FA | **Critical** |
+| **Materials Marketplace** | 🟡 In Progress | 🟡 In Progress | 🟢 Ready | • Hierarchical category browser<br/>• Product keyword search<br/>• PDP details and specifications<br/>• Brand directories | • Multi-criteria side-filters<br/>• Related products recommendations<br/>• Product kits & bundles<br/>• Real vendor inventory sync | • Real-time price tracking graphs<br/>• Barcode scanner product matcher | **High** |
+| **Services Marketplace** | 🟢 Ready | 🟡 In Progress | 🟢 Ready | • Contractor trade categories<br/>• Profile listings and locations<br/>• Quote booking request forms<br/>• Ratings and reviews display | • Live customer-vendor chat<br/>• Contractor calendar scheduling<br/>• Portfolio media uploaders | • Milestone escrow payments<br/>• Nearby contractor geo-matching | **High** |
+| **RFQ Engine** | 🟡 In Progress | 🟡 In Progress | 🟢 Ready | • RFQ creation & posting form<br/>• Bid simulator for dashboard<br/>• RFQ active tracking logs | • Supplier portal bidding forms<br/>• Side-by-side quote comparisons<br/>• SMS/Email bid notifications | • Multi-round reverse auctions | **High** |
+| **BuildPoints & Loyalty** | 🟢 Ready | 🔴 Not Started | 🔴 Not Started | • Dashboard loyalty point balance<br/>• Retail/B2B coupons validation | • Post-order point increment triggers<br/>• Monthly multipliers<br/>• Tier status upgrades (Gold/Platinum) | • Partner store point redemptions | **Medium** |
+| **Procurement Dashboard** | 🟢 Ready | 🟡 In Progress | 🟢 Ready | • Order histories details view<br/>• Address split auto-fill parser<br/>• Billing address check toggling<br/>• Verified GSTIN rendering | • Monthly spend charts & graphs<br/>• PDF invoice/receipt downloads<br/>• Saved/favorite products listing | • Corporate multi-level approval flow | **High** |
+| **Admin Panel** | 🟡 In Progress | 🟡 In Progress | 🟢 Ready | • Master user list grid view<br/>• Global transaction log audits<br/>• Database cleanup APIs for dev | • Product catalog CRUD manager<br/>• Category tree management view<br/>• Vendor applications auditor | • CSV/Excel transaction exports | **Medium** |
+| **Analytics Console** | 🔴 Not Started | 🔴 Not Started | 🔴 Not Started | • Navigation placeholder tabs | • Spend dashboards & analytics grids<br/>• Cement/Steel forecasting logic<br/>• Automated cost estimators | • AI-driven procurement advice | **Low** |
+| **Checkout & Address** | 🟢 Ready | 🟢 Ready | 🟢 Ready | • Address profile management<br/>• Suburb-retaining address parser<br/>• Billing address forms toggles | • Address maps geolocation check<br/>• Address validation checks | • Google Maps pin drop selector | **High** |
+| **Security & Validation** | 🟢 Ready | 🟢 Ready | 🟢 Ready | • Centralized phone/email/GSTIN checks<br/>• XSS HTML script scrubbers<br/>• SQL injection keyword scrubbers<br/>• Auth & profile rate limiters | • DB parameterized query binds<br/>• Permanent IP blacklist bans | • Security audit alert log tracker | **Critical** |
+| **Resources & Calculators** | 🟢 Ready | 🟢 Ready | 🟢 Ready | • Concrete volume cement estimator<br/>• Steel bar reinforcement calculator<br/>• Quality audit checklists | • Structural load calculators<br/>• Estimate logs export options | • Save calculations to projects board | **Medium** |
 
 ---
 
