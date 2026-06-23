@@ -285,10 +285,4 @@ The client runs on `http://localhost:5173`.
 - **Nodemon Reset loop**: Database updates on `db.json` do not restart the server due to ignoring patterns in `server/nodemon.json`.
 </details>
 
-<details>
-<summary><b>🧪 Testing Specifications</b></summary>
 
-- All E2E test suites reside under the `tests/` directory.
-- Run the tests using `npx playwright test`.
-- To run specific tests, use `npx playwright test tests/checkout.spec.ts`.
-</details>
