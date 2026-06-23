@@ -667,3 +667,4 @@ async function initDb() {
 
 // Invoke DB startup
 initDb();
+// Trigger nodemon reload for postgres connection

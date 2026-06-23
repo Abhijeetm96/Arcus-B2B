@@ -499,16 +499,20 @@ export async function runMigrations(pgPool: Pool): Promise<void> {
         name, 
         specifications, 
         COALESCE(NULLIF(regexp_replace(price, '[^\\d.]', '', 'g'), '')::numeric, 0.00),
-        unit_of_measure, 
-        minimum_order_quantity, 
-        order_multiple, 
+        COALESCE(unit_of_measure, TRIM(REPLACE(unit, '/', '')), 'Piece'), 
+        COALESCE(minimum_order_quantity, 1), 
+        COALESCE(order_multiple, 1), 
         COALESCE(NULLIF(status, ''), 'ACTIVE')::product_status_enum
     FROM products
     ON CONFLICT (id) DO NOTHING;
 
     -- inventory
     INSERT INTO inventory (variant_id, available_stock, reserved_stock, reorder_level)
-    SELECT id, inventory_available, inventory_reserved, inventory_reorder_level
+    SELECT 
+        id, 
+        COALESCE(inventory_available, stock, 100), 
+        COALESCE(inventory_reserved, 0), 
+        COALESCE(inventory_reorder_level, 10)
     FROM products
     ON CONFLICT (variant_id) DO NOTHING;
 
