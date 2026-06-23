@@ -186,148 +186,397 @@ graph LR
 
 ```
 ARCUS/
-├── .gitignore                    # Excludes .env, db.json, package-lock, diagnostic scripts
-├── index.html                    # Vite HTML entry point
-├── package.json                  # Frontend dependencies (React 19, Vite, Tailwind)
-├── tailwind.config.js            # Custom design tokens & theme
-├── vite.config.ts                # Vite dev server with /api proxy to :5000
-├── shared/
-│   └── validation.ts             # Isomorphic validators (phone, email, GSTIN, XSS, SQLi)
+├── .gitignore                         # Excludes .env, db.json, package-lock, diagnostic scripts
+├── index.html                         # Vite HTML entry point
+├── package.json                       # Frontend deps: React 19, Vite 8, Tailwind CSS 3
+├── tailwind.config.js                 # Custom HSL design tokens & extended theme
+├── vite.config.ts                     # Dev server + /api/* proxy → localhost:5000
+├── tsconfig.app.json / tsconfig.json  # TypeScript configuration
+├── postcss.config.js                  # PostCSS + Autoprefixer
 │
-├── src/                          # React TypeScript SPA
-│   ├── App.tsx                   # Hash router & top-level route declarations
-│   ├── index.css                 # HSL design tokens, typography, utility classes
-│   ├── main.tsx                  # React root mount
+├── shared/
+│   └── validation.ts                  # Isomorphic input validators
+│                                      # (phone, email, GSTIN, XSS strip, SQLi guard)
+│
+├── src/                               # React 19 TypeScript SPA
+│   ├── App.tsx                        # Hash-based router; all top-level route declarations
+│   ├── index.css                      # HSL design tokens, typography scale, utility classes
+│   ├── main.tsx                       # React DOM root mount
 │   │
-│   ├── core/                     # Shared frontend utilities
+│   ├── core/                          # Shared, reusable frontend utilities
 │   │   ├── auth/
-│   │   │   └── PortalResolver.tsx     # Role-based portal redirect guard
+│   │   │   └── PortalResolver.tsx     # Reads role from AuthContext; redirects to correct portal
 │   │   ├── config/
-│   │   │   └── format.ts              # Currency, date, number formatters
+│   │   │   └── format.ts              # formatCurrency(), formatDate(), formatWeight()
 │   │   ├── hooks/
-│   │   │   ├── useOrders.ts           # Orders API hook
-│   │   │   ├── useProducts.ts         # Products API hook
-│   │   │   └── useRFQs.ts             # RFQ API hook
+│   │   │   ├── useOrders.ts           # GET/POST /api/orders hook
+│   │   │   ├── useProducts.ts         # GET /api/products hook with filters
+│   │   │   └── useRFQs.ts             # GET/POST /api/rfqs hook
 │   │   └── permissions/
-│   │       ├── permissions.ts         # Role capability definitions
-│   │       └── usePermissions.ts      # Permission resolver hook
+│   │       ├── permissions.ts         # ROLE_PERMISSIONS map (Admin > Business > Individual)
+│   │       └── usePermissions.ts      # usePermissions() hook — reads from AuthContext
 │   │
 │   ├── context/
-│   │   ├── AuthContext.tsx            # Global auth state (user, role, customerType)
-│   │   └── CartContext.tsx            # Cart state, coupon engine, BuildPoints
+│   │   ├── AuthContext.tsx            # user, role, customerType, login(), logout()
+│   │   └── CartContext.tsx            # cart items, coupon engine, BuildPoints, totals
 │   │
-│   ├── components/                # Page-level views & shared widgets
-│   │   ├── AuthPage.tsx               # Login / Register / OTP
-│   │   ├── Categories.tsx             # Homepage category grid
-│   │   ├── Checkout.tsx               # Address form, order summary, payment
-│   │   ├── ErrorBoundary.tsx          # Global React error boundary
-│   │   ├── Hero.tsx                   # Homepage hero banner
-│   │   ├── MaterialsHub.tsx           # Materials marketplace (PLP)
-│   │   ├── Navbar.tsx                 # Global navigation bar
-│   │   ├── ProductDetail.tsx          # Product detail page (PDP)
-│   │   ├── RfqForm.tsx                # RFQ submission form
-│   │   ├── SearchPage.tsx             # Platform-wide search results page
-│   │   └── ServicesHub.tsx            # Services marketplace + contractor profiles
+│   ├── components/                    # Full-page view components & shared widgets
+│   │   ├── AuthPage.tsx               # Login / Register / OTP verification flow
+│   │   ├── Categories.tsx             # Homepage category tile grid
+│   │   ├── Checkout.tsx               # Shipping address, billing toggle, order summary
+│   │   ├── ErrorBoundary.tsx          # React error boundary (wraps entire app)
+│   │   ├── Hero.tsx                   # Homepage hero section
+│   │   ├── MaterialsHub.tsx           # Materials PLP: filters, search, product cards
+│   │   ├── Navbar.tsx                 # Top nav: search bar, cart icon, user menu
+│   │   ├── ProductDetail.tsx          # PDP: variants, bulk pricing, B2B/B2C split, reviews
+│   │   ├── RfqForm.tsx                # Multi-step RFQ submission form
+│   │   ├── SearchPage.tsx             # Platform-wide search (products + services + pros)
+│   │   └── ServicesHub.tsx            # Services hub, contractor listings, booking modals
 │   │
-│   └── modules/                   # Role-scoped portal modules
-│       ├── admin/                     # Admin portal (13 management screens)
-│       │   ├── AdminLayout.tsx
-│       │   ├── AdminDashboard.tsx
-│       │   ├── ProductManagement.tsx
-│       │   ├── CategoryManagement.tsx
-│       │   ├── BrandManagement.tsx
-│       │   ├── InventoryManagement.tsx
-│       │   ├── OrderManagement.tsx
-│       │   ├── RFQManagement.tsx
-│       │   ├── CustomerManagement.tsx
-│       │   ├── RoleManagement.tsx
-│       │   ├── ImportProducts.tsx
-│       │   ├── ExportProducts.tsx
-│       │   ├── BulkUpdates.tsx
-│       │   ├── SearchAnalytics.tsx
-│       │   ├── AuditLogs.tsx
-│       │   ├── Reports.tsx
-│       │   ├── Settings.tsx
-│       │   └── DashboardHome.tsx
+│   └── modules/                       # Role-gated portal modules
+│       ├── admin/                     # Admin portal — 17 screens
+│       │   ├── AdminLayout.tsx        # Sidebar navigation layout
+│       │   ├── DashboardHome.tsx      # KPI summary cards
+│       │   ├── ProductManagement.tsx  # Product CRUD table
+│       │   ├── CategoryManagement.tsx # Category tree editor
+│       │   ├── BrandManagement.tsx    # Brand registry
+│       │   ├── InventoryManagement.tsx# Stock levels & adjustment logs
+│       │   ├── OrderManagement.tsx    # Order status pipeline
+│       │   ├── RFQManagement.tsx      # RFQ pipeline & bid review
+│       │   ├── CustomerManagement.tsx # User account directory
+│       │   ├── RoleManagement.tsx     # Admin role & permission assignment
+│       │   ├── ImportProducts.tsx     # CSV/XLSX bulk import with preview
+│       │   ├── ExportProducts.tsx     # CSV/XLSX catalog export
+│       │   ├── BulkUpdates.tsx        # Mass price/status update tool
+│       │   ├── SearchAnalytics.tsx    # Query logs & click-through heatmap
+│       │   ├── AuditLogs.tsx          # Admin action audit trail viewer
+│       │   ├── Reports.tsx            # Revenue & order analytics
+│       │   ├── Settings.tsx           # Global app config panel
+│       │   └── types.ts               # Shared admin TypeScript interfaces
 │       ├── business/                  # Business (B2B) portal
 │       │   ├── layouts/BusinessLayout.tsx
-│       │   ├── BusinessDashboard.tsx
-│       │   ├── BusinessProjects.tsx
-│       │   ├── BusinessRFQs.tsx
-│       │   └── BusinessInvoices.tsx
+│       │   ├── BusinessDashboard.tsx  # Spend summary, active orders, RFQ count
+│       │   ├── BusinessProjects.tsx   # Project tracker
+│       │   ├── BusinessRFQs.tsx       # RFQ list & status
+│       │   └── BusinessInvoices.tsx   # Invoice download list
 │       ├── individual/                # Individual (B2C) portal
 │       │   ├── layouts/IndividualLayout.tsx
 │       │   ├── IndividualDashboard.tsx
-│       │   ├── IndividualOrders.tsx
-│       │   ├── IndividualAddresses.tsx
-│       │   └── IndividualProfile.tsx
+│       │   ├── IndividualOrders.tsx   # Order history with status tracking
+│       │   ├── IndividualAddresses.tsx# Saved shipping addresses
+│       │   └── IndividualProfile.tsx  # Profile edit form
 │       └── professional/              # Professional / Contractor portal
 │           ├── layouts/ProfessionalLayout.tsx
 │           └── ProfessionalDashboard.tsx
 │
 ├── scripts/
-│   ├── create_admin.cjs              # CLI: seed admin user to DB
-│   └── populate_products.cjs         # CLI: bulk-load product catalog
+│   ├── create_admin.cjs               # CLI: inserts an admin user directly into DB
+│   └── populate_products.cjs          # CLI: bulk-seeds product catalog from JSON
 │
-└── server/                        # Express Node.js API Server
-    ├── package.json                   # Server dependencies (Express, pg, multer, xlsx, nodemailer)
+└── server/                            # Node.js + Express REST API
+    ├── README.md                      # Server-specific architecture documentation
+    ├── package.json                   # Deps: express, pg, multer, xlsx, nodemailer, dotenv
     ├── tsconfig.json
     └── src/
-        ├── index.ts                   # REST API entry — all routes & rate limiters
-        ├── db.ts                      # Backwards-compatible re-export facade
+        ├── index.ts                   # 260+ REST endpoints, rate limiters, CORS, file upload
+        ├── db.ts                      # Backwards-compatible re-export facade for index.ts
         │
         ├── database/
-        │   ├── db.ts                  # PostgreSQL pool + JSON file fallback
-        │   ├── initDb.ts              # Table creation & seed coordinator
-        │   ├── migrations.ts          # DDL schema migrations & constraint additions
-        │   ├── cleanup_legacy.sql     # Phase 5: removes legacy schema artifacts
-        │   ├── executeCleanup.ts      # Cleanup runner with transaction safety
-        │   ├── healthCheck.ts         # DB connectivity health validator
-        │   ├── verifyApiContracts.ts  # API contract regression tests
-        │   ├── verifyBuildPoints.ts   # BuildPoints integrity checker
-        │   └── verifyInventory.ts     # Inventory constraint validator
+        │   ├── db.ts                  # pgPool init + readJsonDb/writeJsonDb fallback
+        │   ├── initDb.ts              # CREATE TABLE IF NOT EXISTS + seed on startup
+        │   ├── migrations.ts          # ALTER TABLE, new tables, indexes, check constraints
+        │   ├── cleanup_legacy.sql     # Phase 5: DROP legacy columns (safe-to-remove only)
+        │   ├── executeCleanup.ts      # Transactional cleanup runner with rollback guard
+        │   ├── healthCheck.ts         # DB ping & table existence validator
+        │   ├── verifyApiContracts.ts  # Regression: checks all critical columns still exist
+        │   ├── verifyBuildPoints.ts   # Integrity: wallet balance ≥ 0, ledger sums match
+        │   └── verifyInventory.ts     # Integrity: no negative stock, reserved ≤ available
         │
-        ├── modules/                   # Modular domain services
+        ├── modules/                   # Domain-separated service layer
         │   ├── analytics/
-        │   │   ├── AuditLog.ts        # Audit log model
-        │   │   └── AuditLogService.ts # Admin action audit trail
+        │   │   ├── AuditLog.ts
+        │   │   └── AuditLogService.ts # insertAuditLog(), getAuditLogs()
         │   ├── catalog/
-        │   │   ├── Product.ts         # Product model
-        │   │   ├── ProductService.ts  # Product CRUD & normalizer
-        │   │   ├── Category.ts        # Category model
-        │   │   ├── CategoryService.ts # Category CRUD
-        │   │   ├── Brand.ts           # Brand model
-        │   │   ├── BrandService.ts    # Brand CRUD
-        │   │   ├── CatalogSyncService.ts  # Cross-table catalog sync
-        │   │   ├── ImportHistory.ts   # Import job model
+        │   │   ├── Product.ts         # Product, PriceTier, ProductVariant interfaces
+        │   │   ├── ProductService.ts  # getAllProducts(), getProductById(), CRUD
+        │   │   ├── Category.ts
+        │   │   ├── CategoryService.ts
+        │   │   ├── Brand.ts
+        │   │   ├── BrandService.ts
+        │   │   ├── CatalogSyncService.ts
+        │   │   ├── ImportHistory.ts
         │   │   ├── ImportHistoryService.ts
-        │   │   ├── ProductImportService.ts  # CSV/XLSX importer
-        │   │   └── ProductExportService.ts  # CSV/XLSX exporter
+        │   │   ├── ProductImportService.ts  # parseCSV/XLSX → upsert products
+        │   │   └── ProductExportService.ts  # query → CSV/XLSX buffer
         │   ├── inventory/
-        │   │   ├── Inventory.ts       # Inventory model
-        │   │   └── InventoryService.ts  # Reserve, release, reorder lifecycle
+        │   │   ├── Inventory.ts
+        │   │   └── InventoryService.ts  # checkAvailability, reserveStock, releaseStock
         │   ├── orders/
-        │   │   ├── Order.ts           # Order + OrderItem models
-        │   │   └── OrderService.ts    # Order placement & status transitions
+        │   │   ├── Order.ts
+        │   │   └── OrderService.ts    # addOrder(), getOrdersByUserId(), updateStatus()
         │   ├── rfq/
-        │   │   ├── RFQ.ts             # RFQ, Booking, DirectQuote models
-        │   │   └── RFQService.ts      # RFQ & booking management
+        │   │   ├── RFQ.ts             # RFQ, Booking, DirectQuote interfaces
+        │   │   └── RFQService.ts
         │   ├── search/
-        │   │   ├── Search.ts          # SearchQueryLog & SearchClickLog models
-        │   │   └── SearchService.ts   # Multi-domain relevance search + analytics
+        │   │   ├── Search.ts
+        │   │   └── SearchService.ts   # searchAll(): products + services + professionals
         │   ├── settings/
-        │   │   ├── Settings.ts        # App settings model
-        │   │   └── SettingsService.ts # Global config read/write
+        │   │   ├── Settings.ts
+        │   │   └── SettingsService.ts # getAppSettings(), updateAppSettings()
         │   └── users/
-        │       ├── User.ts            # User & OtpRecord models
-        │       ├── UserService.ts     # Auth, OTP, registration, profile updates
-        │       └── permissions.ts     # Role-based permission definitions
+        │       ├── User.ts            # User, OtpRecord interfaces
+        │       ├── UserService.ts     # register, login, verifyOTP, updateProfile
+        │       └── permissions.ts     # ROLE → permissions[] map
         │
         └── seed/
-            ├── categories.ts          # Material category hierarchy seed data
-            ├── products.ts            # Product catalog seed (86 products)
-            └── settings.ts            # Default app settings values
+            ├── categories.ts          # 10 material categories with icons & hrefs
+            ├── products.ts            # 86 products across cement, steel, plumbing, electrical
+            └── settings.ts            # Default settings: MOQ, GST rate, shipping threshold
 ```
+
+---
+
+## 🗄️ Database Schema
+
+ARCUS uses **PostgreSQL** as the primary database (with an automatic JSON file fallback for local development). All tables are created via `initDb.ts` and extended via `migrations.ts`.
+
+### Entity Relationship Overview
+
+```mermaid
+erDiagram
+    users ||--o| individual_profiles : "has"
+    users ||--o| business_profiles : "has"
+    users ||--o| professional_profiles : "has"
+    users ||--o| admin_profiles : "has"
+    users ||--o{ user_addresses : "has many"
+    users ||--o{ orders : "places"
+    users ||--o{ rfqs : "submits"
+    users ||--o{ otps : "receives"
+    users ||--|| buildpoints_wallets : "owns"
+    buildpoints_wallets ||--o{ buildpoints_ledger : "tracks"
+    products ||--o{ product_variants : "has"
+    products ||--o{ product_images : "has"
+    products ||--o{ product_reviews : "has"
+    products ||--o{ product_accessories : "has"
+    product_variants ||--o{ product_price_tiers : "has"
+    product_variants ||--|| inventory : "tracked by"
+    orders ||--o{ order_items : "contains"
+    order_items }o--|| product_variants : "references"
+    rfqs ||--o{ rfq_items : "contains"
+    rfqs ||--o{ rfq_quotes : "receives"
+    brands ||--o{ products : "manufactures"
+```
+
+### Tables
+
+#### 👤 `users`
+| Column | Type | Constraints |
+|---|---|---|
+| `id` | `VARCHAR(50)` | PRIMARY KEY |
+| `name` | `VARCHAR(100)` | NOT NULL |
+| `full_name` | `VARCHAR(100)` | |
+| `email` | `VARCHAR(100)` | UNIQUE, NOT NULL |
+| `phone` | `VARCHAR(50)` | UNIQUE (constraint) |
+| `phone_number` | `VARCHAR(50)` | |
+| `password_hash` | `VARCHAR(256)` | NOT NULL |
+| `password_salt` | `VARCHAR(256)` | NOT NULL |
+| `role` | `VARCHAR(50)` | NOT NULL |
+| `customer_type` | `VARCHAR(50)` | DEFAULT `'INDIVIDUAL'` |
+| `admin_role` | `VARCHAR(100)` | DEFAULT `'SUPER_ADMIN'` |
+| `email_verified` | `BOOLEAN` | DEFAULT `FALSE` |
+| `created_at` | `TIMESTAMPTZ` | DEFAULT NOW |
+| `updated_at` | `TIMESTAMPTZ` | DEFAULT NOW |
+
+#### 🔑 `otps`
+| Column | Type | Constraints |
+|---|---|---|
+| `id` | `VARCHAR(50)` | PRIMARY KEY |
+| `user_id` | `VARCHAR(50)` | FK → `users.id` CASCADE |
+| `otp_hash` | `VARCHAR(256)` | NOT NULL |
+| `expires_at` | `TIMESTAMPTZ` | NOT NULL |
+| `attempts` | `INTEGER` | DEFAULT `0` |
+| `created_at` | `TIMESTAMPTZ` | DEFAULT NOW |
+
+#### 👤 `individual_profiles`
+| Column | Type | Constraints |
+|---|---|---|
+| `user_id` | `VARCHAR(50)` | PK + FK → `users.id` CASCADE |
+| `full_name` | `VARCHAR(100)` | NOT NULL |
+| `alternate_phone` | `VARCHAR(50)` | |
+| `preferred_language` | `VARCHAR(50)` | DEFAULT `'English'` |
+| `created_at` / `updated_at` | `TIMESTAMPTZ` | |
+
+#### 🏢 `business_profiles`
+| Column | Type | Constraints |
+|---|---|---|
+| `user_id` | `VARCHAR(50)` | PK + FK → `users.id` CASCADE |
+| `company_name` | `VARCHAR(150)` | NOT NULL |
+| `gst_number` | `VARCHAR(50)` | NOT NULL, UNIQUE (upper) |
+| `pan_number` | `VARCHAR(10)` | |
+| `trade_license_url` | `VARCHAR(255)` | |
+| `verification_status` | `verification_status_enum` | DEFAULT `'PENDING'` |
+| `verified_at` / `verified_by` | `TIMESTAMPTZ / VARCHAR` | |
+
+#### 🔨 `professional_profiles`
+| Column | Type | Constraints |
+|---|---|---|
+| `user_id` | `VARCHAR(50)` | PK + FK → `users.id` CASCADE |
+| `service_category` | `VARCHAR(100)` | NOT NULL |
+| `experience_years` | `INTEGER` | DEFAULT `0` |
+| `city` / `state` | `VARCHAR(100)` | NOT NULL |
+| `skills` | `JSONB` | DEFAULT `[]` |
+| `average_rating` | `NUMERIC(3,2)` | DEFAULT `0.00` |
+| `verification_status` | `verification_status_enum` | DEFAULT `'PENDING'` |
+
+#### 🛡️ `admin_profiles`
+| Column | Type | Constraints |
+|---|---|---|
+| `user_id` | `VARCHAR(50)` | PK + FK → `users.id` CASCADE |
+| `admin_role` | `admin_role_enum` | DEFAULT `'SUPER_ADMIN'` |
+| `permissions` | `JSONB` | DEFAULT `[]` |
+| `assigned_departments` | `JSONB` | DEFAULT `[]` |
+
+#### 📍 `user_addresses`
+| Column | Type | Constraints |
+|---|---|---|
+| `id` | `VARCHAR(50)` | PRIMARY KEY |
+| `user_id` | `VARCHAR(50)` | FK → `users.id` CASCADE |
+| `address_type` | `address_type_enum` | `SHIPPING / BILLING / BOTH` |
+| `recipient_name` | `VARCHAR(100)` | NOT NULL |
+| `address_line_1` | `TEXT` | NOT NULL |
+| `city / state / postal_code` | `VARCHAR` | NOT NULL |
+| `is_default` | `BOOLEAN` | DEFAULT `FALSE` |
+
+#### 📦 `products`
+| Column | Type | Notes |
+|---|---|---|
+| `id` | `VARCHAR(50)` | PRIMARY KEY |
+| `name` | `VARCHAR(100)` | NOT NULL |
+| `category_id` / `category_title` | `VARCHAR` | Material group |
+| `sku` / `brand` / `model` | `VARCHAR` | Catalog identifiers |
+| `unit_of_measure` | `VARCHAR(50)` | Piece, Bag, Bundle, etc. |
+| `hsn_code` | `VARCHAR(50)` | GST classification |
+| `gst_rate` | `NUMERIC(5,2)` | Default `18` |
+| `minimum_order_quantity` | `INTEGER` | DEFAULT `1` |
+| `order_multiple` | `INTEGER` | DEFAULT `1` |
+| `allow_b2b` / `allow_b2c` | `BOOLEAN` | DEFAULT `TRUE` |
+| `status` | `VARCHAR(50)` | `ACTIVE / OUT_OF_STOCK / DISCONTINUED` |
+| `specifications` | `JSONB` | Key-value spec map |
+| `lead_time_days` | `INTEGER` | DEFAULT `3` |
+
+#### 🎨 `product_variants`
+| Column | Type | Constraints |
+|---|---|---|
+| `id` | `VARCHAR(50)` | PRIMARY KEY |
+| `product_id` | `VARCHAR(50)` | FK → `products.id` CASCADE |
+| `sku` | `VARCHAR(100)` | UNIQUE |
+| `price` | `NUMERIC(12,2)` | NOT NULL |
+| `attributes` | `JSONB` | Size, color, grade specs |
+| `status` | `product_status_enum` | DEFAULT `'ACTIVE'` |
+
+#### 💰 `product_price_tiers`
+| Column | Type | Constraints |
+|---|---|---|
+| `id` | `SERIAL` | PRIMARY KEY |
+| `variant_id` | `VARCHAR(50)` | FK → `product_variants.id` CASCADE |
+| `min_quantity` | `INTEGER` | NOT NULL |
+| `max_quantity` | `INTEGER` | NOT NULL, CHECK `min ≤ max` |
+| `price` | `NUMERIC(12,2)` | NOT NULL |
+| `discount_percentage` | `NUMERIC(5,2)` | NOT NULL |
+
+#### 🖼️ `product_images` · `product_accessories` · `product_reviews`
+| Table | Key Fields |
+|---|---|
+| `product_images` | `product_id`, `image_url`, `display_order`, `is_primary` |
+| `product_accessories` | `product_id` + `accessory_product_id` (composite PK) |
+| `product_reviews` | `product_id`, `reviewer_name`, `rating (1–5)`, `is_verified_purchase`, `status` |
+
+#### 📊 `inventory`
+| Column | Type | Constraints |
+|---|---|---|
+| `variant_id` | `VARCHAR(50)` | PK + FK → `product_variants.id` CASCADE |
+| `available_stock` | `INTEGER` | NOT NULL, CHECK `≥ 0` |
+| `reserved_stock` | `INTEGER` | NOT NULL, CHECK `≥ 0` |
+| `reorder_level` | `INTEGER` | DEFAULT `10` |
+| `updated_at` | `TIMESTAMPTZ` | |
+
+#### 🏷️ `brands`
+| Column | Type |
+|---|---|
+| `id` | `VARCHAR(50)` PK |
+| `name` | `VARCHAR(100)` NOT NULL |
+| `logo` | `VARCHAR(255)` |
+| `description` | `TEXT` |
+| `status` | `VARCHAR(50)` DEFAULT `'ACTIVE'` |
+
+#### 📋 `categories`
+| Column | Type |
+|---|---|
+| `id` | `VARCHAR(50)` PK |
+| `name` | `VARCHAR(100)` NOT NULL |
+| `icon` | `VARCHAR(50)` NOT NULL |
+| `count` / `href` | `VARCHAR` |
+
+#### 🛒 `orders` · `order_items`
+| Table | Key Fields |
+|---|---|
+| `orders` | `id`, `user_id` (FK), `status` (enum), `amount`, `gst_number`, `payment_method`, `points_earned` |
+| `order_items` | `order_id` (FK), `variant_id` (FK), `quantity`, `unit_price`, `gst_rate`, `tax_amount`, `total_amount` — CHECK `qty > 0` |
+
+#### 📝 `rfqs` · `rfq_items` · `rfq_quotes`
+| Table | Key Fields |
+|---|---|
+| `rfqs` | `id`, `name`, `phone`, `category`, `quantity`, `buyer_id`, `status` (enum), `title`, `budget`, `attachment_urls` |
+| `rfq_items` | `rfq_id` (FK), `product_id` (FK), `item_name`, `quantity`, `specification_requirements` (JSONB) |
+| `rfq_quotes` | `rfq_id` (FK), `supplier_id` (FK), `quote_amount`, `delivery_lead_time_days`, `validity_date`, `status` |
+
+#### 📅 `bookings` · `quotes`
+| Table | Key Fields |
+|---|---|
+| `bookings` | `id`, `service_name`, `name`, `phone`, `date`, `notes` |
+| `quotes` | `id`, `contractor_id`, `contractor_company`, `name`, `phone`, `budget`, `timeline`, `description` |
+
+#### 🏆 `buildpoints_wallets` · `buildpoints_ledger`
+| Table | Key Fields |
+|---|---|
+| `buildpoints_wallets` | `user_id` (PK/FK), `balance` (CHECK `≥ 0`), `tier` (BRONZE/SILVER/GOLD), `lifetime_points_accumulated` |
+| `buildpoints_ledger` | `wallet_user_id` (FK), `points`, `transaction_type` (EARNED/REDEEMED/ADJUSTED/EXPIRED), `reference_type`, `reference_id`, `description` |
+
+#### 🔍 `search_queries` · `search_clicks`
+| Table | Key Fields |
+|---|---|
+| `search_queries` | `id` (SERIAL), `query`, `results_count`, `timestamp` |
+| `search_clicks` | `id` (SERIAL), `query`, `product_id`, `timestamp` |
+
+#### ⚙️ `settings`
+| Key | Example Value |
+|---|---|
+| `b2c_minimum_order_value` | `1000` |
+| `default_gst_rate` | `18` |
+| `free_shipping_threshold` | `5000` |
+| `default_moq` | `1` |
+| `quote_validity_days` | `30` |
+| `search_enable_logging` | `true` |
+
+#### 📜 `audit_logs` · `inventory_adjustments` · `import_history`
+| Table | Key Fields |
+|---|---|
+| `audit_logs` | `id` (SERIAL), `action_type`, `details`, `performed_by`, `timestamp` |
+| `inventory_adjustments` | `product_id` (FK), `adjustment_type`, `quantity`, `previous_stock`, `new_stock`, `reason`, `performed_by` |
+| `import_history` | `id`, `file_name`, `mode`, `products_added`, `products_updated`, `products_failed`, `error_report` |
+
+### Enums
+
+| Enum | Values |
+|---|---|
+| `customer_type_enum` | `INDIVIDUAL`, `BUSINESS`, `PROFESSIONAL` |
+| `admin_role_enum` | `SUPER_ADMIN`, `OPERATIONS_MANAGER`, `INVENTORY_MANAGER`, `SALES_MANAGER`, `CUSTOMER_SUPPORT` |
+| `product_status_enum` | `ACTIVE`, `OUT_OF_STOCK`, `COMING_SOON`, `DISCONTINUED`, `ARCHIVED`, `RFQ_ONLY` |
+| `order_status_enum` | `Pending`, `Confirmed`, `Dispatched`, `Out For Delivery`, `Delivered`, `Cancelled`, `Awaiting Payment` |
+| `rfq_status_enum` | `Submitted`, `Open`, `Under Review`, `Quotes Received`, `Completed`, `Cancelled`, `Expired` |
+| `buildpoints_transaction_type_enum` | `EARNED`, `REDEEMED`, `ADJUSTED`, `EXPIRED` |
+| `address_type_enum` | `SHIPPING`, `BILLING`, `BOTH` |
+| `verification_status_enum` | `PENDING`, `APPROVED`, `REJECTED` |
 
 ---
 
