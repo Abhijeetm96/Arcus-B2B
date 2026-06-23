@@ -800,6 +800,8 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
     name: '',
     phone: '',
     date: '',
+    time: '',
+    address: '',
     notes: ''
   })
 
@@ -812,6 +814,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
     phone: '',
     budget: '',
     timeline: '',
+    address: '',
     desc: ''
   })
 
@@ -1187,14 +1190,14 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                   className="border border-[#0A0A0A] text-[#0A0A0A] px-xl py-md rounded-xl font-bold hover:bg-[#F8F9FA] transition-all flex items-center gap-xs text-body-sm"
                 >
                   <span className="material-symbols-outlined text-[20px]">calendar_today</span>
-                  Book Call
+                  Book a Visit
                 </button>
                 <button
                   onClick={() => {
                     setSelectedPro(pro)
                     setShowDirectQuoteModal(true)
                   }}
-                  className="bg-[#FFC107] text-[#0A0A0A] px-2xl py-md rounded-xl font-bold hover:bg-[#fabd00] hover:scale-105 transition-all shadow text-body-sm"
+                  className="bg-[#FFC107] text-[#0A0A0A] px-xl py-md rounded-xl font-bold hover:bg-[#fabd00] hover:scale-105 active:scale-95 transition-all shadow-md text-body-sm"
                 >
                   Request Quote
                 </button>
@@ -1370,13 +1373,36 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       required
                     />
                   </div>
+                  <div className="grid grid-cols-2 gap-md">
+                    <div className="flex flex-col gap-xs">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-[#6C757D] font-label-caps">Preferred Date</label>
+                      <input
+                        type="date"
+                        value={bookForm.date}
+                        onChange={(e) => setBookForm({ ...bookForm, date: e.target.value })}
+                        className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                        required
+                      />
+                    </div>
+                    <div className="flex flex-col gap-xs">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-[#6C757D] font-label-caps">Preferred Time</label>
+                      <input
+                        type="time"
+                        value={bookForm.time}
+                        onChange={(e) => setBookForm({ ...bookForm, time: e.target.value })}
+                        className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                        required
+                      />
+                    </div>
+                  </div>
                   <div className="flex flex-col gap-xs">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-[#6C757D] font-label-caps">Preferred Date</label>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-[#6C757D] font-label-caps">Site Address</label>
                     <input
-                      type="date"
-                      value={bookForm.date}
-                      onChange={(e) => setBookForm({ ...bookForm, date: e.target.value })}
+                      type="text"
+                      value={bookForm.address}
+                      onChange={(e) => setBookForm({ ...bookForm, address: e.target.value })}
                       className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      placeholder="Building, Street, Area, City"
                       required
                     />
                   </div>
@@ -1471,6 +1497,17 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                         required
                       />
                     </div>
+                  </div>
+                  <div className="flex flex-col gap-xs">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-[#6C757D] font-label-caps">Site Address</label>
+                    <input
+                      type="text"
+                      value={directQuoteForm.address}
+                      onChange={(e) => setDirectQuoteForm({ ...directQuoteForm, address: e.target.value })}
+                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      placeholder="Building, Street, Area, City"
+                      required
+                    />
                   </div>
                   <div className="flex flex-col gap-xs">
                     <label className="text-[10px] font-bold uppercase tracking-wider text-[#6C757D] font-label-caps">Project Description</label>

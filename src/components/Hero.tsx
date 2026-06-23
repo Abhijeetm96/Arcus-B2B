@@ -81,7 +81,7 @@ export default function Hero() {
                   500+
                 </p>
                 <p className="font-label-caps text-[10px] text-secondary">
-                  Suppliers
+                  Brands
                 </p>
               </div>
             </div>

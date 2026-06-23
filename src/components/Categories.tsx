@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react'
+
 interface Category {
   name: string
   icon: string
@@ -5,7 +7,7 @@ interface Category {
   href: string
 }
 
-const categories: Category[] = [
+const localCategories: Category[] = [
   { name: 'Plumbing',   icon: 'plumbing',           count: '2,100+ Products', href: '#/materials/plumbing' },
   { name: 'Electrical', icon: 'electrical_services', count: '3,400+ Products', href: '#/materials/electrical' },
   { name: 'Interior',   icon: 'weekend',             count: '2,800+ Products', href: '#/materials/tiles-flooring' },
@@ -17,6 +19,30 @@ const categories: Category[] = [
 ]
 
 export default function Categories() {
+  const [categories, setCategories] = useState<Category[]>(localCategories)
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/admin/categories')
+      .then((res) => {
+        if (!res.ok) throw new Error()
+        return res.json()
+      })
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped = data.map((cat: any) => ({
+            name: cat.name,
+            icon: cat.icon,
+            count: cat.count || '0 Products',
+            href: cat.href || `#/materials/${cat.id}`
+          }))
+          setCategories(mapped)
+        }
+      })
+      .catch((err) => {
+        console.warn('Backend categories endpoint offline, using local static fallback.', err)
+      })
+  }, [])
+
   return (
     <section className="w-full py-4xl bg-background border-t border-surface-variant">
       <div className="max-w-[1440px] mx-auto px-lg w-full flex flex-col gap-xl">

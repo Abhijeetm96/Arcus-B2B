@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
+import { useAuth } from '../context/AuthContext'
 import { validateQuantity } from '../../shared/validation'
 
 interface PriceTier {
@@ -132,6 +133,36 @@ export default function ProductDetail() {
   const [activeImage, setActiveImage] = useState(0)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [productUnit, setProductUnit] = useState('/ Unit')
+  const [stock, setStock] = useState<number>(100)
+  const [status, setStatus] = useState<'ACTIVE' | 'OUT_OF_STOCK' | 'DISCONTINUED' | 'COMING_SOON'>('ACTIVE')
+  const [syncingStock, setSyncingStock] = useState(false)
+
+  const handleSyncStock = async () => {
+    setSyncingStock(true);
+    try {
+      const res = await fetch(`http://localhost:5000/api/products/${productSlug}/sync-inventory`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.stock !== undefined) {
+          setStock(data.stock);
+          setToastMessage('Live inventory synced successfully!');
+        }
+      } else {
+        setToastMessage('Failed to sync live stock from vendor.');
+      }
+    } catch (e) {
+      console.error(e);
+      setToastMessage('Failed to sync live stock: Network error.');
+    } finally {
+      setSyncingStock(false);
+    }
+  };
 
   useEffect(() => {
     if (toastMessage) {
@@ -148,6 +179,20 @@ export default function ProductDetail() {
       setToastMessage(check.error || 'Invalid quantity.');
       return;
     }
+    if (customerType === 'BUSINESS') {
+      if (qty < minimumOrderQuantity) {
+        setToastMessage(`Business orders require a minimum of ${minimumOrderQuantity} ${minimumOrderUnit}.`);
+        return;
+      }
+      if (orderMultiple > 1 && qty % orderMultiple !== 0) {
+        setToastMessage(`Quantity must be a multiple of ${orderMultiple}.`);
+        return;
+      }
+    }
+    if (qty > stock) {
+      setToastMessage(`Cannot add to cart: only ${stock} units in stock.`);
+      return;
+    }
     addToCart({
       id: productSlug,
       name: productName,
@@ -155,7 +200,11 @@ export default function ProductDetail() {
       unit: productUnit,
       images: images,
       categoryTitle: categoryTitle,
-      priceTiers: tiers
+      priceTiers: tiers,
+      stock: stock,
+      minimumOrderQuantity,
+      orderMultiple,
+      minimumOrderUnit
     }, qty)
     setToastMessage(`Added ${qty} x ${productName} to cart!`)
   }
@@ -166,6 +215,20 @@ export default function ProductDetail() {
       setToastMessage(check.error || 'Invalid quantity.');
       return;
     }
+    if (customerType === 'BUSINESS') {
+      if (qty < minimumOrderQuantity) {
+        setToastMessage(`Business orders require a minimum of ${minimumOrderQuantity} ${minimumOrderUnit}.`);
+        return;
+      }
+      if (orderMultiple > 1 && qty % orderMultiple !== 0) {
+        setToastMessage(`Quantity must be a multiple of ${orderMultiple}.`);
+        return;
+      }
+    }
+    if (qty > stock) {
+      setToastMessage(`Cannot purchase: only ${stock} units in stock.`);
+      return;
+    }
     addToCart({
       id: productSlug,
       name: productName,
@@ -173,12 +236,30 @@ export default function ProductDetail() {
       unit: productUnit,
       images: images,
       categoryTitle: categoryTitle,
-      priceTiers: tiers
+      priceTiers: tiers,
+      stock: stock,
+      minimumOrderQuantity,
+      orderMultiple,
+      minimumOrderUnit
     }, qty)
     window.location.hash = '#/checkout'
   }
 
   const handleAddKitToCart = () => {
+    if (customerType === 'BUSINESS') {
+      if (qty < minimumOrderQuantity) {
+        setToastMessage(`Business orders require a minimum of ${minimumOrderQuantity} ${minimumOrderUnit}.`);
+        return;
+      }
+      if (orderMultiple > 1 && qty % orderMultiple !== 0) {
+        setToastMessage(`Quantity must be a multiple of ${orderMultiple}.`);
+        return;
+      }
+    }
+    if (qty > stock) {
+      setToastMessage(`Cannot add kit: main product has only ${stock} units in stock.`);
+      return;
+    }
     // Add main product
     addToCart({
       id: productSlug,
@@ -187,7 +268,11 @@ export default function ProductDetail() {
       unit: productUnit,
       images: images,
       categoryTitle: categoryTitle,
-      priceTiers: tiers
+      priceTiers: tiers,
+      stock: stock,
+      minimumOrderQuantity,
+      orderMultiple,
+      minimumOrderUnit
     }, qty)
 
     // Add selected recommended products
@@ -237,12 +322,24 @@ export default function ProductDetail() {
     return 'building-materials'
   }
 
+  const { user } = useAuth()
+  const customerType = user?.customerType || (user?.role && ['Business', 'Contractor', 'Supplier'].includes(user.role) ? 'BUSINESS' : 'INDIVIDUAL');
+
   // Dynamic B2B details state
   const [productName, setProductName] = useState('Astral CPVC Pipe 1 Inch SDR 11')
+  const [brand, setBrand] = useState('ASTRAL')
   const [categoryTitle, setCategoryTitle] = useState('Plumbing')
   const [productRating, setProductRating] = useState('4.8')
   const [productDescription, setProductDescription] = useState('Astral CPVC PRO pipes and fittings are manufactured from a specialty plastic chemically known as Chlorinated Poly Vinyl Chloride (CPVC). This CPVC compound is designed for hot and cold water distribution systems. Easy installation with solvent cement, superior pressure rating, and long-term reliability in high-rise residential and commercial complexes.')
   
+  // B2B states
+  const [minimumOrderQuantity, setMinimumOrderQuantity] = useState<number>(1)
+  const [minimumOrderUnit, setMinimumOrderUnit] = useState<string>('Piece')
+  const [orderMultiple, setOrderMultiple] = useState<number>(1)
+  const [leadTimeDays, setLeadTimeDays] = useState<number>(3)
+  const [allowB2B, setAllowB2B] = useState<boolean>(true)
+  const [allowB2C, setAllowB2C] = useState<boolean>(true)
+
   const [images, setImages] = useState<string[]>([
     '/pdp_cpvc_pipe_main.png',
     '/pdp_cpvc_pipe_warehouse.png',
@@ -268,28 +365,57 @@ export default function ProductDetail() {
       })
       .then((data) => {
         if (data.name) setProductName(data.name)
+        if (data.brand) setBrand(data.brand)
         if (data.categoryTitle) setCategoryTitle(data.categoryTitle)
         if (data.rating) setProductRating(data.rating)
         if (data.description) setProductDescription(data.description)
         if (data.unit) setProductUnit(data.unit)
         if (data.images && data.images.length > 0) setImages(data.images);
         if (data.priceTiers && data.priceTiers.length > 0) {
-          const mappedTiers = data.priceTiers.map((t: any) => ({
-            ...t,
-            max: t.max === 999999 ? Infinity : t.max
-          }));
-          setTiers(mappedTiers);
+          const uniqueTiers: PriceTier[] = [];
+          data.priceTiers.forEach((t: any) => {
+            const isDup = uniqueTiers.some(
+              (ut) => ut.min === t.min && ut.max === (t.max === 999999 ? Infinity : t.max) && ut.price === t.price
+            );
+            if (!isDup) {
+              uniqueTiers.push({
+                min: t.min,
+                max: t.max === 999999 ? Infinity : t.max,
+                price: t.price,
+                save: t.save || 0
+              });
+            }
+          });
+          setTiers(uniqueTiers);
         }
         if (data.specifications) setSpecifications(data.specifications);
         if (data.recommendedAccessories && data.recommendedAccessories.length > 0) {
           setRecommendedProducts(data.recommendedAccessories);
         }
         if (data.reviews && data.reviews.length > 0) setReviews(data.reviews);
+        
+        const availableStock = data.inventory?.available !== undefined ? data.inventory.available : (data.stock !== undefined ? data.stock : 100);
+        setStock(availableStock);
+        if (data.status) setStatus(data.status);
+
+        const moq = data.minimumOrderQuantity !== undefined ? data.minimumOrderQuantity : 1;
+        setMinimumOrderQuantity(moq);
+        if (data.minimumOrderUnit) setMinimumOrderUnit(data.minimumOrderUnit);
+        if (data.orderMultiple !== undefined) setOrderMultiple(data.orderMultiple);
+        if (data.leadTimeDays !== undefined) setLeadTimeDays(data.leadTimeDays);
+        if (data.allowB2B !== undefined) setAllowB2B(data.allowB2B);
+        if (data.allowB2C !== undefined) setAllowB2C(data.allowB2C);
+
+        if (customerType === 'BUSINESS') {
+          setQty(moq);
+        } else {
+          setQty(1);
+        }
       })
       .catch((err) => {
         console.warn('Backend server offline or product not found. Using local static product fallback.', err);
       });
-  }, [productSlug]);
+  }, [productSlug, customerType]);
 
   // State for Everything You Need section
   const [selectedRecommendations, setSelectedRecommendations] = useState<Record<string, boolean>>({
@@ -391,21 +517,76 @@ export default function ProductDetail() {
 
   const handleQtyChange = (val: number) => {
     if (isNaN(val)) {
-      setQty(1);
+      setQty(customerType === 'BUSINESS' ? minimumOrderQuantity : 1);
       return;
     }
     const check = validateQuantity(val);
     if (!check.valid) {
       return;
     }
-    setQty(Math.max(1, Math.floor(val)));
+    
+    let targetVal = Math.floor(val);
+    if (customerType === 'BUSINESS') {
+      if (targetVal < minimumOrderQuantity) {
+        targetVal = minimumOrderQuantity;
+      }
+      if (orderMultiple > 1 && targetVal % orderMultiple !== 0) {
+        const remainder = targetVal % orderMultiple;
+        if (targetVal < qty) {
+          // Decreasing quantity, round down to previous multiple
+          targetVal = Math.max(minimumOrderQuantity, targetVal - remainder);
+        } else {
+          // Increasing quantity, round up to next multiple
+          targetVal = targetVal + (orderMultiple - remainder);
+        }
+      }
+    } else {
+      if (targetVal < 1) {
+        targetVal = 1;
+      }
+    }
+    setQty(targetVal);
   }
 
-  const handleRfqSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!rfqForm.email) return
-    setRfqSubmitted(true)
-  }
+  const handleRfqSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rfqForm.email) return;
+
+    try {
+      const token = localStorage.getItem('arcus_token');
+      const payload = {
+        name: 'Bulk Inquiry',
+        phone: '9999999999', // Default phone for product details page RFQ
+        category: categoryTitle,
+        quantity: String(rfqForm.qty || 1000),
+        location: 'Bengaluru', // Default location
+        timeline: 'Within 1 Week', // Default timeline
+        details: `Inquiry for product: ${productName}. Project Type: ${rfqForm.projectType}. Email: ${rfqForm.email}`,
+        title: `Inquiry for ${productName}`,
+        budget: undefined, // Optional
+        attachmentUrls: []
+      };
+
+      const res = await fetch('http://localhost:5000/api/rfq', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        setRfqSubmitted(true);
+      } else {
+        const errData = await res.json();
+        setToastMessage(errData.error || 'Failed to submit RFQ.');
+      }
+    } catch (err) {
+      console.error(err);
+      setToastMessage('Error submitting RFQ. Please try again.');
+    }
+  };
 
   return (
     <div className="w-full bg-background min-h-screen text-on-surface pt-lg pb-5xl">
@@ -444,12 +625,28 @@ export default function ProductDetail() {
                 +
               </button>
             </div>
-            <button 
-              onClick={handleAddToCart}
-              className="bg-primary-container text-on-primary-container px-xxl h-11 rounded-md font-bold hover:bg-[#fabd00] transition-all flex items-center gap-sm font-label-caps text-[14px]"
-            >
-              Add to Cart
-            </button>
+            {status === 'COMING_SOON' ? (
+              <button
+                onClick={() => {
+                  document.getElementById('enterprise-rfq-section')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="bg-primary text-on-primary hover:bg-[#fabd00] hover:text-on-primary-container px-xxl h-11 rounded-md font-bold transition-all flex items-center gap-sm font-label-caps text-[14px]"
+              >
+                Inquire
+              </button>
+            ) : (
+              <button 
+                onClick={handleAddToCart}
+                disabled={qty > stock || stock === 0 || status === 'OUT_OF_STOCK'}
+                className={`px-xxl h-11 rounded-md font-bold transition-all flex items-center gap-sm font-label-caps text-[14px] ${
+                  qty > stock || stock === 0 || status === 'OUT_OF_STOCK'
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-primary-container text-on-primary-container hover:bg-[#fabd00]'
+                }`}
+              >
+                Add to Cart
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -537,7 +734,7 @@ export default function ProductDetail() {
                 {productName}
               </h1>
               <div className="flex flex-wrap items-center gap-md mt-sm">
-                <span className="bg-surface-container text-on-surface font-black text-[11px] px-sm py-1 rounded">ASTRAL</span>
+                <span className="bg-surface-container text-on-surface font-black text-[11px] px-sm py-1 rounded">{brand.toUpperCase()}</span>
                 <div className="h-4 w-px bg-surface-variant"></div>
                 <div className="flex items-center gap-xs text-primary font-bold text-body-sm">
                   <span className="material-symbols-outlined text-[16px]">verified</span>
@@ -545,7 +742,7 @@ export default function ProductDetail() {
                 </div>
                 <div className="flex items-center gap-xs text-green-600 font-bold text-[12px] bg-green-50 px-sm py-1 rounded-full">
                   <span className="material-symbols-outlined text-[16px]">workspace_premium</span>
-                  <span>Best Seller in Pipes</span>
+                  <span>Best Seller in {categoryTitle}</span>
                 </div>
               </div>
             </div>
@@ -561,6 +758,77 @@ export default function ProductDetail() {
                   <span className="text-body-sm text-secondary">GST Included</span>
                 </div>
               </div>
+
+              {/* Real-time Inventory Status */}
+              <div className="flex items-center justify-between p-md bg-[#F8F9FA] rounded-md border border-[#E9ECEF]">
+                <div className="flex items-center gap-sm">
+                  <span 
+                    className="h-2.5 w-2.5 rounded-full animate-pulse" 
+                    style={{
+                      backgroundColor: status === 'COMING_SOON' ? '#3B82F6'
+                        : status === 'DISCONTINUED' ? '#6B7280'
+                        : status === 'OUT_OF_STOCK' || stock === 0 ? '#EF4444'
+                        : stock > 10 ? '#10B981'
+                        : '#F59E0B'
+                    }}
+                  ></span>
+                  <div>
+                    <p className="text-xs text-[#6C757D] font-bold uppercase tracking-wider">Inventory Status</p>
+                    <p className="text-body-sm font-extrabold text-[#0A0A0A]">
+                      {status === 'COMING_SOON' ? 'Coming Soon'
+                        : status === 'DISCONTINUED' ? 'Discontinued'
+                        : status === 'OUT_OF_STOCK' || stock === 0 ? 'Out of Stock'
+                        : stock > 10 ? `${stock} Units Available`
+                        : `Low Stock: Only ${stock} left`}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleSyncStock}
+                  disabled={syncingStock}
+                  className="flex items-center gap-xs text-xs text-primary font-bold hover:underline bg-[#FFC107]/10 py-xs px-sm rounded border border-[#FFC107]/20 disabled:opacity-50 transition-all cursor-pointer"
+                >
+                  {syncingStock ? (
+                    <svg className="animate-spin h-3.5 w-3.5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    <span className="material-symbols-outlined text-[14px]">sync</span>
+                  )}
+                  {syncingStock ? 'Syncing...' : 'Sync Live Stock'}
+                </button>
+              </div>
+
+              {/* B2B Specifications Info Panel */}
+              {customerType === 'BUSINESS' && (
+                <div className="bg-amber-50/50 p-lg rounded-md border border-amber-200/50 text-left space-y-md">
+                  <h4 className="font-bold text-amber-900 text-sm flex items-center gap-xs">
+                    <span className="material-symbols-outlined text-[18px]">business_center</span>
+                    Procurement Information
+                  </h4>
+                  <div className="grid grid-cols-2 gap-md text-xs font-semibold text-amber-800">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-amber-700/70 uppercase">Minimum Order Qty (MOQ)</span>
+                      <span className="text-body-sm font-extrabold">{minimumOrderQuantity} {minimumOrderUnit}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-amber-700/70 uppercase">Order Multiples</span>
+                      <span className="text-body-sm font-extrabold">{orderMultiple} {minimumOrderUnit}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-amber-700/70 uppercase">Standard Lead Time</span>
+                      <span className="text-body-sm font-extrabold">{leadTimeDays} Days</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-amber-700/70 uppercase">Allowed Segments</span>
+                      <span className="text-body-sm font-extrabold">
+                        {allowB2B && allowB2C ? 'B2B & B2C' : allowB2B ? 'B2B Only' : allowB2C ? 'B2C Only' : 'None'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Quantity Selector and Progress Tracker */}
               <div className="flex flex-col gap-lg bg-surface-container-low p-lg rounded-md border border-surface-variant">
@@ -664,22 +932,53 @@ export default function ProductDetail() {
                 </div>
 
                  {/* Conditional Actions */}
-                {qty < 1000 && (
-                  <div className="grid grid-cols-2 gap-md" id="standardActions">
-                    <button 
-                      onClick={handleAddToCart}
-                      className="bg-primary-container text-on-primary-container h-16 rounded-md font-bold hover:bg-[#fabd00] transition-colors flex items-center justify-center gap-sm font-label-caps text-[16px] shadow-sm"
-                    >
-                      <span className="material-symbols-outlined text-[22px]">shopping_cart</span> Add to Cart
-                    </button>
-                    <button 
-                      onClick={handleBuyNow}
-                      className="bg-[#121212] text-white h-16 rounded-md font-bold hover:bg-on-surface transition-colors font-label-caps text-[16px]"
-                    >
-                      Buy Now
-                    </button>
+                  <div className="flex flex-col gap-sm">
+                    {status === 'COMING_SOON' ? (
+                      <button
+                        onClick={() => {
+                          document.getElementById('enterprise-rfq-section')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="w-full h-16 bg-primary text-on-primary hover:bg-[#fabd00] hover:text-on-primary-container rounded-md font-bold transition-colors flex items-center justify-center gap-sm font-label-caps text-[16px] shadow-sm"
+                      >
+                        <span className="material-symbols-outlined text-[22px]">contact_support</span> Inquire
+                      </button>
+                    ) : (
+                      <>
+                        {qty > stock && (
+                          <div className="p-md bg-red-50 border border-red-200 text-red-800 rounded-md flex items-center gap-sm justify-center">
+                            <span className="material-symbols-outlined text-[20px] text-red-600">warning</span>
+                            <span className="text-[12px] font-bold">
+                              Requested quantity ({qty}) exceeds available vendor inventory ({stock}).
+                            </span>
+                          </div>
+                        )}
+                        <div className="grid grid-cols-2 gap-md" id="standardActions">
+                          <button 
+                            onClick={handleAddToCart}
+                            disabled={qty > stock || stock === 0 || status === 'OUT_OF_STOCK'}
+                            className={`h-16 rounded-md font-bold transition-colors flex items-center justify-center gap-sm font-label-caps text-[16px] shadow-sm ${
+                              qty > stock || stock === 0 || status === 'OUT_OF_STOCK'
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                : 'bg-primary-container text-on-primary-container hover:bg-[#fabd00]'
+                            }`}
+                          >
+                            <span className="material-symbols-outlined text-[22px]">shopping_cart</span> Add to Cart
+                          </button>
+                          <button 
+                            onClick={handleBuyNow}
+                            disabled={qty > stock || stock === 0 || status === 'OUT_OF_STOCK'}
+                            className={`h-16 rounded-md font-bold transition-colors font-label-caps text-[16px] ${
+                              qty > stock || stock === 0 || status === 'OUT_OF_STOCK'
+                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                : 'bg-[#121212] text-white hover:bg-on-surface'
+                            }`}
+                          >
+                            Buy Now
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
-                )}
 
                 {qty >= 500 && (
                   <div className="flex flex-col gap-md mt-sm" id="rfqActions">

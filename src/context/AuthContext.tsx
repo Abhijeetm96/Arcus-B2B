@@ -6,7 +6,7 @@ export interface User {
   email: string;
   phone: string;
   companyName?: string;
-  role: 'Buyer' | 'Contractor' | 'Supplier' | 'Individual' | 'Business' | 'Professional' | 'Admin';
+  role: 'USER' | 'Admin' | string;
   createdAt?: string;
   gstNumber?: string;
   serviceCategory?: string;
@@ -15,6 +15,9 @@ export interface User {
   state?: string;
   website?: string;
   portfolioUrl?: string;
+  buildPoints?: number;
+  customerType?: 'INDIVIDUAL' | 'BUSINESS' | 'PROFESSIONAL' | string;
+  adminRole?: string;
 }
 
 export interface AuthContextType {
@@ -27,7 +30,7 @@ export interface AuthContextType {
     phone: string;
     password?: string;
     companyName?: string;
-    role: 'Buyer' | 'Contractor' | 'Supplier' | 'Individual' | 'Business' | 'Professional' | 'Admin';
+    role: string;
     gstNumber?: string;
     serviceCategory?: string;
     experience?: string;
@@ -35,13 +38,41 @@ export interface AuthContextType {
     state?: string;
     website?: string;
     portfolioUrl?: string;
-  }) => Promise<{ success: boolean; error?: string; email?: string }>;
+  }) => Promise<{ success: boolean; error?: string; email?: string; token?: string; user?: User }>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Helper to normalize user role and customerType on client side
+const normalizeUser = (u: any): User | null => {
+  if (!u) return null;
+  
+  const rawRole = (u.role || '').toUpperCase();
+  const normalizedRole = (rawRole === 'ADMIN' || rawRole === 'SUPER_ADMIN') ? 'Admin' : 'USER';
+  
+  let customerType = u.customerType || '';
+  if (!customerType) {
+    if (['INDIVIDUAL', 'BUYER', 'USER'].includes(rawRole)) {
+      customerType = 'INDIVIDUAL';
+    } else if (['BUSINESS', 'CONTRACTOR', 'SUPPLIER'].includes(rawRole)) {
+      customerType = 'BUSINESS';
+    } else if (['PROFESSIONAL'].includes(rawRole)) {
+      customerType = 'PROFESSIONAL';
+    } else {
+      customerType = 'INDIVIDUAL';
+    }
+  } else {
+    customerType = customerType.toUpperCase();
+  }
+
+  return {
+    ...u,
+    role: normalizedRole,
+    customerType,
+  };
+};
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -60,7 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
           if (res.ok) {
             const data = await res.json();
-            setUser(data);
+            setUser(normalizeUser(data));
           } else {
             // Token expired or invalid
             localStorage.removeItem('arcus_token');
@@ -93,7 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, error: 'email_not_verified', email: data.email };
       }
       localStorage.setItem('arcus_token', data.token);
-      setUser(data.user);
+      setUser(normalizeUser(data.user));
       return { success: true };
     } catch (err) {
       return { success: false, error: 'Network error. Please try again.' };
@@ -113,7 +144,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!res.ok) {
         return { success: false, error: data.error || 'Registration failed' };
       }
-      return { success: true, email: data.email };
+      if (data.token) {
+        localStorage.setItem('arcus_token', data.token);
+        setUser(normalizeUser(data.user));
+      }
+      return { success: true, email: data.email, token: data.token, user: normalizeUser(data.user) || undefined };
     } catch (err) {
       return { success: false, error: 'Network error. Please try again.' };
     }
@@ -130,7 +165,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
         if (res.ok) {
           const data = await res.json();
-          setUser(data);
+          setUser(normalizeUser(data));
         }
       } catch (err) {
         console.error('Failed to refresh user:', err);

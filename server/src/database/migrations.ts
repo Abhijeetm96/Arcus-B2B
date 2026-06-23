@@ -66,79 +66,9 @@ export async function runMigrations(pgPool: Pool): Promise<void> {
       ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE,
       ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
       ADD COLUMN IF NOT EXISTS customer_type VARCHAR(50) DEFAULT 'INDIVIDUAL',
-      ADD COLUMN IF NOT EXISTS build_points INTEGER DEFAULT 0,
       ADD COLUMN IF NOT EXISTS admin_role VARCHAR(100) DEFAULT 'SUPER_ADMIN';
   `);
 
-  // Run queries to check/add columns to the users table for B2B/B2C/Professional fields
-  const checkUserCols = await pgPool.query(`
-    SELECT column_name 
-    FROM information_schema.columns 
-    WHERE table_name='users' AND column_name='gst_number'
-  `);
-  if (checkUserCols.rows.length === 0) {
-    console.log('🔄 Altering users table to add new B2B/B2C/Professional columns...');
-    await pgPool.query(`
-      ALTER TABLE users 
-        ADD COLUMN gst_number VARCHAR(50),
-        ADD COLUMN service_category VARCHAR(100),
-        ADD COLUMN experience VARCHAR(50),
-        ADD COLUMN city VARCHAR(100),
-        ADD COLUMN state VARCHAR(100),
-        ADD COLUMN website VARCHAR(150),
-        ADD COLUMN portfolio_url VARCHAR(150);
-    `);
-  }
-
-  // Run queries to check/add columns to the products table for backward compatibility
-  const checkColsRes = await pgPool.query(`
-    SELECT column_name 
-    FROM information_schema.columns 
-    WHERE table_name='products' AND column_name='description'
-  `);
-  if (checkColsRes.rows.length === 0) {
-    console.log('🔄 Altering products table to add detailed B2B columns...');
-    await pgPool.query(`
-      ALTER TABLE products 
-        ADD COLUMN description TEXT,
-        ADD COLUMN images JSONB DEFAULT '[]'::jsonb,
-        ADD COLUMN price_tiers JSONB DEFAULT '[]'::jsonb,
-        ADD COLUMN specifications JSONB DEFAULT '{}'::jsonb,
-        ADD COLUMN recommended_accessories JSONB DEFAULT '[]'::jsonb,
-        ADD COLUMN reviews JSONB DEFAULT '[]'::jsonb;
-    `);
-  }
-
-  // Check subcategory columns
-  const checkSubColsRes = await pgPool.query(`
-    SELECT column_name 
-    FROM information_schema.columns 
-    WHERE table_name='products' AND column_name='subcategory_slug'
-  `);
-  if (checkSubColsRes.rows.length === 0) {
-    console.log('🔄 Altering products table to add subcategory columns...');
-    await pgPool.query(`
-      ALTER TABLE products 
-        ADD COLUMN subcategory_slug VARCHAR(100),
-        ADD COLUMN leaf_slug VARCHAR(100);
-    `);
-  }
-
-  // Check stock column
-  const checkStockColRes = await pgPool.query(`
-    SELECT column_name 
-    FROM information_schema.columns 
-    WHERE table_name='products' AND column_name='stock'
-  `);
-  if (checkStockColRes.rows.length === 0) {
-    console.log('🔄 Altering products table to add stock column...');
-    await pgPool.query(`
-      ALTER TABLE products 
-        ADD COLUMN stock INTEGER DEFAULT 100;
-    `);
-  }
-
-  // Alter columns to support new features
   await pgPool.query(`
     ALTER TABLE rfqs 
       ADD COLUMN IF NOT EXISTS buyer_id VARCHAR(50),
@@ -146,29 +76,6 @@ export async function runMigrations(pgPool: Pool): Promise<void> {
       ADD COLUMN IF NOT EXISTS title VARCHAR(255),
       ADD COLUMN IF NOT EXISTS budget VARCHAR(100),
       ADD COLUMN IF NOT EXISTS attachment_urls JSONB DEFAULT '[]'::jsonb;
-
-    ALTER TABLE products 
-      ADD COLUMN IF NOT EXISTS minimum_order_unit VARCHAR(50) DEFAULT 'Piece',
-      ADD COLUMN IF NOT EXISTS order_multiple INTEGER DEFAULT 1,
-      ADD COLUMN IF NOT EXISTS allow_b2b BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS allow_b2c BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS minimum_order_quantity INTEGER DEFAULT 1,
-      ADD COLUMN IF NOT EXISTS product_id VARCHAR(100),
-      ADD COLUMN IF NOT EXISTS sku VARCHAR(100),
-      ADD COLUMN IF NOT EXISTS brand VARCHAR(100),
-      ADD COLUMN IF NOT EXISTS model VARCHAR(100),
-      ADD COLUMN IF NOT EXISTS unit_of_measure VARCHAR(50),
-      ADD COLUMN IF NOT EXISTS hsn_code VARCHAR(50),
-      ADD COLUMN IF NOT EXISTS gst_rate NUMERIC(5,2),
-      ADD COLUMN IF NOT EXISTS inventory_available INTEGER DEFAULT 100,
-      ADD COLUMN IF NOT EXISTS inventory_reserved INTEGER DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS inventory_reorder_level INTEGER DEFAULT 10,
-      ADD COLUMN IF NOT EXISTS lead_time_days INTEGER DEFAULT 3,
-      ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'ACTIVE',
-      ADD COLUMN IF NOT EXISTS category_id VARCHAR(50),
-      ADD COLUMN IF NOT EXISTS procurement_price NUMERIC(12,2),
-      ADD COLUMN IF NOT EXISTS vendor_name VARCHAR(100),
-      ADD COLUMN IF NOT EXISTS vendor_product_code VARCHAR(100);
   `);
 
   // Validation & data integrity constraints
@@ -183,34 +90,15 @@ export async function runMigrations(pgPool: Pool): Promise<void> {
       END IF;
     END $$;
 
-    -- Unique GST number for users (partial index: only non-null, non-empty)
-    CREATE UNIQUE INDEX IF NOT EXISTS users_gst_unique
-      ON users (UPPER(gst_number))
-      WHERE gst_number IS NOT NULL AND gst_number != '';
-
     -- Unique slug for products (on products table!)
     CREATE UNIQUE INDEX IF NOT EXISTS products_link_unique
       ON products (link)
       WHERE link IS NOT NULL AND link != '';
 
-    -- Stock check constraint (non-negative)
-    DO $$ BEGIN
-      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'products_stock_check') THEN
-        ALTER TABLE products ADD CONSTRAINT products_stock_check CHECK (stock >= 0);
-      END IF;
-    END $$;
-
     -- Rating check constraint (between 0 and 5)
     DO $$ BEGIN
       IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'products_rating_check') THEN
         ALTER TABLE products ADD CONSTRAINT products_rating_check CHECK (rating::numeric >= 0.0 AND rating::numeric <= 5.0);
-      END IF;
-    END $$;
-
-    -- Price check constraint (starts with ₹)
-    DO $$ BEGIN
-      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'products_price_check') THEN
-        ALTER TABLE products ADD CONSTRAINT products_price_check CHECK (price LIKE '₹%');
       END IF;
     END $$;
   `);
@@ -434,6 +322,21 @@ export async function runMigrations(pgPool: Pool): Promise<void> {
   `);
 
   // 3. Create indexes
+  // Clean up duplicates if they exist to prevent unique index creation failures
+  await pgPool.query(`
+    DELETE FROM buildpoints_ledger a USING buildpoints_ledger b
+    WHERE a.id > b.id 
+      AND a.wallet_user_id = b.wallet_user_id 
+      AND a.reference_type = b.reference_type 
+      AND COALESCE(a.reference_id, '') = COALESCE(b.reference_id, '')
+      AND a.transaction_type = b.transaction_type;
+
+    DELETE FROM order_items a USING order_items b
+    WHERE a.id > b.id 
+      AND a.order_id = b.order_id 
+      AND a.variant_id = b.variant_id;
+  `);
+
   await pgPool.query(`
     CREATE INDEX IF NOT EXISTS idx_addresses_user ON user_addresses(user_id);
     CREATE INDEX IF NOT EXISTS idx_variants_product ON product_variants(product_id);
@@ -446,89 +349,17 @@ export async function runMigrations(pgPool: Pool): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_points_ledger_wallet ON buildpoints_ledger(wallet_user_id);
     CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
     CREATE INDEX IF NOT EXISTS idx_order_items_variant ON order_items(variant_id);
+    
+    -- Enforce uniqueness constraints
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_ledger_uniqueness 
+    ON buildpoints_ledger(wallet_user_id, reference_type, reference_id, transaction_type);
+    
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_order_items_uniqueness 
+    ON order_items(order_id, variant_id);
+
+    CREATE UNIQUE INDEX IF NOT EXISTS business_profiles_gst_unique 
+    ON business_profiles(UPPER(gst_number));
   `);
 
-  // 4. Perform data extraction & migration scripts
-  console.log('🌱 Performing data migrations to new tables...');
-
-  await pgPool.query(`
-    -- individual_profiles
-    INSERT INTO individual_profiles (user_id, full_name, alternate_phone)
-    SELECT id, COALESCE(full_name, name), phone_number FROM users
-    ON CONFLICT (user_id) DO NOTHING;
-
-    -- business_profiles
-    INSERT INTO business_profiles (user_id, company_name, gst_number)
-    SELECT id, company_name, gst_number 
-    FROM users 
-    WHERE customer_type = 'BUSINESS' OR role IN ('Business', 'Supplier', 'Contractor')
-    ON CONFLICT (user_id) DO NOTHING;
-
-    -- professional_profiles
-    INSERT INTO professional_profiles (user_id, service_category, experience_years, city, state, website_url, portfolio_url)
-    SELECT 
-        id, 
-        COALESCE(service_category, 'General'), 
-        COALESCE(NULLIF(regexp_replace(experience, '\\D', '', 'g'), '')::integer, 0), 
-        COALESCE(city, 'Unknown'), 
-        COALESCE(state, 'Unknown'), 
-        website, 
-        portfolio_url
-    FROM users 
-    WHERE customer_type = 'PROFESSIONAL' OR role = 'Professional'
-    ON CONFLICT (user_id) DO NOTHING;
-
-    -- buildpoints_wallets & ledger initial seed
-    INSERT INTO buildpoints_wallets (user_id, balance, lifetime_points_accumulated)
-    SELECT id, COALESCE(build_points, 0), COALESCE(build_points, 0)
-    FROM users
-    ON CONFLICT (user_id) DO NOTHING;
-
-    INSERT INTO buildpoints_ledger (wallet_user_id, points, transaction_type, reference_type, description)
-    SELECT id, COALESCE(build_points, 0), 'EARNED', 'ADMIN', 'Initial balance migration seed'
-    FROM users
-    WHERE COALESCE(build_points, 0) > 0
-    ON CONFLICT DO NOTHING;
-
-    -- product_variants
-    INSERT INTO product_variants (id, product_id, sku, name, attributes, price, unit_of_measure, minimum_order_quantity, order_multiple, status)
-    SELECT 
-        id, 
-        id, 
-        COALESCE(sku, 'SKU-' || UPPER(id)), 
-        name, 
-        specifications, 
-        COALESCE(NULLIF(regexp_replace(price, '[^\\d.]', '', 'g'), '')::numeric, 0.00),
-        COALESCE(unit_of_measure, TRIM(REPLACE(unit, '/', '')), 'Piece'), 
-        COALESCE(minimum_order_quantity, 1), 
-        COALESCE(order_multiple, 1), 
-        COALESCE(NULLIF(status, ''), 'ACTIVE')::product_status_enum
-    FROM products
-    ON CONFLICT (id) DO NOTHING;
-
-    -- inventory
-    INSERT INTO inventory (variant_id, available_stock, reserved_stock, reorder_level)
-    SELECT 
-        id, 
-        COALESCE(inventory_available, stock, 100), 
-        COALESCE(inventory_reserved, 0), 
-        COALESCE(inventory_reorder_level, 10)
-    FROM products
-    ON CONFLICT (variant_id) DO NOTHING;
-
-    -- product_price_tiers
-    INSERT INTO product_price_tiers (variant_id, min_quantity, max_quantity, price, discount_percentage)
-    SELECT 
-        p.id,
-        (tier->>'min')::integer,
-        (tier->>'max')::integer,
-        (tier->>'price')::numeric,
-        (tier->>'save')::numeric
-    FROM products p,
-    LATERAL jsonb_array_elements(p.price_tiers) AS tier
-    ON CONFLICT DO NOTHING;
-  `);
-
-  console.log('✅ ARCUS normalized database redesign migrations applied.');
   console.log('✅ Database migrations applied successfully.');
 }

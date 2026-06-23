@@ -12,6 +12,8 @@ export default function RfqForm() {
     details: '',
     name: '',
     phone: '',
+    title: '',
+    budget: '',
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,9 +35,13 @@ export default function RfqForm() {
     }
 
     try {
+      const token = localStorage.getItem('arcus_token');
       const response = await fetch('/api/rfq', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify(formData),
       })
       if (!response.ok) {
@@ -204,6 +210,34 @@ export default function RfqForm() {
                       <option value="Within 1 Month">Within 1 Month</option>
                       <option value="Planning Phase">Planning Phase</option>
                     </select>
+                  </div>
+                  <div className="flex flex-col gap-xs md:col-span-2">
+                    <label className="font-label-caps text-[10px] text-secondary">
+                      Requirement Title (Optional)
+                    </label>
+                    <input
+                      value={formData.title}
+                      onChange={(e) =>
+                        setFormData({ ...formData, title: e.target.value })
+                      }
+                      className="w-full rounded-md border border-surface-variant bg-white focus:border-2 focus:border-primary-container focus:ring-0 text-body-sm text-on-surface placeholder:text-gray-400"
+                      placeholder="e.g. Cement Procurement for Phase 1"
+                      type="text"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-xs md:col-span-2">
+                    <label className="font-label-caps text-[10px] text-secondary">
+                      Estimated Budget (INR, Optional)
+                    </label>
+                    <input
+                      value={formData.budget}
+                      onChange={(e) =>
+                        setFormData({ ...formData, budget: e.target.value })
+                      }
+                      className="w-full rounded-md border border-surface-variant bg-white focus:border-2 focus:border-primary-container focus:ring-0 text-body-sm text-on-surface placeholder:text-gray-400"
+                      placeholder="e.g. 500000"
+                      type="text"
+                    />
                   </div>
                   <div className="flex flex-col gap-xs md:col-span-2">
                     <label className="font-label-caps text-[10px] text-secondary">

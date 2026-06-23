@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const DB_FILE = path.join(__dirname, '..', 'server', 'data', 'db.json');
-const TS_FILE = path.join(__dirname, '..', 'server', 'src', 'db.ts');
+const TS_FILE = path.join(__dirname, '..', 'server', 'src', 'seed', 'products.ts');
 
 // Load existing db.json
 const db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
@@ -2485,19 +2485,171 @@ const productsData = [
     ],
     subcategorySlug: "plywood-laminates",
     leafSlug: "decorative-laminates"
+  },
+  {
+    id: "astral-elbow-90",
+    categoryTitle: "Plumbing",
+    name: "Astral CPVC Elbow 90°",
+    price: "₹35",
+    unit: "/ Piece",
+    rating: "4.7",
+    icon: "plumbing",
+    link: "#/product/astral-elbow-90",
+    description: "Astral CPVC PRO 90-degree elbow fittings are designed for direction changes in plumbing systems. Made from premium lead-free CPVC compound, offering high pressure rating and temperature resistance.",
+    images: ["/pdp_cpvc_elbow.png"],
+    priceTiers: [
+      { min: 1, max: 100, price: 35, save: 0 },
+      { min: 101, max: 500, price: 32, save: 8 },
+      { min: 501, max: 999999, price: 29, save: 17 }
+    ],
+    specifications: {
+      "Material": "CPVC (Chlorinated Poly Vinyl Chloride)",
+      "Angle": "90 Degrees",
+      "Size": "1 Inch (25mm)",
+      "Standard": "ASTM D2846",
+      "Color": "Tan/Off-White",
+      "Manufacturer": "Astral Poly Technik Limited"
+    },
+    recommendedAccessories: [],
+    reviews: [
+      { initials: "RK", name: "Ramesh K.", role: "Plumber", rating: 5, date: "1 week ago", comment: "\"Fits perfectly with Astral CPVC pipes. Zero leaks.\"" }
+    ],
+    subcategorySlug: "pipes-fittings",
+    leafSlug: "pipe-fittings"
+  },
+  {
+    id: "astral-ball-valve",
+    categoryTitle: "Plumbing",
+    name: "Astral CPVC Ball Valve",
+    price: "₹150",
+    unit: "/ Piece",
+    rating: "4.8",
+    icon: "plumbing",
+    link: "#/product/astral-ball-valve",
+    description: "Astral CPVC ball valve designed for flow regulation in residential and commercial plumbing systems. Solvent weld sockets ensure high leak resistance.",
+    images: ["/pdp_cpvc_pipe_warehouse.png"],
+    priceTiers: [
+      { min: 1, max: 20, price: 150, save: 0 },
+      { min: 21, max: 100, price: 140, save: 6 },
+      { min: 101, max: 999999, price: 130, save: 13 }
+    ],
+    specifications: {
+      "Material": "CPVC",
+      "Size": "1 Inch (25mm)",
+      "Connection": "Solvent Weld",
+      "Max Pressure": "15 Bar",
+      "Manufacturer": "Astral Poly Technik Limited"
+    },
+    recommendedAccessories: [],
+    reviews: [
+      { initials: "AJ", name: "Ajay J.", role: "Contractor", rating: 5, date: "2 weeks ago", comment: "\"Handles pressure shifts very well. Lever turns smoothly.\"" }
+    ],
+    subcategorySlug: "valves",
+    leafSlug: "ball-valves"
+  },
+  {
+    id: "supreme-pvc-pipe-4",
+    categoryTitle: "Plumbing",
+    name: "Supreme PVC Pipe 4\"",
+    price: "₹450",
+    unit: "/ Piece",
+    rating: "4.6",
+    icon: "plumbing",
+    link: "#/product/supreme-pvc-pipe-4",
+    description: "Supreme lead-free uPVC pipe 4-inch diameter for drainage, soil, waste, and rainwater harvesting applications. Exceptional flow characteristics and high mechanical strength.",
+    images: ["/pdp_cpvc_pipe_install.png"],
+    priceTiers: [
+      { min: 1, max: 20, price: 450, save: 0 },
+      { min: 21, max: 100, price: 420, save: 6 },
+      { min: 101, max: 999999, price: 395, save: 12 }
+    ],
+    specifications: {
+      "Material": "uPVC",
+      "Size": "4 Inch (110mm)",
+      "Length": "6 Meters",
+      "Standard": "IS 4985",
+      "Manufacturer": "Supreme Industries Limited"
+    },
+    recommendedAccessories: [],
+    reviews: [
+      { initials: "KK", name: "Kiran K.", role: "Site Supervisor", rating: 5, date: "3 weeks ago", comment: "\"Highly durable PVC pipe, doesn't warp under sun exposure.\"" }
+    ],
+    subcategorySlug: "pipes-fittings",
+    leafSlug: "pvc-pipes"
+  },
+  {
+    id: "jaquar-shower-head",
+    categoryTitle: "Plumbing",
+    name: "Jaquar Overhead Shower",
+    price: "₹1,850",
+    unit: "/ Unit",
+    rating: "4.8",
+    icon: "plumbing",
+    link: "#/product/jaquar-shower-head",
+    description: "Jaquar premium multi-flow overhead rain shower head with rub-clean silicone nozzles to prevent lime scale buildup. Beautiful chrome finish with high-gloss mirror effect.",
+    images: ["/services_bathroom_renovation.png"],
+    priceTiers: [
+      { min: 1, max: 10, price: 1850, save: 0 },
+      { min: 11, max: 50, price: 1720, save: 7 },
+      { min: 51, max: 999999, price: 1600, save: 13 }
+    ],
+    specifications: {
+      "Brand": "Jaquar",
+      "Finish": "Chrome Plated",
+      "Material": "Brass",
+      "Nozzles": "Anti-clogging Silicone",
+      "Manufacturer": "Jaquar Group"
+    },
+    recommendedAccessories: [],
+    reviews: [
+      { initials: "AP", name: "Anil P.", role: "Architect", rating: 5, date: "2 weeks ago", comment: "\"Looks incredibly premium. Rain flow pattern is very satisfying.\"" }
+    ],
+    subcategorySlug: "bathroom-fittings",
+    leafSlug: "showers-mixers"
+  },
+  {
+    id: "finolex-cable-3core",
+    categoryTitle: "Electrical",
+    name: "Finolex 3 Core Cable",
+    price: "₹3,200",
+    unit: "/ Coil",
+    rating: "4.7",
+    icon: "bolt",
+    link: "#/product/finolex-cable-3core",
+    description: "Finolex 3-core heavy-duty round flexible industrial copper cable, insulated and sheathed with flame-retardant PVC compound. Designed for submersible pumps and industrial applications.",
+    images: ["/services_washing_machine.png"],
+    priceTiers: [
+      { min: 1, max: 10, price: 3200, save: 0 },
+      { min: 11, max: 50, price: 3000, save: 6 },
+      { min: 51, max: 999999, price: 2800, save: 12 }
+    ],
+    specifications: {
+      "Conductor": "Copper",
+      "Cores": "3 Core",
+      "Size": "2.5 sq mm",
+      "Length": "100 Meters",
+      "Voltage Rating": "1100V",
+      "Manufacturer": "Finolex Cables Ltd."
+    },
+    recommendedAccessories: [],
+    reviews: [
+      { initials: "MD", name: "Mohit D.", role: "Electrical Contractor", rating: 5, date: "1 week ago", comment: "\"Very high load carrying capacity. Sheathing is durable.\"" }
+    ],
+    subcategorySlug: "wires-cables",
+    leafSlug: "flexible-cables"
   }
 ];
 
-// Verify we have exactly 81 products
-if (productsData.length !== 81) {
-  console.error('ERROR: Total generated products count is', productsData.length, 'expected exactly 81.');
+// Verify we have exactly 86 products
+if (productsData.length !== 86) {
+  console.error('ERROR: Total generated products count is', productsData.length, 'expected exactly 86.');
   process.exit(1);
 }
 
 // 1. Write to db.json
 db.products = productsData;
 fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), 'utf8');
-console.log('✅ Successfully wrote 81 products to db.json.');
+console.log('✅ Successfully wrote 86 products to db.json.');
 
 // 2. Generate TypeScript array code for db.ts
 // Formats specifications and priceTiers nicely in JS representation
@@ -2521,30 +2673,9 @@ const serializeProduct = (p) => {
   }`;
 };
 
-const tsArrayCode = `const defaultProducts: Product[] = [\n${productsData.map(serializeProduct).join(',\n')}\n];`;
+const tsArrayCode = `export const defaultProducts: any[] = [\n${productsData.map(serializeProduct).join(',\n')}\n];`;
 
-// Read db.ts
-let dbTsCode = fs.readFileSync(TS_FILE, 'utf8');
-
-// Locate defaultProducts block
-const startMarker = 'const defaultProducts: Product[] = [';
-const endMarker = 'let pgPool: Pool | null = null;';
-
-const startIndex = dbTsCode.indexOf(startMarker);
-const endIndex = dbTsCode.indexOf(endMarker);
-
-if (startIndex === -1 || endIndex === -1) {
-  console.error('ERROR: Could not find defaultProducts block markers in db.ts');
-  process.exit(1);
-}
-
-// Replace the block (including the trailing ]; but keeping let pgPool...)
-const preCode = dbTsCode.substring(0, startIndex);
-const postCode = dbTsCode.substring(endIndex);
-
-const updatedDbTsCode = preCode + tsArrayCode + '\n\n' + postCode;
-
-// Write back to db.ts
-fs.writeFileSync(TS_FILE, updatedDbTsCode, 'utf8');
-console.log('✅ Successfully updated defaultProducts array (81 products) in db.ts.');
-console.log('🎉 Total products populated: 81 products (3 per each of the 27 subcategories).');
+// Write back to products.ts
+fs.writeFileSync(TS_FILE, tsArrayCode + '\n', 'utf8');
+console.log('✅ Successfully updated defaultProducts array (86 products) in products.ts.');
+console.log('🎉 Total products populated: 86 products (including the 5 brand hub mock products).');

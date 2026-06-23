@@ -23,6 +23,24 @@ dist-ssr
 *.sln
 *.sw?
 
-
 # Audit logs
 audit/
+
+# Environment variables (secrets)
+.env
+.env.*
+!.env.example
+
+# Local database file
+server/data/db.json
+
+# Lock files (environment-specific)
+package-lock.json
+server/package-lock.json
+
+# Diagnostic / scratch scripts
+server/check_*.js
+server/query_*.js
+server/test_*.js
+server/fetch_*.js
+server/verify_*.js

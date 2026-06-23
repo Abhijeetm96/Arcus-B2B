@@ -439,20 +439,33 @@ async function initDb() {
           id VARCHAR(50) PRIMARY KEY,
           category_title VARCHAR(100) NOT NULL,
           name VARCHAR(100) NOT NULL,
-          price VARCHAR(50) NOT NULL,
           unit VARCHAR(50) NOT NULL,
           rating VARCHAR(10) NOT NULL,
           icon VARCHAR(50) NOT NULL,
           link VARCHAR(150),
           description TEXT,
-          images JSONB,
-          price_tiers JSONB,
           specifications JSONB,
           recommended_accessories JSONB,
-          reviews JSONB,
           subcategory_slug VARCHAR(100),
           leaf_slug VARCHAR(100),
-          stock INTEGER DEFAULT 100
+          minimum_order_unit VARCHAR(50) DEFAULT 'Piece',
+          order_multiple INTEGER DEFAULT 1,
+          allow_b2b BOOLEAN DEFAULT TRUE,
+          allow_b2c BOOLEAN DEFAULT TRUE,
+          minimum_order_quantity INTEGER DEFAULT 1,
+          product_id VARCHAR(100),
+          sku VARCHAR(100),
+          brand VARCHAR(100),
+          model VARCHAR(100),
+          unit_of_measure VARCHAR(50),
+          hsn_code VARCHAR(50),
+          gst_rate NUMERIC(5,2),
+          lead_time_days INTEGER DEFAULT 3,
+          status VARCHAR(50) DEFAULT 'ACTIVE',
+          category_id VARCHAR(50),
+          procurement_price NUMERIC(12,2),
+          vendor_name VARCHAR(100),
+          vendor_product_code VARCHAR(100)
         );
 
         CREATE TABLE IF NOT EXISTS users (
@@ -466,16 +479,10 @@ async function initDb() {
           phone_number VARCHAR(50),
           password_hash VARCHAR(256) NOT NULL,
           password_salt VARCHAR(256) NOT NULL,
-          company_name VARCHAR(150),
           role VARCHAR(50) NOT NULL,
           email_verified BOOLEAN DEFAULT FALSE,
-          gst_number VARCHAR(50),
-          service_category VARCHAR(100),
-          experience VARCHAR(50),
-          city VARCHAR(100),
-          state VARCHAR(100),
-          website VARCHAR(150),
-          portfolio_url VARCHAR(150)
+          customer_type VARCHAR(50) DEFAULT 'INDIVIDUAL',
+          admin_role VARCHAR(100) DEFAULT 'SUPER_ADMIN'
         );
 
         CREATE TABLE IF NOT EXISTS orders (
@@ -486,11 +493,9 @@ async function initDb() {
           products TEXT NOT NULL,
           status VARCHAR(50) NOT NULL,
           amount VARCHAR(50) NOT NULL,
-          items JSONB NOT NULL,
-          shipping_address TEXT NOT NULL,
-          billing_address TEXT NOT NULL,
           gst_number VARCHAR(50),
-          payment_method VARCHAR(50) NOT NULL
+          payment_method VARCHAR(50) NOT NULL,
+          points_earned INTEGER DEFAULT 0
         );
 
         CREATE TABLE IF NOT EXISTS otps (
@@ -589,32 +594,26 @@ async function initDb() {
           const p = normalizeProductForSeeding(rawProd, i);
           await pgPool.query(`
             INSERT INTO products (
-              id, category_title, name, price, unit, rating, icon, link, description, 
-              images, price_tiers, specifications, recommended_accessories, reviews, 
-              subcategory_slug, leaf_slug, stock, minimum_order_unit, order_multiple, 
-              allow_b2b, allow_b2c, minimum_order_quantity, product_id, sku, brand, model, 
-              unit_of_measure, hsn_code, gst_rate, inventory_available, inventory_reserved, 
-              inventory_reorder_level, lead_time_days, status, category_id
+              id, category_title, name, unit, rating, icon, link, description, 
+              specifications, recommended_accessories, subcategory_slug, leaf_slug,
+              minimum_order_unit, order_multiple, allow_b2b, allow_b2c, minimum_order_quantity,
+              product_id, sku, brand, model, unit_of_measure, hsn_code, gst_rate, 
+              lead_time_days, status, category_id
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27)
           `, [
             p.id,
             p.categoryTitle || p.categoryId,
             p.name,
-            `₹${p.price}`,
             p.unit || `/ ${p.unitOfMeasure}`,
             p.rating || '4.5',
             p.icon || 'inventory_2',
             p.link || null,
             p.description || null,
-            JSON.stringify(p.images || []),
-            JSON.stringify(p.priceTiers || []),
             JSON.stringify(p.specifications || {}),
             JSON.stringify(p.recommendedAccessories || []),
-            JSON.stringify(p.reviews || []),
             p.subcategorySlug || null,
             p.leafSlug || null,
-            p.inventory.available,
             p.minimumOrderUnit,
             p.orderMultiple,
             p.allowB2B,
@@ -627,13 +626,58 @@ async function initDb() {
             p.unitOfMeasure,
             p.hsnCode || null,
             p.gstRate,
-            p.inventory.available,
-            p.inventory.reserved,
-            p.inventory.reorderLevel,
             p.leadTimeDays,
             p.status,
             p.categoryId
           ]);
+
+          // Seed product_variants directly
+          const sku = p.sku || `SKU-${p.id.toUpperCase()}`;
+          const price = p.price;
+          const status = p.status || 'ACTIVE';
+          await pgPool.query(`
+            INSERT INTO product_variants (id, product_id, sku, name, attributes, price, unit_of_measure, minimum_order_quantity, order_multiple, status)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            ON CONFLICT (id) DO NOTHING
+          `, [p.id, p.id, sku, p.name, JSON.stringify(p.specifications || {}), price, p.unitOfMeasure || 'Piece', p.minimumOrderQuantity, p.orderMultiple, status]);
+
+          // Seed inventory directly
+          const available = p.inventory?.available !== undefined ? p.inventory.available : 100;
+          await pgPool.query(`
+            INSERT INTO inventory (variant_id, available_stock, reserved_stock, reorder_level)
+            VALUES ($1, $2, 0, 10)
+            ON CONFLICT (variant_id) DO NOTHING
+          `, [p.id, available]);
+
+          // Seed price tiers directly
+          if (p.priceTiers && p.priceTiers.length > 0) {
+            for (const tier of p.priceTiers) {
+              await pgPool.query(`
+                INSERT INTO product_price_tiers (variant_id, min_quantity, max_quantity, price, discount_percentage)
+                VALUES ($1, $2, $3, $4, $5)
+              `, [p.id, tier.min, tier.max, tier.price, tier.save || 0]);
+            }
+          }
+
+          // Seed images directly
+          if (p.images && p.images.length > 0) {
+            for (let imgIdx = 0; imgIdx < p.images.length; imgIdx++) {
+              await pgPool.query(`
+                INSERT INTO product_images (product_id, image_url, display_order, is_primary)
+                VALUES ($1, $2, $3, $4)
+              `, [p.id, p.images[imgIdx], imgIdx, imgIdx === 0]);
+            }
+          }
+
+          // Seed reviews directly
+          if (p.reviews && p.reviews.length > 0) {
+            for (const r of p.reviews) {
+              await pgPool.query(`
+                INSERT INTO product_reviews (product_id, reviewer_name, reviewer_role, rating, comment, is_verified_purchase, status)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)
+              `, [p.id, r.reviewerName || 'Anonymous', r.reviewerRole || 'Customer', r.rating || 5, r.comment || '', r.isVerifiedPurchase || false, r.status || 'APPROVED']);
+            }
+          }
         }
         console.log(`✅ Seeded ${defaultProducts.length} products successfully.`);
       }

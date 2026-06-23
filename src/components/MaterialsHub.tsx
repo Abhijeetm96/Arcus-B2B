@@ -410,6 +410,14 @@ interface MaterialsHubProps {
   leafSlug?: string
 }
 
+const getNumericPrice = (price: any): number => {
+  if (typeof price === 'number') return price;
+  if (typeof price === 'string') {
+    return parseInt(price.replace(/[^0-9]/g, ''), 10) || 0;
+  }
+  return 0;
+};
+
 export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }: MaterialsHubProps) {
   const [activeTab, setActiveTab] = useState<'Cement' | 'Steel' | 'Plumbing' | 'Electrical' | 'Paints' | 'Tiles' | 'Hardware' | 'Building'>('Cement')
   const [products, setProducts] = useState<any[]>([])
@@ -419,6 +427,8 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
   const [priceRange, setPriceRange] = useState<number>(100000)
   const [sortOption, setSortOption] = useState<string>('Popularity')
+  const [minRating, setMinRating] = useState<number>(0)
+  const [selectedSpecs, setSelectedSpecs] = useState<Record<string, string[]>>({})
 
   useEffect(() => {
     setLoading(true)
@@ -454,6 +464,32 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
         setLoading(false)
       })
   }, [])
+
+  // Reset filters when navigation changes
+  useEffect(() => {
+    setSelectedBrands([]);
+    setMinRating(0);
+    setSelectedSpecs({});
+    
+    if (products.length > 0 && leafSlug) {
+      const activeLeafName = materialsHierarchy
+        .flatMap(c => c.subcategories || [])
+        .flatMap(s => s.leaves || [])
+        .find(l => l.slug === leafSlug)?.name;
+
+      const matching = products.filter(p => {
+        return p.leafSlug === leafSlug || p.leafSlug === activeLeafName || p.leafSlug?.toLowerCase() === leafSlug.toLowerCase();
+      });
+      
+      if (matching.length > 0) {
+        const prices = matching.map(p => getNumericPrice(p.price));
+        const maxP = Math.max(...prices);
+        setPriceRange(maxP || 100000);
+      } else {
+        setPriceRange(100000);
+      }
+    }
+  }, [categorySlug, subcategorySlug, leafSlug, products])
 
   // Auto-scrolling and tab syncing on index tab parameter
   useEffect(() => {
@@ -501,16 +537,55 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
     // Filter implementation
     const availableBrands = Array.from(new Set(matchingProducts.map(p => p.brand || 'Generic')))
     
+    // Compute dynamic specification filters
+    const specFilters: { key: string; values: string[] }[] = [];
+    {
+      const specsMap: Record<string, Set<string>> = {};
+      matchingProducts.forEach(p => {
+        if (p.specifications && typeof p.specifications === 'object') {
+          Object.entries(p.specifications).forEach(([key, val]) => {
+            const lowerKey = key.toLowerCase();
+            if (lowerKey === 'brand' || lowerKey === 'manufacturer') return;
+            if (val && typeof val === 'string') {
+              if (!specsMap[key]) specsMap[key] = new Set();
+              specsMap[key].add(val);
+            }
+          });
+        }
+      });
+      Object.entries(specsMap).forEach(([key, valSet]) => {
+        if (valSet.size > 1) {
+          specFilters.push({ key, values: Array.from(valSet) });
+        }
+      });
+    }
+
     const filteredProducts = matchingProducts.filter(p => {
-      const numericPrice = parseInt((p.price || '0').replace(/[^0-9]/g, ''), 10)
+      const numericPrice = getNumericPrice(p.price)
       const matchesBrand = selectedBrands.length === 0 || selectedBrands.includes(p.brand || 'Generic')
       const matchesPrice = numericPrice <= priceRange
-      return matchesBrand && matchesPrice
+
+      const ratingVal = parseFloat(p.rating || '0')
+      const matchesRating = minRating === 0 || ratingVal >= minRating
+
+      // Check dynamic specifications match
+      let matchesSpecs = true;
+      for (const [key, values] of Object.entries(selectedSpecs)) {
+        if (values && values.length > 0) {
+          const specValue = p.specifications?.[key];
+          if (!specValue || !values.includes(specValue)) {
+            matchesSpecs = false;
+            break;
+          }
+        }
+      }
+
+      return matchesBrand && matchesPrice && matchesRating && matchesSpecs
     })
 
     const sortedProducts = [...filteredProducts].sort((a, b) => {
-      const priceA = parseInt((a.price || '0').replace(/[^0-9]/g, ''), 10)
-      const priceB = parseInt((b.price || '0').replace(/[^0-9]/g, ''), 10)
+      const priceA = getNumericPrice(a.price)
+      const priceB = getNumericPrice(b.price)
       if (sortOption === 'Price: Low to High') return priceA - priceB
       if (sortOption === 'Price: High to Low') return priceB - priceA
       return 0 // Popularity (default)
@@ -542,7 +617,17 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
                   <span className="material-symbols-outlined text-[20px]">filter_list</span> Filters
                 </h3>
                 <button 
-                  onClick={() => { setSelectedBrands([]); setPriceRange(100000); }} 
+                  onClick={() => {
+                    setSelectedBrands([]);
+                    setMinRating(0);
+                    setSelectedSpecs({});
+                    if (matchingProducts.length > 0) {
+                      const maxP = Math.max(...matchingProducts.map(p => getNumericPrice(p.price)));
+                      setPriceRange(maxP || 100000);
+                    } else {
+                      setPriceRange(100000);
+                    }
+                  }} 
                   className="text-xs text-primary font-bold hover:underline"
                 >
                   Clear All
@@ -576,7 +661,7 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
                 <input 
                   type="range" 
                   min="0" 
-                  max="100000" 
+                  max={matchingProducts.length > 0 ? Math.max(...matchingProducts.map(p => getNumericPrice(p.price))) : 100000} 
                   step="50" 
                   value={priceRange} 
                   onChange={(e) => setPriceRange(parseInt(e.target.value, 10))}
@@ -587,6 +672,76 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
                   <span className="text-primary font-extrabold text-body-sm">₹{priceRange.toLocaleString('en-IN')}</span>
                 </div>
               </div>
+
+              {/* Rating Filter */}
+              <div className="space-y-md border-t border-[#E9ECEF] pt-md">
+                <p className="font-bold text-xs uppercase tracking-wider text-[#6C757D]">Customer Ratings</p>
+                <div className="space-y-sm">
+                  {[4.5, 4.0, 3.5].map((rating) => (
+                    <button
+                      key={rating}
+                      onClick={() => setMinRating(minRating === rating ? 0 : rating)}
+                      className={`flex items-center gap-xs text-body-sm w-full text-left py-xs px-sm rounded-lg transition-all ${
+                        minRating === rating 
+                          ? 'bg-[#FFC107]/10 text-[#0A0A0A] font-bold border border-[#FFC107]/30' 
+                          : 'hover:bg-[#E9ECEF]/50 text-[#495057] font-medium border border-transparent'
+                      }`}
+                    >
+                      <div className="flex items-center text-[#FFC107]">
+                        {Array.from({ length: 5 }).map((_, i) => {
+                          const isFilled = i < Math.floor(rating);
+                          const isHalf = !isFilled && i < rating;
+                          return (
+                            <span
+                              key={i}
+                              className="material-symbols-outlined text-[16px] text-[#FFC107]"
+                              style={{ fontVariationSettings: isFilled ? "'FILL' 1" : "'FILL' 0" }}
+                            >
+                              {isHalf ? 'star_half' : 'star'}
+                            </span>
+                          );
+                        })}
+                      </div>
+                      <span>{rating}+ Stars</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Specifications Filter */}
+              {specFilters.map((filter) => (
+                <div key={filter.key} className="space-y-md border-t border-[#E9ECEF] pt-md">
+                  <p className="font-bold text-xs uppercase tracking-wider text-[#6C757D]">{filter.key}</p>
+                  <div className="space-y-sm">
+                    {filter.values.map(val => {
+                      const isChecked = selectedSpecs[filter.key]?.includes(val) || false;
+                      return (
+                        <label key={val} className="flex items-center gap-sm cursor-pointer select-none text-body-sm font-medium">
+                          <input 
+                            type="checkbox" 
+                            checked={isChecked}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              setSelectedSpecs(prev => {
+                                const currentVals = prev[filter.key] || [];
+                                const newVals = checked 
+                                  ? [...currentVals, val]
+                                  : currentVals.filter(v => v !== val);
+                                return {
+                                  ...prev,
+                                  [filter.key]: newVals
+                                };
+                              });
+                            }}
+                            className="rounded border-[#CED4DA] text-primary focus:ring-primary h-4 w-4 cursor-pointer"
+                          />
+                          {val}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Product Grid & Sorting */}
@@ -651,15 +806,26 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
                           {product.desc}
                         </p>
                       </div>
-                      <div className="pt-md flex items-center justify-between mt-md border-t border-[#E9ECEF]">
-                        <span className="text-lg font-extrabold text-[#0A0A0A]">
-                          {product.price}{' '}
-                          <span className="text-xs font-normal text-[#6C757D]">
-                            {product.unit}
+                      <div className="pt-md flex flex-col gap-xs mt-md border-t border-[#E9ECEF]">
+                        <div className="flex justify-between items-center">
+                          <span className="text-lg font-extrabold text-[#0A0A0A]">
+                            {product.price}{' '}
+                            <span className="text-xs font-normal text-[#6C757D]">
+                              {product.unit}
+                            </span>
                           </span>
-                        </span>
-                        <div className="bg-[#0A0A0A] text-white p-2 rounded-lg group-hover:bg-primary transition-colors flex items-center justify-center">
-                          <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+                          <div className="bg-[#0A0A0A] text-white p-2 rounded-lg group-hover:bg-primary transition-colors flex items-center justify-center">
+                            <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-xs mt-xs">
+                          <span 
+                            className="h-2 w-2 rounded-full"
+                            style={{ backgroundColor: (product.stock || 0) > 10 ? '#10B981' : (product.stock || 0) > 0 ? '#F59E0B' : '#EF4444' }}
+                          ></span>
+                          <span className="text-[11px] text-[#6C757D] font-medium">
+                            {(product.stock || 0) > 10 ? `${product.stock} Units In Stock` : (product.stock || 0) > 0 ? `Low Stock: Only ${product.stock} left` : 'Out of Stock'}
+                          </span>
                         </div>
                       </div>
                     </a>

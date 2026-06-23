@@ -108,10 +108,10 @@ export const AuthPage: React.FC = () => {
       await refreshUser();
       // Hide the email verification UI so the success screen renders
       setIsVerifyingEmail(false);
-      // Set success state based on user role for success screen
-      if (data.user.role === 'Business') {
+      const customerType = (data.user.customerType || '').toUpperCase();
+      if (customerType === 'BUSINESS') {
         setSuccessState('Business');
-      } else if (data.user.role === 'Professional') {
+      } else if (customerType === 'PROFESSIONAL') {
         setSuccessState('Professional');
       } else {
         setSuccessState('Individual');
@@ -243,14 +243,18 @@ export const AuthPage: React.FC = () => {
   };
 
   const handleRoleRedirect = (userObj: User) => {
-    if (userObj.role === 'Business') {
-      window.location.hash = '#/business-dashboard';
-    } else if (userObj.role === 'Professional') {
-      window.location.hash = '#/professional-dashboard';
-    } else if (userObj.role === 'Admin') {
-      window.location.hash = '#/admin';
+    const role = (userObj.role || '').toUpperCase();
+    if (role === 'ADMIN') {
+      window.location.hash = '#/portal/admin';
+      return;
+    }
+    const customerType = (userObj.customerType || '').toUpperCase();
+    if (customerType === 'BUSINESS') {
+      window.location.hash = '#/dashboard/business';
+    } else if (customerType === 'PROFESSIONAL') {
+      window.location.hash = '#/dashboard/professional';
     } else {
-      window.location.hash = '#/account';
+      window.location.hash = '#/dashboard/individual';
     }
   };
 
@@ -334,9 +338,18 @@ export const AuthPage: React.FC = () => {
     });
     setIndLoading(false);
     if (res.success) {
-      setVerifyingEmailAddress(res.email || indEmail);
-      setIsVerifyingEmail(true);
-      setEmailOtpCountdown(60);
+      if (res.token && res.user) {
+        const loggedUser = res.user;
+        setSuccessState('Individual');
+        if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current);
+        redirectTimerRef.current = setTimeout(() => {
+          handleRoleRedirect(loggedUser);
+        }, 3000);
+      } else {
+        setVerifyingEmailAddress(res.email || indEmail);
+        setIsVerifyingEmail(true);
+        setEmailOtpCountdown(60);
+      }
     } else {
       setIndError(res.error || 'Registration failed');
     }
@@ -375,9 +388,18 @@ export const AuthPage: React.FC = () => {
     });
     setBusLoading(false);
     if (res.success) {
-      setVerifyingEmailAddress(res.email || busContactEmail);
-      setIsVerifyingEmail(true);
-      setEmailOtpCountdown(60);
+      if (res.token && res.user) {
+        const loggedUser = res.user;
+        setSuccessState('Business');
+        if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current);
+        redirectTimerRef.current = setTimeout(() => {
+          handleRoleRedirect(loggedUser);
+        }, 3000);
+      } else {
+        setVerifyingEmailAddress(res.email || busContactEmail);
+        setIsVerifyingEmail(true);
+        setEmailOtpCountdown(60);
+      }
     } else {
       setBusError(res.error || 'Registration failed');
     }
@@ -426,9 +448,18 @@ export const AuthPage: React.FC = () => {
     });
     setProLoading(false);
     if (res.success) {
-      setVerifyingEmailAddress(res.email || proEmail);
-      setIsVerifyingEmail(true);
-      setEmailOtpCountdown(60);
+      if (res.token && res.user) {
+        const loggedUser = res.user;
+        setSuccessState('Professional');
+        if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current);
+        redirectTimerRef.current = setTimeout(() => {
+          handleRoleRedirect(loggedUser);
+        }, 3000);
+      } else {
+        setVerifyingEmailAddress(res.email || proEmail);
+        setIsVerifyingEmail(true);
+        setEmailOtpCountdown(60);
+      }
     } else {
       setProError(res.error || 'Registration failed');
     }

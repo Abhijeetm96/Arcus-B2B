@@ -6,24 +6,63 @@
   .nav-link-hover {
     @apply relative after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full;
   }
+
   .glass-card {
     @apply bg-surface/80 backdrop-blur-md border border-surface-variant shadow-sm;
   }
+
   .perspective-1000 {
     perspective: 1000px;
   }
-  
+
   /* 3D Dashboard Mockup Transforms */
   .rotate-y-\[-5deg\] {
     transform: rotateY(-5deg);
   }
+
   .rotate-x-\[2deg\] {
     transform: rotateX(2deg);
   }
-  
+
   .hover\:rotate-y-0:hover {
     transform: rotateY(0deg);
   }
+
+  .hover\:rotate-x-0:hover {
+    transform: rotateX(0deg);
+  }
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .nav-link-hover {
+    @apply relative after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full;
+  }
+
+  .glass-card {
+    @apply bg-surface/80 backdrop-blur-md border border-surface-variant shadow-sm;
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  /* 3D Dashboard Mockup Transforms */
+  .rotate-y-\[-5deg\] {
+    transform: rotateY(-5deg);
+  }
+
+  .rotate-x-\[2deg\] {
+    transform: rotateX(2deg);
+  }
+
+  .hover\:rotate-y-0:hover {
+    transform: rotateY(0deg);
+  }
+
   .hover\:rotate-x-0:hover {
     transform: rotateX(0deg);
   }

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 
 export interface CartItem {
   id: string;
@@ -10,6 +11,10 @@ export interface CartItem {
   image: string;
   categoryTitle: string;
   priceTiers?: { min: number; max: number; price: number; save: number }[];
+  stock: number;
+  minimumOrderQuantity?: number;
+  orderMultiple?: number;
+  minimumOrderUnit?: string;
 }
 
 export interface CartContextType {
@@ -22,6 +27,10 @@ export interface CartContextType {
     images?: string[];
     categoryTitle?: string;
     priceTiers?: { min: number; max: number; price: number; save: number }[];
+    stock?: number;
+    minimumOrderQuantity?: number;
+    orderMultiple?: number;
+    minimumOrderUnit?: string;
   }, qty?: number) => void;
   removeFromCart: (productId: string) => void;
   updateQty: (productId: string, qty: number) => void;
@@ -38,6 +47,9 @@ const parsePrice = (priceStr: string | number): number => {
 };
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
+  const customerType = user?.customerType || (user?.role && ['Business', 'Contractor', 'Supplier'].includes(user.role) ? 'BUSINESS' : 'INDIVIDUAL');
+
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem('arcus-cart-items');
     return saved ? JSON.parse(saved) : [];
@@ -67,22 +79,85 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const basePrice = parsePrice(product.price);
       const image = product.images && product.images.length > 0 ? product.images[0] : '/pdp_cpvc_pipe_main.png';
       const categoryTitle = product.categoryTitle || 'Materials';
+      const moq = product.minimumOrderQuantity !== undefined ? product.minimumOrderQuantity : 1;
+      const mult = product.orderMultiple !== undefined ? product.orderMultiple : 1;
+      const minUnit = product.minimumOrderUnit || product.unit || 'Piece';
 
       if (existingItemIndex > -1) {
         const updatedItems = [...prevItems];
         const existingItem = updatedItems[existingItemIndex];
-        const newQty = existingItem.qty + qty;
+        const stock = product.stock !== undefined ? product.stock : (existingItem.stock !== undefined ? existingItem.stock : 100);
+        let newQty = existingItem.qty + qty;
+        
+        // Enforce stock limit
+        if (newQty > stock) {
+          alert(`Cannot add more items. Only ${stock} units are available in stock.`);
+          newQty = stock;
+        }
+
+        // Validate B2B MOQ and multiple rules if B2B
+        if (customerType === 'BUSINESS') {
+          if (newQty < moq) {
+            alert(`Business orders require a minimum of ${moq} ${minUnit}. Setting quantity to ${moq}.`);
+            newQty = moq;
+          }
+          if (mult > 1 && newQty % mult !== 0) {
+            const remainder = newQty % mult;
+            const adjustedQty = newQty + (mult - remainder);
+            if (adjustedQty <= stock) {
+              alert(`Quantity must be a multiple of ${mult} for this product. Adjusting to ${adjustedQty}.`);
+              newQty = adjustedQty;
+            } else {
+              const adjustedDown = newQty - remainder;
+              alert(`Quantity must be a multiple of ${mult} for this product. Adjusting to ${adjustedDown}.`);
+              newQty = adjustedDown;
+            }
+          }
+        }
+
         const newPrice = getPriceForQty(product.priceTiers || existingItem.priceTiers, basePrice, newQty);
         
         updatedItems[existingItemIndex] = {
           ...existingItem,
           qty: newQty,
           price: newPrice,
-          priceTiers: product.priceTiers || existingItem.priceTiers
+          priceTiers: product.priceTiers || existingItem.priceTiers,
+          stock,
+          minimumOrderQuantity: moq,
+          orderMultiple: mult,
+          minimumOrderUnit: minUnit
         };
         return updatedItems;
       } else {
-        const initialPrice = getPriceForQty(product.priceTiers, basePrice, qty);
+        const stock = product.stock !== undefined ? product.stock : 100;
+        let finalQty = qty;
+
+        // Enforce B2B MOQ and multiple rules if B2B
+        if (customerType === 'BUSINESS') {
+          if (finalQty < moq) {
+            alert(`Business orders require a minimum of ${moq} ${minUnit}. Setting quantity to ${moq}.`);
+            finalQty = moq;
+          }
+          if (mult > 1 && finalQty % mult !== 0) {
+            const remainder = finalQty % mult;
+            const adjustedQty = finalQty + (mult - remainder);
+            if (adjustedQty <= stock) {
+              alert(`Quantity must be a multiple of ${mult} for this product. Adjusting to ${adjustedQty}.`);
+              finalQty = adjustedQty;
+            } else {
+              const adjustedDown = finalQty - remainder;
+              alert(`Quantity must be a multiple of ${mult} for this product. Adjusting to ${adjustedDown}.`);
+              finalQty = adjustedDown;
+            }
+          }
+        }
+
+        if (finalQty > stock) {
+          alert(`Cannot add more items. Only ${stock} units are available in stock.`);
+          finalQty = stock;
+        }
+
+        const initialPrice = getPriceForQty(product.priceTiers, basePrice, finalQty);
         return [
           ...prevItems,
           {
@@ -91,10 +166,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             basePrice,
             price: initialPrice,
             unit: product.unit,
-            qty,
+            qty: finalQty,
             image,
             categoryTitle,
-            priceTiers: product.priceTiers
+            priceTiers: product.priceTiers,
+            stock,
+            minimumOrderQuantity: moq,
+            orderMultiple: mult,
+            minimumOrderUnit: minUnit
           }
         ];
       }
@@ -113,10 +192,40 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCartItems((prevItems) =>
       prevItems.map((item) => {
         if (item.id === productId) {
-          const newPrice = getPriceForQty(item.priceTiers, item.basePrice, qty);
+          const stock = item.stock !== undefined ? item.stock : 100;
+          const moq = item.minimumOrderQuantity !== undefined ? item.minimumOrderQuantity : 1;
+          const mult = item.orderMultiple !== undefined ? item.orderMultiple : 1;
+          const minUnit = item.minimumOrderUnit || item.unit || 'Piece';
+          let finalQty = qty;
+
+          // Check if B2B
+          if (customerType === 'BUSINESS') {
+            if (finalQty < moq) {
+              alert(`Business orders require a minimum of ${moq} ${minUnit}.`);
+              finalQty = moq;
+            }
+            if (mult > 1 && finalQty % mult !== 0) {
+              const remainder = finalQty % mult;
+              const adjustedQty = finalQty + (mult - remainder);
+              if (adjustedQty <= stock) {
+                alert(`Quantity must be a multiple of ${mult}. Adjusting to ${adjustedQty}.`);
+                finalQty = adjustedQty;
+              } else {
+                const adjustedDown = finalQty - remainder;
+                alert(`Quantity must be a multiple of ${mult}. Adjusting to ${adjustedDown}.`);
+                finalQty = adjustedDown;
+              }
+            }
+          }
+
+          if (finalQty > stock) {
+            alert(`Cannot update quantity. Only ${stock} units are available in stock.`);
+            finalQty = stock;
+          }
+          const newPrice = getPriceForQty(item.priceTiers, item.basePrice, finalQty);
           return {
             ...item,
-            qty,
+            qty: finalQty,
             price: newPrice
           };
         }

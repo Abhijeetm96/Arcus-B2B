@@ -112,24 +112,103 @@ export default function Navbar() {
   const [hoveredServicesCategory, setHoveredServicesCategory] = useState(0)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const profileRef = useRef<HTMLDivElement>(null)
+  
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<{ products: any[]; brands: any[]; categories: any[]; services: any[]; professionals: any[] }>({ products: [], brands: [], categories: [], services: [], professionals: [] })
+  const [showDropdown, setShowDropdown] = useState(false)
 
+  const profileRef = useRef<HTMLDivElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const mobileSearchInputRef = useRef<HTMLInputElement>(null)
+
+  // Debounce query by 300ms
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults({ products: [], brands: [], categories: [], services: [], professionals: [] })
+      setShowDropdown(false)
+      return
+    }
+
+    const handler = setTimeout(async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/search?q=${encodeURIComponent(searchQuery)}`)
+        if (res.ok) {
+          const data = await res.json()
+          setSearchResults({
+            products: Array.isArray(data?.products) ? data.products.slice(0, 5) : [],
+            brands: Array.isArray(data?.brands) ? data.brands.slice(0, 3) : [],
+            categories: Array.isArray(data?.categories) ? data.categories.slice(0, 3) : [],
+            services: Array.isArray(data?.services) ? data.services.slice(0, 5) : [],
+            professionals: Array.isArray(data?.professionals) ? data.professionals.slice(0, 5) : []
+          })
+          setShowDropdown(true)
+        }
+      } catch (err) {
+        console.error('Error fetching search results:', err)
+      }
+    }, 300)
+
+    return () => clearTimeout(handler)
+  }, [searchQuery])
+
+  // Handle click outside for menus
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
         setIsProfileOpen(false)
+      }
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        !searchInputRef.current?.contains(event.target as Node) &&
+        !mobileSearchInputRef.current?.contains(event.target as Node)
+      ) {
+        setShowDropdown(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    function handleGlobalKeyDown(e: KeyboardEvent) {
+      if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+        e.preventDefault()
+        if (mobileMenuOpen) {
+          mobileSearchInputRef.current?.focus()
+        } else {
+          searchInputRef.current?.focus()
+        }
+      }
+
+      if (e.key === 'Escape') {
+        setShowDropdown(false)
+      }
+    }
+
+    document.addEventListener('keydown', handleGlobalKeyDown)
+    return () => document.removeEventListener('keydown', handleGlobalKeyDown)
+  }, [mobileMenuOpen])
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      setShowDropdown(false)
+      setMobileMenuOpen(false)
+      window.location.hash = `#/search?q=${encodeURIComponent(searchQuery.trim())}`
+    }
+  }
+
   const getDashboardRoute = () => {
     if (!user) return '#/auth';
-    if (user.role === 'Business') return '#/business-dashboard';
-    if (user.role === 'Professional') return '#/professional-dashboard';
-    if (user.role === 'Admin') return '#/admin';
-    return '#/account';
+    const role = (user.role || '').toUpperCase();
+    if (role === 'ADMIN') return '#/portal/admin';
+    
+    const type = (user.customerType || '').toUpperCase();
+    if (type === 'BUSINESS') return '#/dashboard/business';
+    if (type === 'PROFESSIONAL') return '#/dashboard/professional';
+    return '#/dashboard/individual';
   };
 
   return (
@@ -151,10 +230,138 @@ export default function Navbar() {
               search
             </span>
             <input
+              ref={searchInputRef}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => { if (searchQuery.trim()) setShowDropdown(true); }}
+              onKeyDown={handleSearchKeyDown}
               className="w-full h-12 pl-[44px] pr-md rounded-md border border-surface-variant bg-white focus:border-2 focus:border-primary-container focus:ring-0 transition-all font-body-sm text-on-surface placeholder:text-secondary-fixed-dim outline-none shadow-sm"
               placeholder="Search cement, steel, tiles, plumbers..."
               type="text"
             />
+            {showDropdown && (
+              <div 
+                ref={dropdownRef}
+                className="absolute top-full left-0 w-full mt-2 bg-white dark:bg-surface-dim border border-surface-variant shadow-2xl rounded-md z-50 max-h-[480px] overflow-y-auto text-left"
+              >
+                {(!searchResults?.products || searchResults.products.length === 0) &&
+                 (!searchResults?.services || searchResults.services.length === 0) &&
+                 (!searchResults?.professionals || searchResults.professionals.length === 0) &&
+                 (!searchResults?.categories || searchResults.categories.length === 0) ? (
+                  <div className="p-md text-center text-secondary text-body-sm">
+                    No results found for "{searchQuery}"
+                  </div>
+                ) : (
+                  <div className="flex flex-col">
+                    {/* Services Section */}
+                    {Array.isArray(searchResults?.services) && searchResults.services.length > 0 && (
+                      <div className="p-md border-b border-surface-variant">
+                        <p className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-sm">Services</p>
+                        <div className="flex flex-col gap-sm">
+                          {searchResults.services.map((s) => (
+                            <a 
+                              key={s?.slug || Math.random().toString()} 
+                              href={s?.path || '#'}
+                              onClick={() => { setShowDropdown(false); setSearchQuery(''); }}
+                              className="flex items-center justify-between hover:bg-surface-container-low p-xs rounded transition-colors no-underline block"
+                            >
+                              <div className="flex-1 min-w-0 text-left">
+                                <p className="text-body-sm text-[#0A0A0A] font-bold truncate mb-0">{s?.name}</p>
+                                <p className="text-[11px] text-secondary truncate mb-0 mt-0">{s?.desc}</p>
+                              </div>
+                              <span className="text-body-sm text-[#0A0A0A] font-extrabold pr-xs shrink-0">{s?.price}</span>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Professionals Section */}
+                    {Array.isArray(searchResults?.professionals) && searchResults.professionals.length > 0 && (
+                      <div className="p-md border-b border-surface-variant">
+                        <p className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-sm">Professionals</p>
+                        <div className="flex flex-col gap-sm">
+                          {searchResults.professionals.map((pro) => (
+                            <a 
+                              key={pro?.id || Math.random().toString()} 
+                              href={`#/services/contractors/${pro?.id || ''}`}
+                              onClick={() => { setShowDropdown(false); setSearchQuery(''); }}
+                              className="flex items-center justify-between hover:bg-surface-container-low p-xs rounded transition-colors no-underline block"
+                            >
+                              <div className="flex-1 min-w-0 text-left">
+                                <p className="text-body-sm text-[#0A0A0A] font-bold truncate mb-0">{pro?.name}</p>
+                                <p className="text-[11px] text-secondary truncate mb-0 mt-0">{pro?.company} • {pro?.city}</p>
+                              </div>
+                              <span className="material-symbols-outlined text-green-600 text-[20px] pr-xs shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Products Section */}
+                    {Array.isArray(searchResults?.products) && searchResults.products.length > 0 && (
+                      <div className="p-md border-b border-surface-variant">
+                        <p className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-sm">Products</p>
+                        <div className="flex flex-col gap-sm">
+                          {searchResults.products.map((p) => (
+                            <a 
+                              key={p?.id || Math.random().toString()} 
+                              href={`#/product/${p?.id || ''}`}
+                              onClick={async () => {
+                                setShowDropdown(false);
+                                setSearchQuery('');
+                                try {
+                                  await fetch('http://localhost:5000/api/search/click', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ productId: p?.id, query: searchQuery })
+                                  });
+                                } catch (e) {
+                                  console.error(e);
+                                }
+                              }}
+                              className="flex items-center gap-md hover:bg-surface-container-low p-xs rounded transition-colors no-underline block"
+                            >
+                              <div className="w-10 h-10 bg-white border border-surface-variant rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
+                                <img src={p?.images?.[0] || '/pdp_cpvc_pipe_main.png'} alt={p?.name ?? 'Product'} className="w-full h-full object-cover" />
+                              </div>
+                              <div className="flex-1 min-w-0 text-left">
+                                <p className="text-body-sm text-[#0A0A0A] font-bold truncate mb-0">{p?.name ?? 'Unnamed Product'}</p>
+                                <div className="flex items-center gap-sm text-[11px] text-secondary mt-0">
+                                  <span>{p?.brand ?? 'Generic'}</span>
+                                  <span>•</span>
+                                  <span className="text-on-surface font-semibold">₹{(p?.price ?? 0).toLocaleString('en-IN')}</span>
+                                </div>
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Categories Section */}
+                    {Array.isArray(searchResults?.categories) && searchResults.categories.length > 0 && (
+                      <div className="p-md">
+                        <p className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-sm">Categories</p>
+                        <div className="flex flex-wrap gap-xs">
+                          {searchResults.categories.map((cat) => (
+                            <a 
+                              key={cat?.id || Math.random().toString()} 
+                              href={cat?.path || '#'}
+                              onClick={() => { setShowDropdown(false); setSearchQuery(''); }}
+                              className="px-md py-sm bg-surface-container-low hover:bg-primary-container/20 border border-surface-variant text-body-sm text-[#0A0A0A] font-bold rounded-full transition-colors no-underline inline-block"
+                            >
+                              {cat?.name || 'Unknown'}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -177,11 +384,10 @@ export default function Navbar() {
                     key={cat.slug}
                     href={`#/materials/${cat.slug}`}
                     onMouseEnter={() => setHoveredMaterialsCategory(idx)}
-                    className={`flex items-center justify-between px-md py-sm transition-colors font-label-caps text-[13px] font-bold tracking-wide select-none ${
-                      hoveredMaterialsCategory === idx 
-                        ? 'bg-primary-container text-on-primary-container' 
+                    className={`flex items-center justify-between px-md py-sm transition-colors font-label-caps text-[13px] font-bold tracking-wide select-none ${hoveredMaterialsCategory === idx
+                        ? 'bg-primary-container text-on-primary-container'
                         : 'text-secondary hover:bg-surface-variant/40'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-sm">
                       <span className="material-symbols-outlined text-[20px]">{cat.icon}</span>
@@ -191,7 +397,7 @@ export default function Navbar() {
                   </a>
                 ))}
               </div>
-              
+
               {/* Right Column: Subcategories list */}
               <div className="flex-1 p-lg bg-white min-h-[340px]">
                 <h4 className="font-bold text-body-md text-on-surface border-b border-surface-variant pb-xs mb-md flex items-center gap-xs">
@@ -236,11 +442,10 @@ export default function Navbar() {
                       key={cat.slug}
                       href={`#/services/${cat.slug}`}
                       onMouseEnter={() => setHoveredServicesCategory(idx)}
-                      className={`flex items-center justify-between px-md py-sm transition-colors font-label-caps text-[13px] font-bold tracking-wide select-none ${
-                        hoveredServicesCategory === idx 
-                          ? 'bg-primary-container text-on-primary-container' 
+                      className={`flex items-center justify-between px-md py-sm transition-colors font-label-caps text-[13px] font-bold tracking-wide select-none ${hoveredServicesCategory === idx
+                          ? 'bg-primary-container text-on-primary-container'
                           : 'text-secondary hover:bg-surface-variant/40'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-sm">
                         <span className="material-symbols-outlined text-[20px]">{cat.icon}</span>
@@ -250,7 +455,7 @@ export default function Navbar() {
                     </a>
                   ))}
                 </div>
-                
+
                 {/* Right Column: Service Types list */}
                 <div className="flex-1 p-lg bg-white min-h-[340px]">
                   <h4 className="font-bold text-body-md text-on-surface border-b border-surface-variant pb-xs mb-md flex items-center gap-xs">
@@ -275,7 +480,7 @@ export default function Navbar() {
                   </div>
                 </div>
               </div>
-              
+
               {/* Bottom Actions Row */}
               <div className="bg-surface-container border-t border-surface-variant p-md flex justify-between items-center gap-md">
                 <a
@@ -328,7 +533,7 @@ export default function Navbar() {
             <span className="material-symbols-outlined">notifications</span>
             <span className="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
           </button>
-          <button 
+          <button
             onClick={() => setIsCartOpen(true)}
             className="flex items-center justify-center p-sm text-secondary hover:text-primary transition-colors relative"
           >
@@ -340,7 +545,7 @@ export default function Navbar() {
           <div className="hidden lg:block w-px h-6 bg-surface-variant mx-sm"></div>
           {user ? (
             <div ref={profileRef} className="hidden lg:block relative">
-              <div 
+              <div
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center gap-xs cursor-pointer select-none"
               >
@@ -353,7 +558,7 @@ export default function Navbar() {
                 </div>
                 <span className={`material-symbols-outlined text-[18px] text-secondary transition-transform ${isProfileOpen ? 'rotate-180' : ''}`}>expand_more</span>
               </div>
-              
+
               {isProfileOpen && (
                 <div className="absolute right-0 top-full mt-xs w-48 bg-white border border-surface-variant shadow-2xl rounded-md z-50 py-xs text-left">
                   <div className="px-md py-sm border-b border-surface-variant">
@@ -368,8 +573,12 @@ export default function Navbar() {
                       <span className="material-symbols-outlined text-sm text-[#6C757D]">email</span>
                       {user.email}
                     </p>
+                    <p className="text-body-xs font-semibold text-[#FFC107] truncate mt-1 flex items-center gap-xs">
+                      <span className="material-symbols-outlined text-sm text-[#FFC107]">stars</span>
+                      BuildPoints: {user.buildPoints ?? 0}
+                    </p>
                   </div>
-                  
+
                   {/* Menu links based on design spec */}
                   <a
                     href={getDashboardRoute()}
@@ -377,43 +586,9 @@ export default function Navbar() {
                     className="w-full text-left px-md py-sm hover:bg-[#F8F9FA] transition-colors text-body-sm font-semibold text-[#0A0A0A] flex items-center gap-sm"
                   >
                     <span className="material-symbols-outlined text-[20px] text-secondary">dashboard</span>
-                    Dashboard
+                    Dashboard Portal
                   </a>
-                  <a
-                    href="#/account/orders"
-                    onClick={() => setIsProfileOpen(false)}
-                    className="w-full text-left px-md py-sm hover:bg-[#F8F9FA] transition-colors text-body-sm font-semibold text-[#0A0A0A] flex items-center gap-sm"
-                  >
-                    <span className="material-symbols-outlined text-[20px] text-secondary">shopping_cart</span>
-                    Orders
-                  </a>
-                  {user && ['Business', 'Professional', 'Contractor', 'Supplier'].includes(user.role) && (
-                    <a
-                      href="#/account/rfqs"
-                      onClick={() => setIsProfileOpen(false)}
-                      className="w-full text-left px-md py-sm hover:bg-[#F8F9FA] transition-colors text-body-sm font-semibold text-[#0A0A0A] flex items-center gap-sm"
-                    >
-                      <span className="material-symbols-outlined text-[20px] text-secondary">receipt_long</span>
-                      RFQs
-                    </a>
-                  )}
-                  <a
-                    href="#/account/saved"
-                    onClick={() => setIsProfileOpen(false)}
-                    className="w-full text-left px-md py-sm hover:bg-[#F8F9FA] transition-colors text-body-sm font-semibold text-[#0A0A0A] flex items-center gap-sm"
-                  >
-                    <span className="material-symbols-outlined text-[20px] text-secondary">bookmark</span>
-                    Saved Items
-                  </a>
-                  <a
-                    href="#/account/settings"
-                    onClick={() => setIsProfileOpen(false)}
-                    className="w-full text-left px-md py-sm hover:bg-[#F8F9FA] transition-colors text-body-sm font-semibold text-[#0A0A0A] flex items-center gap-sm"
-                  >
-                    <span className="material-symbols-outlined text-[20px] text-secondary">settings</span>
-                    Settings
-                  </a>
-                  
+
                   <div className="h-px bg-surface-variant my-xs"></div>
                   <button
                     onClick={() => {
@@ -465,10 +640,139 @@ export default function Navbar() {
               search
             </span>
             <input
+              ref={mobileSearchInputRef}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => { if (searchQuery.trim()) setShowDropdown(true); }}
+              onKeyDown={handleSearchKeyDown}
               className="w-full h-12 pl-[44px] pr-md rounded-md border border-surface-variant bg-white focus:border-2 focus:border-primary-container focus:ring-0 transition-all font-body-sm text-on-surface placeholder:text-secondary-fixed-dim outline-none shadow-sm"
               placeholder="Search..."
               type="text"
             />
+            {showDropdown && (
+              <div 
+                ref={dropdownRef}
+                className="absolute top-full left-0 w-full mt-2 bg-white dark:bg-surface-dim border border-surface-variant shadow-2xl rounded-md z-50 max-h-[300px] overflow-y-auto text-left"
+              >
+                {(!searchResults?.products || searchResults.products.length === 0) &&
+                 (!searchResults?.services || searchResults.services.length === 0) &&
+                 (!searchResults?.professionals || searchResults.professionals.length === 0) &&
+                 (!searchResults?.categories || searchResults.categories.length === 0) ? (
+                  <div className="p-md text-center text-secondary text-body-sm">
+                    No results found for "{searchQuery}"
+                  </div>
+                ) : (
+                  <div className="flex flex-col">
+                    {/* Services Section */}
+                    {Array.isArray(searchResults?.services) && searchResults.services.length > 0 && (
+                      <div className="p-md border-b border-surface-variant">
+                        <p className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-sm">Services</p>
+                        <div className="flex flex-col gap-sm">
+                          {searchResults.services.map((s) => (
+                            <a 
+                              key={s?.slug || Math.random().toString()} 
+                              href={s?.path || '#'}
+                              onClick={() => { setShowDropdown(false); setSearchQuery(''); setMobileMenuOpen(false); }}
+                              className="flex items-center justify-between hover:bg-surface-container-low p-xs rounded transition-colors no-underline block"
+                            >
+                              <div className="flex-1 min-w-0 text-left">
+                                <p className="text-body-sm text-[#0A0A0A] font-bold truncate mb-0">{s?.name}</p>
+                                <p className="text-[11px] text-secondary truncate mb-0 mt-0">{s?.desc}</p>
+                              </div>
+                              <span className="text-body-sm text-[#0A0A0A] font-extrabold pr-xs shrink-0">{s?.price}</span>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Professionals Section */}
+                    {Array.isArray(searchResults?.professionals) && searchResults.professionals.length > 0 && (
+                      <div className="p-md border-b border-surface-variant">
+                        <p className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-sm">Professionals</p>
+                        <div className="flex flex-col gap-sm">
+                          {searchResults.professionals.map((pro) => (
+                            <a 
+                              key={pro?.id || Math.random().toString()} 
+                              href={`#/services/contractors/${pro?.id || ''}`}
+                              onClick={() => { setShowDropdown(false); setSearchQuery(''); setMobileMenuOpen(false); }}
+                              className="flex items-center justify-between hover:bg-surface-container-low p-xs rounded transition-colors no-underline block"
+                            >
+                              <div className="flex-1 min-w-0 text-left">
+                                <p className="text-body-sm text-[#0A0A0A] font-bold truncate mb-0">{pro?.name}</p>
+                                <p className="text-[11px] text-secondary truncate mb-0 mt-0">{pro?.company} • {pro?.city}</p>
+                              </div>
+                              <span className="material-symbols-outlined text-green-600 text-[20px] pr-xs shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Products Section */}
+                    {Array.isArray(searchResults?.products) && searchResults.products.length > 0 && (
+                      <div className="p-md border-b border-surface-variant">
+                        <p className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-sm">Products</p>
+                        <div className="flex flex-col gap-sm">
+                          {searchResults.products.map((p) => (
+                            <a 
+                              key={p?.id || Math.random().toString()} 
+                              href={`#/product/${p?.id || ''}`}
+                              onClick={async () => {
+                                setShowDropdown(false);
+                                setSearchQuery('');
+                                setMobileMenuOpen(false);
+                                try {
+                                  await fetch('http://localhost:5000/api/search/click', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ productId: p?.id, query: searchQuery })
+                                  });
+                                } catch (e) {
+                                  console.error(e);
+                                }
+                              }}
+                              className="flex items-center gap-md hover:bg-surface-container-low p-xs rounded transition-colors no-underline block"
+                            >
+                              <div className="w-10 h-10 bg-white border border-surface-variant rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
+                                <img src={p?.images?.[0] || '/pdp_cpvc_pipe_main.png'} alt={p?.name ?? 'Product'} className="w-full h-full object-cover" />
+                              </div>
+                              <div className="flex-1 min-w-0 text-left">
+                                <p className="text-body-sm text-[#0A0A0A] font-bold truncate mb-0">{p?.name ?? 'Unnamed Product'}</p>
+                                <div className="flex items-center gap-sm text-[11px] text-secondary mt-0">
+                                  <span>{p?.brand ?? 'Generic'}</span>
+                                  <span>•</span>
+                                  <span className="text-on-surface font-semibold">₹{(p?.price ?? 0).toLocaleString('en-IN')}</span>
+                                </div>
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Categories Section */}
+                    {Array.isArray(searchResults?.categories) && searchResults.categories.length > 0 && (
+                      <div className="p-md">
+                        <p className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-sm">Categories</p>
+                        <div className="flex flex-wrap gap-xs">
+                          {searchResults.categories.map((cat) => (
+                            <a 
+                              key={cat?.id || Math.random().toString()} 
+                              href={cat?.path || '#'}
+                              onClick={() => { setShowDropdown(false); setSearchQuery(''); setMobileMenuOpen(false); }}
+                              className="px-md py-sm bg-surface-container-low hover:bg-primary-container/20 border border-surface-variant text-body-sm text-[#0A0A0A] font-bold rounded-full transition-colors no-underline inline-block"
+                            >
+                              {cat?.name || 'Unknown'}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <a
             className="text-secondary hover:text-primary font-label-caps text-label-caps py-2 border-b border-surface-variant text-left"
@@ -488,7 +792,7 @@ export default function Navbar() {
               <a href="#/materials/tiles-flooring" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary transition-colors font-medium">Tiles &amp; Flooring</a>
             </div>
           </div>
-          
+
           <a
             className="text-secondary hover:text-primary font-label-caps text-label-caps py-2 border-b border-surface-variant text-left"
             href="#/services"
@@ -550,18 +854,16 @@ export default function Navbar() {
                       {user.companyName}
                     </span>
                   )}
+                  <span className="text-xs text-[#FFC107] font-semibold mt-1 flex items-center gap-xs">
+                    <span className="material-symbols-outlined text-xs text-[#FFC107]">stars</span>
+                    BuildPoints: {user.buildPoints ?? 0}
+                  </span>
                 </div>
               </div>
 
               {/* Mobile Profile Sub-links */}
-              <div className="grid grid-cols-2 gap-sm text-xs font-semibold py-xs border-t border-b border-surface-variant my-xs">
-                <a href={getDashboardRoute()} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-xs p-xs hover:bg-[#F8F9FA] rounded"><span className="material-symbols-outlined text-[18px] text-secondary">dashboard</span> Dashboard</a>
-                <a href="#/account/orders" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-xs p-xs hover:bg-[#F8F9FA] rounded"><span className="material-symbols-outlined text-[18px] text-secondary">shopping_cart</span> Orders</a>
-                {user && ['Business', 'Professional', 'Contractor', 'Supplier'].includes(user.role) && (
-                  <a href="#/account/rfqs" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-xs p-xs hover:bg-[#F8F9FA] rounded"><span className="material-symbols-outlined text-[18px] text-secondary">receipt_long</span> RFQs</a>
-                )}
-                <a href="#/account/saved" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-xs p-xs hover:bg-[#F8F9FA] rounded"><span className="material-symbols-outlined text-[18px] text-secondary">bookmark</span> Saved Items</a>
-                <a href="#/account/settings" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-xs p-xs hover:bg-[#F8F9FA] rounded"><span className="material-symbols-outlined text-[18px] text-secondary">settings</span> Settings</a>
+              <div className="py-xs border-t border-b border-surface-variant my-xs">
+                <a href={getDashboardRoute()} onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-xs p-xs hover:bg-[#F8F9FA] rounded text-body-sm font-semibold"><span className="material-symbols-outlined text-[18px] text-secondary">dashboard</span> Dashboard Portal</a>
               </div>
 
               <button
@@ -599,16 +901,15 @@ export default function Navbar() {
 
       {/* Cart Drawer Overlay */}
       {isCartOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-50 transition-opacity duration-300 animate-fade-in"
           onClick={() => setIsCartOpen(false)}
         />
       )}
 
       {/* Cart Drawer Panel */}
-      <div className={`fixed top-0 right-0 h-full w-full sm:w-[450px] bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
-        isCartOpen ? 'translate-x-0' : 'translate-x-full'
-      }`}>
+      <div className={`fixed top-0 right-0 h-full w-full sm:w-[450px] bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${isCartOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}>
         {/* Header */}
         <div className="p-xl border-b border-surface-variant flex items-center justify-between">
           <div className="flex items-center gap-sm">
@@ -618,7 +919,7 @@ export default function Navbar() {
               {cartCount}
             </span>
           </div>
-          <button 
+          <button
             onClick={() => setIsCartOpen(false)}
             className="p-sm text-secondary hover:text-primary transition-colors flex items-center justify-center rounded-full hover:bg-surface-container-low"
           >
@@ -635,7 +936,7 @@ export default function Navbar() {
                 <p className="font-bold text-body-md text-on-surface">Your cart is empty</p>
                 <p className="text-secondary text-xs mt-xs">Add materials from our catalog to request quotes or buy.</p>
               </div>
-              <button 
+              <button
                 onClick={() => { setIsCartOpen(false); window.location.hash = '#/materials'; }}
                 className="bg-primary-container text-on-primary-container hover:bg-[#fabd00] font-bold px-lg py-md rounded-xl text-body-sm transition-all shadow-sm w-full"
               >
@@ -656,18 +957,18 @@ export default function Navbar() {
                     <h4 className="font-bold text-body-sm text-on-surface truncate pr-xl">{item.name}</h4>
                     <p className="text-secondary text-xs mt-xs">{item.categoryTitle}</p>
                   </div>
-                  
+
                   <div className="flex justify-between items-center mt-sm">
                     {/* Qty Counter */}
                     <div className="flex items-center border border-surface-variant bg-white rounded-lg scale-90 origin-left">
-                      <button 
+                      <button
                         onClick={() => updateQty(item.id, item.qty - 1)}
                         className="px-sm py-xs text-secondary hover:text-primary font-bold text-xs"
                       >
                         -
                       </button>
                       <span className="w-8 text-center text-xs font-bold">{item.qty}</span>
-                      <button 
+                      <button
                         onClick={() => updateQty(item.id, item.qty + 1)}
                         className="px-sm py-xs text-secondary hover:text-primary font-bold text-xs"
                       >
@@ -684,7 +985,7 @@ export default function Navbar() {
                 </div>
 
                 {/* Delete Button */}
-                <button 
+                <button
                   onClick={() => removeFromCart(item.id)}
                   className="absolute top-md right-md text-secondary hover:text-error transition-colors p-xs rounded-full hover:bg-white"
                 >
@@ -714,7 +1015,7 @@ export default function Navbar() {
             </div>
 
             <div className="flex gap-md">
-              <button 
+              <button
                 onClick={() => { setIsCartOpen(false); window.location.hash = '#/checkout'; }}
                 className="flex-1 bg-primary-container text-on-primary-container hover:bg-[#fabd00] h-14 rounded-xl font-bold flex items-center justify-center gap-sm transition-all shadow-md text-body-sm"
               >

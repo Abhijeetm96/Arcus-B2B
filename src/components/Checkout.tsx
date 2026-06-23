@@ -133,6 +133,26 @@ export const Checkout: React.FC = () => {
   const { cartItems, cartTotal, clearCart, updateQty, removeFromCart, addToCart } = useCart();
   const { user, loading, refreshUser } = useAuth();
   const isB2b = !!user && ['Business', 'Contractor', 'Supplier', 'Professional'].includes(user.role);
+  const customerType = user?.customerType || (isB2b ? 'BUSINESS' : 'INDIVIDUAL');
+  const isIndividual = customerType === 'INDIVIDUAL';
+  const [b2cMinOrderVal, setB2cMinOrderVal] = useState<number>(1000);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/settings');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && typeof data.b2cMinimumOrderValue === 'number') {
+            setB2cMinOrderVal(data.b2cMinimumOrderValue);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch settings:', err);
+      }
+    };
+    fetchSettings();
+  }, []);
   
   // State for Address Form
   const [formData, setFormData] = useState({
@@ -703,6 +723,10 @@ export const Checkout: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isIndividual && cartTotal < b2cMinOrderVal) {
+      setErrorMessage(`Add ₹${(b2cMinOrderVal - cartTotal).toLocaleString('en-IN')} more to place your order`);
+      return;
+    }
     if (!validateForm()) return;
 
     setSubmitting(true);
@@ -716,8 +740,19 @@ export const Checkout: React.FC = () => {
 
     const orderPayload = {
       products: productsSummary,
-      amount: `₹${finalTotal.toLocaleString('en-IN')}`,
-      items: cartItems.map(item => ({ name: item.name, qty: item.qty, price: item.price, image: item.image })),
+      amount: finalTotal,
+      items: cartItems.map(item => ({
+        productId: item.id,
+        productName: item.name,
+        quantity: item.qty,
+        unitPrice: item.price,
+        // Keep legacy properties for backward compatibility
+        id: item.id,
+        name: item.name,
+        qty: item.qty,
+        price: item.price,
+        image: item.image
+      })),
       shippingAddress: shippingAddressStr,
       billingAddress: billingAddressStr,
       gstNumber: isB2b ? user.gstNumber : undefined,
@@ -1460,10 +1495,17 @@ export const Checkout: React.FC = () => {
                 </div>
               </div>
 
+              {isIndividual && cartTotal < b2cMinOrderVal && (
+                <div className="bg-error-container text-on-error-container p-md rounded-xl border border-error/20 text-left text-body-sm font-semibold flex items-center gap-sm">
+                  <span className="material-symbols-outlined text-error text-[20px]">warning</span>
+                  <span>Add ₹{(b2cMinOrderVal - cartTotal).toLocaleString('en-IN')} more to place your order</span>
+                </div>
+              )}
+
               {/* Place Order CTA */}
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || (isIndividual && cartTotal < b2cMinOrderVal)}
                 className="w-full bg-primary-container text-on-primary-container hover:bg-[#fabd00] h-14 rounded-xl font-bold flex items-center justify-center gap-sm transition-all shadow-md text-body-md disabled:opacity-50"
               >
                 {submitting ? (

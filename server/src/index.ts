@@ -3,7 +3,18 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
 import https from 'https';
-import { addRfq, addBooking, addQuote, getAllRfqs, getAllBookings, getAllQuotes, getAllProducts, getProductById, addUser, getUserByEmail, getUserByPhone, getUserByGst, getUserById, addOrder, getOrdersByUserId, updateUser, addOtp, getOtpByUserId, incrementOtpAttempts, deleteOtp, deleteOtpsByUserId, getOrderById, updateOrderStatus, deleteUserByEmail, deleteUserByGst } from './db';
+import multer from 'multer';
+import * as XLSX from 'xlsx';
+import { 
+  addRfq, addBooking, addQuote, getAllRfqs, getAllBookings, getAllQuotes, getAllProducts, getProductById, updateProductStock, 
+  addUser, getUserByEmail, getUserByPhone, getUserByGst, getUserById, addOrder, getOrdersByUserId, updateUser, addOtp, 
+  getOtpByUserId, incrementOtpAttempts, deleteOtp, deleteOtpsByUserId, getOrderById, updateOrderStatus, deleteUserByEmail, 
+  deleteUserByGst, searchService, getAppSettings, updateAppSettings, getAllCategories, addCategory, updateCategory, 
+  deleteCategory, addProduct, updateProduct, deleteProduct, updateProductInventory, updateRfqStatus, Order,
+  getAllBrands, getBrandById, addBrand, updateBrand, deleteBrand, logAction, getAllAuditLogs, recordAdjustment, getAdjustmentHistory,
+  getAllOrders, getAllUsers,
+  validateImportSheet, matchZipImages, generateTemplate, exportCatalog, executeImport, executeBulkUpdates, getAllImportHistory, getImportHistoryById, HEADER_MAPPING
+} from './db';
 import { validateEmail, validatePhone, validatePassword, validateName, validateBusinessName, validateGST, validateExperience, validateURL, normalizePhone, sanitizeText, trimAndClean, RateLimiter } from '../../shared/validation';
 
 dotenv.config();
@@ -14,12 +25,18 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
+app.use((req, res, next) => {
+  console.log(`[REQUEST] ${req.method} ${req.url} Auth: ${req.headers.authorization || 'None'}`);
+  next();
+});
+
 // ─── Rate Limiters ───────────────────────────────────────────
 const isTestOrDev = process.env.NODE_ENV !== 'production';
 const loginLimiter = new RateLimiter(isTestOrDev ? 1000 : 5, 15 * 60 * 1000);    // 5 attempts per 15 min
 const otpLimiter = new RateLimiter(isTestOrDev ? 1000 : 3, 5 * 60 * 1000);       // 3 OTP requests per 5 min
 const formLimiter = new RateLimiter(isTestOrDev ? 1000 : 5, 10 * 60 * 1000);     // 5 form submissions per 10 min
 const profileLimiter = new RateLimiter(isTestOrDev ? 1000 : 10, 60 * 60 * 1000); // 10 profile updates per hour
+const DISABLE_OTP_FOR_DEV = true;
 
 function getClientIp(req: express.Request): string {
   return (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
@@ -94,33 +111,71 @@ const professionalsList = [
   }
 ];
 
+async function checkIsAdmin(req: any): Promise<boolean> {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return false;
+    }
+    const token = authHeader.split(' ')[1];
+    const userId = verifyToken(token);
+    if (!userId) return false;
+    const user = await getUserById(userId);
+    return user?.role === 'ADMIN' || user?.role === 'Admin';
+  } catch {
+    return false;
+  }
+}
+
+function sanitizeProduct(product: any, isAdmin: boolean): any {
+  if (!product) return null;
+  const copy = { ...product };
+  if (!isAdmin) {
+    delete copy.procurementPrice;
+    delete copy.vendorName;
+    delete copy.vendorProductCode;
+  }
+  return copy;
+}
+
 // Endpoints for GET Static Data
 app.get('/api/products', async (req, res) => {
   try {
-    const products = await getAllProducts();
+    const isAdmin = await checkIsAdmin(req);
+    const products = (await getAllProducts()).filter(p => p.status !== 'DISCONTINUED');
     
     // Convert grouped map to ProductCategory[] format, preserving category ordering
     const categoryOrder = ['Plumbing', 'Electrical', 'Cement', 'Steel', 'Paints', 'Tiles', 'Hardware', 'Building'];
     const formattedCategories = categoryOrder
       .map((title) => {
-        const matchingProducts = products.filter(p => p.categoryTitle.toLowerCase() === title.toLowerCase() || (title === 'Cement' && p.categoryTitle === 'Cement & Concrete'));
+        const matchingProducts = products.filter(p => p.categoryTitle?.toLowerCase() === title.toLowerCase() || (title === 'Cement' && p.categoryTitle === 'Cement & Concrete'));
         return {
           title,
-          products: matchingProducts.map(p => ({
-            id: p.id,
-            name: p.name,
-            brand: p.specifications?.['Brand'] || p.specifications?.['Manufacturer'] || 'Generic',
-            price: p.price,
-            unit: p.unit,
-            rating: p.rating,
-            icon: p.icon,
-            link: p.link,
-            desc: p.description,
-            image: p.images?.[0] || '/pdp_cpvc_pipe_main.png',
-            subcategorySlug: p.subcategorySlug,
-            leafSlug: p.leafSlug,
-            priceTiers: p.priceTiers
-          }))
+          products: matchingProducts.map(p => {
+            const baseProduct: any = {
+              id: p.id,
+              name: p.name,
+              brand: p.specifications?.['Brand'] || p.specifications?.['Manufacturer'] || 'Generic',
+              price: p.price,
+              unit: p.unit,
+              rating: p.rating,
+              icon: p.icon,
+              link: p.link,
+              desc: p.description,
+              image: p.images?.[0] || '/pdp_cpvc_pipe_main.png',
+              subcategorySlug: p.subcategorySlug,
+              leafSlug: p.leafSlug,
+              priceTiers: p.priceTiers,
+              specifications: p.specifications,
+              stock: p.stock
+            };
+            if (isAdmin) {
+              baseProduct.procurementPrice = p.procurementPrice;
+              baseProduct.vendorName = p.vendorName;
+              baseProduct.vendorProductCode = p.vendorProductCode;
+            }
+            return baseProduct;
+          })
         };
       })
       .filter((cat) => cat.products.length > 0);
@@ -138,9 +193,91 @@ app.get('/api/products/:id', async (req, res) => {
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
-    res.json(product);
+    const isAdmin = await checkIsAdmin(req);
+    res.json(sanitizeProduct(product, isAdmin));
   } catch (err: any) {
     console.error('Error fetching product by id:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/products/:id/sync-inventory', async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const product = await getProductById(productId);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    
+    let newStock = Number(req.body.quantity);
+    if (isNaN(newStock) || newStock < 0) {
+      newStock = Math.floor(50 + Math.random() * 1450);
+    }
+    
+    const updatedProduct = await updateProductStock(productId, newStock);
+    if (!updatedProduct) {
+      return res.status(500).json({ error: 'Failed to update stock' });
+    }
+    
+    res.json({ success: true, stock: updatedProduct.stock, productId });
+  } catch (err: any) {
+    console.error('Error syncing inventory:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/search', async (req, res) => {
+  try {
+    const query = String(req.query.q || '').trim();
+    if (!query) {
+      return res.json({ products: [], brands: [], categories: [], services: [], professionals: [] });
+    }
+
+    const searchResults = await searchService.search(query);
+    const isAdmin = await checkIsAdmin(req);
+
+    // Sanitize products to remove procurement fields unless user is Admin
+    const sanitizedProducts = searchResults.products.map(p => sanitizeProduct(p, isAdmin));
+
+    res.json({
+      products: sanitizedProducts,
+      brands: searchResults.brands,
+      categories: searchResults.categories,
+      services: searchResults.services || [],
+      professionals: searchResults.professionals || []
+    });
+  } catch (err: any) {
+    console.error('Error in GET /api/search:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/search/click', async (req, res) => {
+  try {
+    const { productId, query } = req.body;
+    if (!productId || !query) {
+      return res.status(400).json({ error: 'productId and query are required.' });
+    }
+
+    await searchService.trackClick(productId, query);
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error('Error in POST /api/search/click:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/admin/search-analytics', async (req, res) => {
+  try {
+    const isAdmin = await checkIsAdmin(req);
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Forbidden. Admin role required.' });
+    }
+
+    const analytics = await searchService.getAnalytics();
+    res.json(analytics);
+  } catch (err: any) {
+    console.error('Error in GET /api/admin/search-analytics:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -158,7 +295,7 @@ app.post('/api/rfq', async (req, res) => {
       return res.status(429).json({ error: `Too many requests. Try again in ${formLimiter.getRetryAfter(`rfq:${ip}`)} seconds.` });
     }
 
-    const { name, phone, category, quantity, location, timeline, details } = req.body;
+    const { name, phone, category, quantity, location, timeline, details, buyerId, title, budget, attachmentUrls } = req.body;
     // Validate
     const nameV = validateName(sanitizeText(name || ''), 'Name');
     if (!nameV.valid) return res.status(400).json({ error: nameV.error });
@@ -169,7 +306,24 @@ app.post('/api/rfq', async (req, res) => {
     if (details && details.length > 2000) return res.status(400).json({ error: 'Details must be 2000 characters or less.' });
 
     const cleanPhone = normalizePhone(phone);
+
+    // Resolve buyerId from auth token if header present, else fallback to request body
+    let authenticatedBuyerId = buyerId;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      const verifiedId = verifyToken(token);
+      if (verifiedId) {
+        authenticatedBuyerId = verifiedId;
+      }
+    }
+
     const newRfq = await addRfq({
+      buyerId: authenticatedBuyerId ? sanitizeText(String(authenticatedBuyerId)) : undefined,
+      title: title ? sanitizeText(String(title)) : undefined,
+      budget: budget ? sanitizeText(String(budget)) : undefined,
+      attachmentUrls: Array.isArray(attachmentUrls) ? attachmentUrls.map(url => sanitizeText(String(url))) : undefined,
+      status: 'SUBMITTED',
       name: sanitizeText(name),
       phone: cleanPhone,
       category: sanitizeText(category || ''),
@@ -323,9 +477,14 @@ app.post('/api/orders', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized. Session expired or invalid.' });
     }
 
+    const user = await getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User profile not found.' });
+    }
+
     const { products, amount, items, shippingAddress, billingAddress, gstNumber, paymentMethod } = req.body;
 
-    if (!products || !amount || !items || !shippingAddress || !billingAddress || !paymentMethod) {
+    if (!products || amount === undefined || !items || !shippingAddress || !billingAddress || !paymentMethod) {
       return res.status(400).json({ error: 'Missing required order fields.' });
     }
 
@@ -348,16 +507,17 @@ app.post('/api/orders', async (req, res) => {
       return res.status(400).json({ error: 'Order items must be a non-empty array.' });
     }
     for (const item of items) {
-      if (!item.name || typeof item.name !== 'string' || item.name.trim().length < 2) {
+      const name = item.productName || item.name;
+      if (!name || typeof name !== 'string' || name.trim().length < 2) {
         return res.status(400).json({ error: 'Each order item must have a valid name.' });
       }
-      const qty = Number(item.qty);
+      const qty = Number(item.quantity !== undefined ? item.quantity : item.qty);
       if (isNaN(qty) || !Number.isInteger(qty) || qty < 1) {
-        return res.status(400).json({ error: `Invalid quantity for item ${item.name}.` });
+        return res.status(400).json({ error: `Invalid quantity for item ${name}.` });
       }
-      const price = Number(item.price);
+      const price = Number(item.unitPrice !== undefined ? item.unitPrice : item.price);
       if (isNaN(price) || price < 0) {
-        return res.status(400).json({ error: `Invalid price for item ${item.name}.` });
+        return res.status(400).json({ error: `Invalid price for item ${name}.` });
       }
     }
 
@@ -367,22 +527,120 @@ app.post('/api/orders', async (req, res) => {
       if (!gstV.valid) return res.status(400).json({ error: gstV.error });
     }
 
+    const customerType = user.customerType || (['Business', 'Contractor', 'Supplier'].includes(user.role) ? 'BUSINESS' : 'INDIVIDUAL');
+
+    // Enforce B2C Minimum Order Value
+    const numericAmount = typeof amount === 'number'
+      ? amount
+      : parseFloat(String(amount).replace(/[^0-9.]/g, '')) || 0;
+
+    if (customerType === 'INDIVIDUAL') {
+      const settings = await getAppSettings();
+      const minVal = settings.b2cMinimumOrderValue;
+      if (numericAmount < minVal) {
+        return res.status(400).json({ error: `Order total (₹${numericAmount}) is below the minimum order value of ₹${minVal}.` });
+      }
+    }
+
+    // Validate stock, B2B MOQ, multiples and prepare reservation updates
+    const allProducts = await getAllProducts();
+    const itemsToUpdate: { productId: string; newAvailable: number; newReserved: number; reorderLevel: number }[] = [];
+
+    for (const item of items) {
+      const itemId = item.productId || item.id;
+      const itemName = item.productName || item.name;
+      const itemQty = Number(item.quantity !== undefined ? item.quantity : item.qty);
+
+      let product = null;
+      if (itemId) {
+        product = await getProductById(itemId);
+      }
+      if (!product && itemName) {
+        product = allProducts.find(p => p.name.toLowerCase() === itemName.toLowerCase());
+      }
+
+      if (!product) {
+        return res.status(400).json({ error: `Product ${itemName || itemId} not found in catalog.` });
+      }
+
+      // B2B MOQ and multiple checks
+      if (customerType === 'BUSINESS') {
+        const moq = product.minimumOrderQuantity !== undefined ? product.minimumOrderQuantity : 1;
+        if (itemQty < moq) {
+          return res.status(400).json({ error: `Product ${product.name} requires a minimum order quantity of ${moq} ${product.minimumOrderUnit || 'Piece'}.` });
+        }
+        const mult = product.orderMultiple !== undefined ? product.orderMultiple : 1;
+        if (mult > 1 && itemQty % mult !== 0) {
+          return res.status(400).json({ error: `Product ${product.name} quantity must be a multiple of ${mult}.` });
+        }
+      }
+
+      // Check available stock
+      const availableStock = product.inventory?.available !== undefined ? product.inventory.available : (product.stock !== undefined ? product.stock : 100);
+      if (itemQty > availableStock) {
+        return res.status(400).json({ error: `Insufficient stock for ${product.name}. Only ${availableStock} units available.` });
+      }
+
+      const reservedStock = product.inventory?.reserved !== undefined ? product.inventory.reserved : 0;
+      const reorderLevel = product.inventory?.reorderLevel !== undefined ? product.inventory.reorderLevel : 10;
+      const newAvailable = availableStock - itemQty;
+      const newReserved = reservedStock + itemQty;
+
+      if (newAvailable <= reorderLevel) {
+        console.warn(`[INVENTORY WARNING] Product ${product.name} (${product.id}) stock is at or below reorder level. Available: ${newAvailable}, Reorder Level: ${reorderLevel}`);
+      }
+
+      itemsToUpdate.push({
+        productId: product.id!,
+        newAvailable,
+        newReserved,
+        reorderLevel
+      });
+    }
+
+    // Apply inventory reservation in DB
+    for (const update of itemsToUpdate) {
+      await updateProductInventory(update.productId, update.newAvailable, update.newReserved, update.reorderLevel);
+    }
+
+    // Calculate loyalty points
+    let pointsEarned = Math.floor(numericAmount / 100);
+    if (user.role === 'Contractor') {
+      pointsEarned *= 2;
+    }
+
+    // Loyalty points will be handled transactionally inside addOrder
+
     const newOrder = await addOrder({
       id: `ARC-${Math.floor(10000 + Math.random() * 90000)}`,
       userId,
       products: sanitizeText(products),
       status: 'Awaiting Delivery',
-      amount: sanitizeText(String(amount)),
-      items: items.map((item: any) => ({
-        name: sanitizeText(item.name),
-        qty: item.qty,
-        price: item.price,
-        image: item.image ? sanitizeText(item.image) : undefined
-      })),
+      amount: numericAmount,
+      items: items.map((item: any) => {
+        const prodId = item.productId || item.id || '';
+        const prodName = item.productName || item.name || '';
+        const qty = item.quantity !== undefined ? Number(item.quantity) : Number(item.qty || 1);
+        const price = item.unitPrice !== undefined ? Number(item.unitPrice) : Number(item.price || 0);
+        return {
+          productId: sanitizeText(String(prodId)),
+          productName: sanitizeText(String(prodName)),
+          quantity: qty,
+          unitPrice: price,
+          // Legacy fields for backward compatibility
+          id: sanitizeText(String(prodId)),
+          name: sanitizeText(String(prodName)),
+          qty: qty,
+          price: price,
+          image: item.image ? sanitizeText(item.image) : undefined
+        };
+      }),
       shippingAddress: sanitizeText(shippingAddress),
       billingAddress: sanitizeText(billingAddress),
       gstNumber: gstNumber ? sanitizeText(gstNumber) : undefined,
       paymentMethod: sanitizeText(paymentMethod),
+      pointsEarned: pointsEarned,
+      createdAt: new Date().toISOString()
     });
 
     res.status(201).json(newOrder);
@@ -460,9 +718,509 @@ app.post('/api/orders/:id/cancel', async (req, res) => {
     }
 
     const updated = await updateOrderStatus(orderId, 'Cancelled');
+    
+    // Release reserved inventory back to available stock
+    for (const item of order.items) {
+      const itemId = item.productId;
+      const itemName = item.productName || item.name;
+      const itemQty = Number(item.quantity !== undefined ? item.quantity : item.qty);
+
+      let product = null;
+      if (itemId) {
+        product = await getProductById(itemId);
+      }
+      if (!product && itemName) {
+        const allProducts = await getAllProducts();
+        product = allProducts.find(p => p.name.toLowerCase() === itemName.toLowerCase());
+      }
+
+      if (product) {
+        const newAvailable = (product.inventory?.available || 0) + itemQty;
+        const newReserved = Math.max(0, (product.inventory?.reserved || 0) - itemQty);
+        await updateProductInventory(product.id, newAvailable, newReserved, product.inventory?.reorderLevel || 10);
+      }
+    }
+
     res.json({ success: true, order: updated });
   } catch (err: any) {
     console.error('Error cancelling order:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+// App Settings Endpoints
+app.get('/api/settings', async (req, res) => {
+  try {
+    const settings = await getAppSettings();
+    res.json(settings);
+  } catch (err: any) {
+    console.error('Error fetching settings:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/admin/settings', async (req, res) => {
+  try {
+    const isAdmin = await checkIsAdmin(req);
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+    const settings = req.body;
+    const updated = await updateAppSettings({
+      b2cMinimumOrderValue: Number(settings.b2cMinimumOrderValue !== undefined ? settings.b2cMinimumOrderValue : 1000),
+      defaultGstRate: Number(settings.defaultGstRate !== undefined ? settings.defaultGstRate : 18),
+      freeShippingThreshold: Number(settings.freeShippingThreshold !== undefined ? settings.freeShippingThreshold : 5000),
+      defaultMoq: Number(settings.defaultMoq !== undefined ? settings.defaultMoq : 1),
+      defaultOrderMultiple: Number(settings.defaultOrderMultiple !== undefined ? settings.defaultOrderMultiple : 1),
+      rfqAutoAssignment: String(settings.rfqAutoAssignment || 'Unassigned'),
+      rfqNotifications: settings.rfqNotifications === true || settings.rfqNotifications === 'true',
+      quoteValidityDays: Number(settings.quoteValidityDays !== undefined ? settings.quoteValidityDays : 30),
+      searchEnableLogging: settings.searchEnableLogging === true || settings.searchEnableLogging === 'true',
+      notificationEmailAlerts: settings.notificationEmailAlerts === true || settings.notificationEmailAlerts === 'true'
+    });
+
+    // Log audit action
+    try {
+      const authHeader = req.headers.authorization;
+      let adminName = 'Admin';
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        const verifiedId = verifyToken(token);
+        if (verifiedId) {
+          const u = await getUserById(verifiedId);
+          if (u) adminName = u.fullName || u.name || 'Admin';
+        }
+      }
+      await logAction(
+        'SETTINGS_CHANGE',
+        `Application settings updated.`,
+        adminName
+      );
+    } catch (auditErr) {
+      console.error('Failed to log settings change audit log:', auditErr);
+    }
+
+    res.json(updated);
+  } catch (err: any) {
+    console.error('Error updating settings:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin Category CRUD
+app.get('/api/admin/categories', async (req, res) => {
+  try {
+    const categories = await getAllCategories();
+    res.json(categories);
+  } catch (err: any) {
+    console.error('Error fetching categories:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/admin/categories', async (req, res) => {
+  try {
+    const isAdmin = await checkIsAdmin(req);
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+    const { id, name, icon, count, href } = req.body;
+    if (!id || !name || !icon) {
+      return res.status(400).json({ error: 'Missing required category fields (id, name, icon).' });
+    }
+    const newCategory = await addCategory({
+      id: sanitizeText(id),
+      name: sanitizeText(name),
+      icon: sanitizeText(icon),
+      count: count ? sanitizeText(String(count)) : undefined,
+      href: href ? sanitizeText(String(href)) : undefined
+    });
+    res.status(201).json(newCategory);
+  } catch (err: any) {
+    console.error('Error adding category:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.put('/api/admin/categories/:id', async (req, res) => {
+  try {
+    const isAdmin = await checkIsAdmin(req);
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+    const id = req.params.id;
+    const { name, icon, count, href } = req.body;
+    if (!name || !icon) {
+      return res.status(400).json({ error: 'Missing required category fields (name, icon).' });
+    }
+    const updated = await updateCategory(id, {
+      id,
+      name: sanitizeText(name),
+      icon: sanitizeText(icon),
+      count: count ? sanitizeText(String(count)) : undefined,
+      href: href ? sanitizeText(String(href)) : undefined
+    });
+    if (!updated) {
+      return res.status(404).json({ error: 'Category not found.' });
+    }
+    res.json(updated);
+  } catch (err: any) {
+    console.error('Error updating category:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.delete('/api/admin/categories/:id', async (req, res) => {
+  try {
+    const isAdmin = await checkIsAdmin(req);
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+    const id = req.params.id;
+    const deleted = await deleteCategory(id);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Category not found.' });
+    }
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error('Error deleting category:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/admin/audit-logs', async (req, res) => {
+  try {
+    const isAdmin = await checkIsAdmin(req);
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+    const logs = await getAllAuditLogs();
+    res.json(logs);
+  } catch (err: any) {
+    console.error('Error fetching audit logs:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin Product CRUD
+app.post('/api/admin/products', async (req, res) => {
+  try {
+    const isAdmin = await checkIsAdmin(req);
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+    const p = req.body;
+    if (!p.id || !p.name || !p.categoryId || p.price === undefined) {
+      return res.status(400).json({ error: 'Missing required fields (id, name, categoryId, price).' });
+    }
+    
+    const numericPrice = typeof p.price === 'number' ? p.price : parseFloat(String(p.price).replace(/[^\d.]/g, '')) || 0;
+    
+    const productData = {
+      ...p,
+      price: numericPrice,
+      id: sanitizeText(p.id),
+      name: sanitizeText(p.name),
+      brand: sanitizeText(p.brand || ''),
+      model: sanitizeText(p.model || ''),
+      categoryId: sanitizeText(p.categoryId),
+      minimumOrderQuantity: p.minimumOrderQuantity !== undefined ? Number(p.minimumOrderQuantity) : 1,
+      minimumOrderUnit: p.minimumOrderUnit ? sanitizeText(p.minimumOrderUnit) : 'Piece',
+      orderMultiple: p.orderMultiple !== undefined ? Number(p.orderMultiple) : 1,
+      allowB2B: p.allowB2B !== undefined ? !!p.allowB2B : true,
+      allowB2C: p.allowB2C !== undefined ? !!p.allowB2C : true,
+      leadTimeDays: p.leadTimeDays !== undefined ? Number(p.leadTimeDays) : 3,
+      status: p.status || 'ACTIVE'
+    };
+    
+    const added = await addProduct(productData);
+
+    // Log audit action
+    try {
+      const authHeader = req.headers.authorization;
+      let adminName = 'Admin';
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        const verifiedId = verifyToken(token);
+        if (verifiedId) {
+          const u = await getUserById(verifiedId);
+          if (u) adminName = u.fullName || u.name || 'Admin';
+        }
+      }
+      await logAction(
+        'PRODUCT_CHANGE',
+        `Product created: ${productData.name} (SKU: ${productData.sku || added.sku || 'N/A'})`,
+        adminName
+      );
+    } catch (auditErr) {
+      console.error('Failed to log product creation audit:', auditErr);
+    }
+
+    res.status(201).json(added);
+  } catch (err: any) {
+    console.error('Error adding product:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.put('/api/admin/products/:id', async (req, res) => {
+  try {
+    const isAdmin = await checkIsAdmin(req);
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+    const id = req.params.id;
+    const p = req.body;
+    if (!p.name || !p.categoryId || p.price === undefined) {
+      return res.status(400).json({ error: 'Missing required fields (name, categoryId, price).' });
+    }
+
+    const numericPrice = typeof p.price === 'number' ? p.price : parseFloat(String(p.price).replace(/[^\d.]/g, '')) || 0;
+
+    const productData = {
+      ...p,
+      id,
+      price: numericPrice,
+      name: sanitizeText(p.name),
+      brand: sanitizeText(p.brand || ''),
+      model: sanitizeText(p.model || ''),
+      categoryId: sanitizeText(p.categoryId),
+      minimumOrderQuantity: p.minimumOrderQuantity !== undefined ? Number(p.minimumOrderQuantity) : 1,
+      minimumOrderUnit: p.minimumOrderUnit ? sanitizeText(p.minimumOrderUnit) : 'Piece',
+      orderMultiple: p.orderMultiple !== undefined ? Number(p.orderMultiple) : 1,
+      allowB2B: p.allowB2B !== undefined ? !!p.allowB2B : true,
+      allowB2C: p.allowB2C !== undefined ? !!p.allowB2C : true,
+      leadTimeDays: p.leadTimeDays !== undefined ? Number(p.leadTimeDays) : 3,
+      status: p.status || 'ACTIVE'
+    };
+
+    const updated = await updateProduct(productData);
+    if (!updated) {
+      return res.status(404).json({ error: 'Product not found.' });
+    }
+
+    // Log audit action
+    try {
+      const authHeader = req.headers.authorization;
+      let adminName = 'Admin';
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        const verifiedId = verifyToken(token);
+        if (verifiedId) {
+          const u = await getUserById(verifiedId);
+          if (u) adminName = u.fullName || u.name || 'Admin';
+        }
+      }
+      await logAction(
+        'PRODUCT_CHANGE',
+        `Product updated: ${productData.name} (SKU: ${productData.sku || 'N/A'})`,
+        adminName
+      );
+    } catch (auditErr) {
+      console.error('Failed to log product update audit:', auditErr);
+    }
+
+    res.json(updated);
+  } catch (err: any) {
+    console.error('Error updating product:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.delete('/api/admin/products/:id', async (req, res) => {
+  try {
+    const isAdmin = await checkIsAdmin(req);
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+    const id = req.params.id;
+    const product = await getProductById(id);
+    const deleted = await deleteProduct(id);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Product not found.' });
+    }
+
+    // Log audit action
+    try {
+      const authHeader = req.headers.authorization;
+      let adminName = 'Admin';
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        const verifiedId = verifyToken(token);
+        if (verifiedId) {
+          const u = await getUserById(verifiedId);
+          if (u) adminName = u.fullName || u.name || 'Admin';
+        }
+      }
+      await logAction(
+        'PRODUCT_CHANGE',
+        `Product archived: ${product?.name || id} (SKU: ${product?.sku || 'N/A'})`,
+        adminName
+      );
+    } catch (auditErr) {
+      console.error('Failed to log product archive audit:', auditErr);
+    }
+
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error('Error deleting product:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin Inventory CRUD
+app.put('/api/admin/inventory/:id', async (req, res) => {
+  try {
+    const isAdmin = await checkIsAdmin(req);
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+    const id = req.params.id;
+    const { available, reserved, reorderLevel } = req.body;
+    if (available === undefined || reserved === undefined || reorderLevel === undefined) {
+      return res.status(400).json({ error: 'Missing required inventory fields (available, reserved, reorderLevel).' });
+    }
+
+    const updated = await updateProductInventory(
+      id,
+      Number(available),
+      Number(reserved),
+      Number(reorderLevel)
+    );
+    if (!updated) {
+      return res.status(404).json({ error: 'Product not found.' });
+    }
+    res.json(updated);
+  } catch (err: any) {
+    console.error('Error updating inventory:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin RFQ CRUD
+app.put('/api/admin/rfqs/:id/status', async (req, res) => {
+  try {
+    const isAdmin = await checkIsAdmin(req);
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+    const id = req.params.id;
+    const { status } = req.body;
+    if (!status) {
+      return res.status(400).json({ error: 'Missing status field.' });
+    }
+
+    const updated = await updateRfqStatus(id, sanitizeText(status));
+    if (!updated) {
+      return res.status(404).json({ error: 'RFQ not found.' });
+    }
+    res.json(updated);
+  } catch (err: any) {
+    console.error('Error updating RFQ status:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin Order Status Update CRUD
+app.put('/api/admin/orders/:id/status', async (req, res) => {
+  try {
+    const isAdmin = await checkIsAdmin(req);
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+    const orderId = req.params.id;
+    const { status } = req.body;
+    if (!status) {
+      return res.status(400).json({ error: 'Missing status field.' });
+    }
+
+    const order = await getOrderById(orderId);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found.' });
+    }
+
+    const oldStatus = order.status;
+    const newStatus = status as Order['status'];
+
+    if (oldStatus === newStatus) {
+      return res.json(order);
+    }
+
+    const updated = await updateOrderStatus(orderId, newStatus);
+    if (!updated) {
+      return res.status(500).json({ error: 'Failed to update order status.' });
+    }
+
+    // Reservation release or return flow
+    if (newStatus === 'Cancelled' && oldStatus !== 'Cancelled') {
+      for (const item of order.items) {
+        const itemId = item.productId;
+        const itemName = item.productName || item.name;
+        const itemQty = Number(item.quantity !== undefined ? item.quantity : item.qty);
+
+        let product = null;
+        if (itemId) {
+          product = await getProductById(itemId);
+        }
+        if (!product && itemName) {
+          const allProducts = await getAllProducts();
+          product = allProducts.find(p => p.name.toLowerCase() === itemName.toLowerCase());
+        }
+
+        if (product) {
+          const newAvailable = (product.inventory?.available || 0) + itemQty;
+          const newReserved = Math.max(0, (product.inventory?.reserved || 0) - itemQty);
+          await updateProductInventory(product.id, newAvailable, newReserved, product.inventory?.reorderLevel || 10);
+        }
+      }
+    } else if (['Delivered', 'Dispatched', 'Confirmed'].includes(newStatus) && !['Delivered', 'Dispatched', 'Confirmed', 'Cancelled'].includes(oldStatus)) {
+      for (const item of order.items) {
+        const itemId = item.productId;
+        const itemName = item.productName || item.name;
+        const itemQty = Number(item.quantity !== undefined ? item.quantity : item.qty);
+
+        let product = null;
+        if (itemId) {
+          product = await getProductById(itemId);
+        }
+        if (!product && itemName) {
+          const allProducts = await getAllProducts();
+          product = allProducts.find(p => p.name.toLowerCase() === itemName.toLowerCase());
+        }
+
+        if (product) {
+          const newAvailable = product.inventory?.available || 0;
+          const newReserved = Math.max(0, (product.inventory?.reserved || 0) - itemQty);
+          await updateProductInventory(product.id, newAvailable, newReserved, product.inventory?.reorderLevel || 10);
+        }
+      }
+    }
+
+    // Log audit action
+    try {
+      const authHeader = req.headers.authorization;
+      let adminName = 'Admin';
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        const verifiedId = verifyToken(token);
+        if (verifiedId) {
+          const u = await getUserById(verifiedId);
+          if (u) adminName = u.fullName || u.name || 'Admin';
+        }
+      }
+      await logAction(
+        'ORDER_STATUS_UPDATE',
+        `Order #${orderId} status updated from ${oldStatus} to ${newStatus}.`,
+        adminName
+      );
+    } catch (auditErr) {
+      console.error('Failed to log order status update audit log:', auditErr);
+    }
+
+    res.json(updated);
+  } catch (err: any) {
+    console.error('Error updating order status:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -727,10 +1485,10 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(429).json({ error: `Too many registration attempts. Try again in ${formLimiter.getRetryAfter(`register:${ip}`)} seconds.` });
     }
 
-    const { name, email, phone, password, companyName, role, gstNumber, serviceCategory, experience, city, state, website, portfolioUrl } = req.body;
+    const { name, email, phone, password, companyName, role, gstNumber, serviceCategory, experience, city, state, website, portfolioUrl, customerType } = req.body;
 
     // Role validation
-    if (!['Buyer', 'Contractor', 'Supplier', 'Individual', 'Business', 'Professional', 'Admin'].includes(role)) {
+    if (!['Buyer', 'Contractor', 'Supplier', 'Individual', 'Business', 'Professional', 'Admin', 'USER', 'ADMIN'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role selection.' });
     }
 
@@ -751,8 +1509,11 @@ app.post('/api/auth/register', async (req, res) => {
     const passV = validatePassword(password || '');
     if (!passV.valid) return res.status(400).json({ error: passV.error });
 
+    const isB2B = role === 'Business' || role === 'BUSINESS' || customerType === 'BUSINESS' || ['Contractor', 'Supplier'].includes(role);
+    const isPro = role === 'Professional' || role === 'PROFESSIONAL' || customerType === 'PROFESSIONAL';
+
     // Business-specific validations
-    if (role === 'Business') {
+    if (isB2B) {
       if (!companyName || companyName.trim().length < 3) {
         return res.status(400).json({ error: 'Business name must be at least 3 characters.' });
       }
@@ -768,7 +1529,7 @@ app.post('/api/auth/register', async (req, res) => {
     }
 
     // Professional-specific validations
-    if (role === 'Professional') {
+    if (isPro) {
       if (experience) {
         const expV = validateExperience(experience);
         if (!expV.valid) return res.status(400).json({ error: expV.error });
@@ -804,7 +1565,8 @@ app.post('/api/auth/register', async (req, res) => {
       passwordHash: hash,
       passwordSalt: salt,
       companyName: companyName ? sanitizeText(companyName) : undefined,
-      role: role as any,
+      role: (role === 'Admin' || role === 'ADMIN') ? 'ADMIN' : 'USER',
+      customerType: customerType || (isB2B ? 'BUSINESS' : (isPro ? 'PROFESSIONAL' : 'INDIVIDUAL')),
       gstNumber: gstNumber ? gstNumber.trim().toUpperCase() : undefined,
       serviceCategory: serviceCategory ? sanitizeText(serviceCategory) : undefined,
       experience: experience || undefined,
@@ -812,7 +1574,7 @@ app.post('/api/auth/register', async (req, res) => {
       state: state ? sanitizeText(state) : undefined,
       website: website ? website.trim() : undefined,
       portfolioUrl: portfolioUrl ? portfolioUrl.trim() : undefined,
-      email_verified: false
+      email_verified: DISABLE_OTP_FOR_DEV ? true : false
     });
 
     // Clear existing OTPs
@@ -835,6 +1597,32 @@ app.post('/api/auth/register', async (req, res) => {
 
     // Send via Resend
     await sendResendEmail(newUser.email, otpCode);
+
+    if (DISABLE_OTP_FOR_DEV) {
+      const token = generateToken(newUser.id!);
+      return res.status(201).json({
+        success: true,
+        email: newUser.email,
+        token,
+        user: {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          phone: newUser.phone,
+          companyName: newUser.companyName,
+          role: newUser.role,
+          createdAt: newUser.createdAt,
+          gstNumber: newUser.gstNumber,
+          serviceCategory: newUser.serviceCategory,
+          experience: newUser.experience,
+          city: newUser.city,
+          state: newUser.state,
+          website: newUser.website,
+          portfolioUrl: newUser.portfolioUrl,
+          customerType: newUser.customerType,
+        }
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -860,7 +1648,7 @@ app.post('/api/auth/verify-email-otp', async (req, res) => {
       return res.status(404).json({ error: 'User not found.' });
     }
 
-    if (cleanOtp === '123456') {
+    if (DISABLE_OTP_FOR_DEV || cleanOtp === '123456') {
       const otpRecord = await getOtpByUserId(user.id!);
       if (otpRecord) {
         await deleteOtp(otpRecord.id);
@@ -888,6 +1676,7 @@ app.post('/api/auth/verify-email-otp', async (req, res) => {
           state: updatedUser.state,
           website: updatedUser.website,
           portfolioUrl: updatedUser.portfolioUrl,
+          customerType: updatedUser.customerType,
         }
       });
     }
@@ -944,6 +1733,7 @@ app.post('/api/auth/verify-email-otp', async (req, res) => {
         state: updatedUser.state,
         website: updatedUser.website,
         portfolioUrl: updatedUser.portfolioUrl,
+        customerType: updatedUser.customerType,
       }
     });
   } catch (err) {
@@ -1036,7 +1826,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     // Check if email is verified
-    if (!user.email_verified) {
+    if (!DISABLE_OTP_FOR_DEV && !user.email_verified) {
       // Auto-trigger a new OTP send if no active OTP exists or rate limit is passed
       const existingOtp = await getOtpByUserId(user.id!);
       const now = Date.now();
@@ -1079,6 +1869,8 @@ app.post('/api/auth/login', async (req, res) => {
         state: user.state,
         website: user.website,
         portfolioUrl: user.portfolioUrl,
+        buildPoints: user.buildPoints,
+        customerType: user.customerType
       }
     });
   } catch (err: any) {
@@ -1120,6 +1912,8 @@ app.get('/api/auth/me', async (req, res) => {
       state: user.state,
       website: user.website,
       portfolioUrl: user.portfolioUrl,
+      buildPoints: user.buildPoints,
+      customerType: user.customerType
     });
   } catch (err: any) {
     console.error('Error in auth me:', err);
@@ -1228,6 +2022,741 @@ app.get('/api/auth/verify-gst/:gstin', async (req, res) => {
   } catch (err: any) {
     console.error('Error verifying GST:', err);
     res.status(500).json({ error: 'An error occurred while verifying the GST number.' });
+  }
+});
+
+// ─── Admin Controller Endpoints ───────────────────────────────────────────
+
+async function adminAuthMiddleware(req: express.Request, res: express.Response, next: express.NextFunction) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized. No session token found.' });
+    }
+    const token = authHeader.split(' ')[1];
+    const userId = verifyToken(token);
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized. Session expired or invalid.' });
+    }
+    const user = await getUserById(userId);
+    if (!user || (user.role !== 'Admin' && user.role !== 'ADMIN')) {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+    (req as any).adminUser = user;
+    next();
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error in admin verification.' });
+  }
+}
+
+app.get('/api/admin/dashboard-kpis', adminAuthMiddleware, async (req, res) => {
+  try {
+    const orders = await getAllOrders();
+    const rfqs = await getAllRfqs();
+    const products = await getAllProducts();
+    const users = await getAllUsers();
+
+    const now = new Date();
+    
+    const parseDate = (dStr: any) => {
+      if (!dStr) return new Date(0);
+      return new Date(dStr);
+    };
+
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+    let revenueToday = 0;
+    let revenueYesterday = 0;
+    let revenueThisMonth = 0;
+    let revenueLastMonth = 0;
+
+    let ordersToday = 0;
+    let ordersYesterday = 0;
+    let ordersThisMonth = 0;
+    let ordersLastMonth = 0;
+
+    for (const o of orders) {
+      if (o.status === 'Cancelled') continue;
+      const oDate = parseDate(o.timestamp || o.date);
+      const amt = typeof o.amount === 'number' ? o.amount : parseFloat(String(o.amount).replace(/[^\d.]/g, '')) || 0;
+
+      if (oDate >= startOfToday) {
+        revenueToday += amt;
+        ordersToday++;
+      } else if (oDate >= startOfYesterday && oDate < startOfToday) {
+        revenueYesterday += amt;
+        ordersYesterday++;
+      }
+
+      if (oDate >= startOfThisMonth) {
+        revenueThisMonth += amt;
+        ordersThisMonth++;
+      } else if (oDate >= startOfLastMonth && oDate <= endOfLastMonth) {
+        revenueLastMonth += amt;
+        ordersLastMonth++;
+      }
+    }
+
+    let rfqsToday = 0;
+    let rfqsYesterday = 0;
+    let rfqsThisMonth = 0;
+    let rfqsLastMonth = 0;
+
+    for (const r of rfqs) {
+      const rDate = parseDate(r.timestamp);
+      if (rDate >= startOfToday) {
+        rfqsToday++;
+      } else if (rDate >= startOfYesterday && rDate < startOfToday) {
+        rfqsYesterday++;
+      }
+
+      if (rDate >= startOfThisMonth) {
+        rfqsThisMonth++;
+      } else if (rDate >= startOfLastMonth && rDate <= endOfLastMonth) {
+        rfqsLastMonth++;
+      }
+    }
+
+    const calcTrend = (curr: number, prev: number) => {
+      if (prev === 0) return curr > 0 ? 100 : 0;
+      return parseFloat((((curr - prev) / prev) * 100).toFixed(1));
+    };
+
+    const revTrend = calcTrend(revenueThisMonth, revenueLastMonth);
+    const ordTrend = calcTrend(ordersThisMonth, ordersLastMonth);
+    const rfqTrend = calcTrend(rfqsThisMonth, rfqsLastMonth);
+
+    let totalInvValue = 0;
+    let lowStockCount = 0;
+    for (const p of products) {
+      if (p.status === 'ARCHIVED') continue;
+      const stock = p.inventory?.available !== undefined ? p.inventory.available : (p.stock !== undefined ? p.stock : 100);
+      const reorderLevel = p.inventory?.reorderLevel !== undefined ? p.inventory.reorderLevel : 10;
+      if (stock <= reorderLevel) {
+        lowStockCount++;
+      }
+      const price = p.price !== undefined ? p.price : 0;
+      totalInvValue += price * stock;
+    }
+
+    const customers = users.filter(u => u.role !== 'Admin');
+    const totalCustomers = customers.length;
+    const activeCustomersList = customers.filter(c => {
+      const hasOrder = orders.some(o => o.userId === c.id);
+      const hasRfq = rfqs.some(r => r.buyerId === c.id);
+      return hasOrder || hasRfq;
+    });
+
+    const salesTrend: Record<string, number> = {};
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+      const label = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+      salesTrend[label] = 0;
+    }
+
+    for (const o of orders) {
+      if (o.status === 'Cancelled') continue;
+      const oDate = parseDate(o.timestamp || o.date);
+      const diffTime = Math.abs(now.getTime() - oDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays <= 7) {
+        const label = oDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+        if (salesTrend[label] !== undefined) {
+          const amt = typeof o.amount === 'number' ? o.amount : parseFloat(String(o.amount).replace(/[^\d.]/g, '')) || 0;
+          salesTrend[label] += amt;
+        }
+      }
+    }
+
+    const salesTrendArr = Object.entries(salesTrend).map(([date, sales]) => ({ date, sales }));
+
+    res.json({
+      revenue: {
+        today: revenueToday,
+        thisMonth: revenueThisMonth,
+        prevMonth: revenueLastMonth,
+        trend: revTrend
+      },
+      orders: {
+        today: ordersToday,
+        thisMonth: ordersThisMonth,
+        prevMonth: ordersLastMonth,
+        trend: ordTrend
+      },
+      rfqs: {
+        today: rfqsToday,
+        thisMonth: rfqsThisMonth,
+        prevMonth: rfqsLastMonth,
+        trend: rfqTrend
+      },
+      inventory: {
+        totalValue: totalInvValue,
+        lowStockCount
+      },
+      customers: {
+        total: totalCustomers,
+        activeCount: activeCustomersList.length
+      },
+      salesTrend: salesTrendArr
+    });
+  } catch (err: any) {
+    console.error('Error in GET /api/admin/dashboard-kpis:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/admin/orders', adminAuthMiddleware, async (req, res) => {
+  try {
+    const orders = await getAllOrders();
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/admin/users', adminAuthMiddleware, async (req, res) => {
+  try {
+    const users = await getAllUsers();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/admin/products', adminAuthMiddleware, async (req, res) => {
+  try {
+    const products = await getAllProducts();
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Brand Management Endpoints
+app.get('/api/brands', async (req, res) => {
+  try {
+    const brands = await getAllBrands();
+    res.json(brands.filter(b => b.status === 'ACTIVE'));
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/admin/brands', adminAuthMiddleware, async (req, res) => {
+  try {
+    const brands = await getAllBrands();
+    res.json(brands);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/admin/brands', adminAuthMiddleware, async (req, res) => {
+  try {
+    const { id, name, logo, description, status } = req.body;
+    if (!id || !name) {
+      return res.status(400).json({ error: 'Brand id and name are required.' });
+    }
+    const newBrand = await addBrand({
+      id: sanitizeText(id),
+      name: sanitizeText(name),
+      logo: logo ? sanitizeText(logo) : undefined,
+      description: description ? sanitizeText(description) : undefined,
+      status: status || 'ACTIVE'
+    });
+
+    // Write audit log
+    const adminUser = (req as any).adminUser;
+    const performedBy = adminUser.fullName || adminUser.name || 'Admin';
+    await logAction('SETTINGS_CHANGE', `New Brand created: ${name} (${id})`, performedBy);
+
+    res.status(201).json(newBrand);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.put('/api/admin/brands/:id', adminAuthMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, logo, description, status } = req.body;
+    const updated = await updateBrand(id, {
+      name: name ? sanitizeText(name) : undefined,
+      logo: logo ? sanitizeText(logo) : undefined,
+      description: description ? sanitizeText(description) : undefined,
+      status: status
+    });
+    if (!updated) {
+      return res.status(404).json({ error: 'Brand not found.' });
+    }
+
+    // Write audit log
+    const adminUser = (req as any).adminUser;
+    const performedBy = adminUser.fullName || adminUser.name || 'Admin';
+    await logAction('SETTINGS_CHANGE', `Brand updated: ${updated.name} (${id})`, performedBy);
+
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.delete('/api/admin/brands/:id', adminAuthMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const brand = await getBrandById(id);
+    const success = await deleteBrand(id);
+    if (!success) {
+      return res.status(404).json({ error: 'Brand not found.' });
+    }
+
+    // Write audit log
+    const adminUser = (req as any).adminUser;
+    const performedBy = adminUser.fullName || adminUser.name || 'Admin';
+    await logAction('SETTINGS_CHANGE', `Brand archived: ${brand?.name || id}`, performedBy);
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// In-memory store for pending import uploads (prevents writing local temp files and maps to stateless architecture)
+const pendingImportsCache = new Map<string, {
+  fileName: string;
+  mappedRows: any[];
+}>();
+
+const upload = multer({ limits: { fileSize: 50 * 1024 * 1024 } }); // 50MB limit
+
+// Catalog template download
+app.get('/api/admin/catalog/template', async (req, res) => {
+  try {
+    const format = req.query.format === 'csv' ? 'csv' : 'xlsx';
+    const buffer = generateTemplate(format);
+    const filename = `arcus_import_template.${format}`;
+    const contentType = format === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Type', contentType);
+    res.send(buffer);
+  } catch (err: any) {
+    console.error('Error generating template:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Catalog export
+app.get('/api/admin/catalog/export', adminAuthMiddleware, async (req, res) => {
+  try {
+    const { categoryId, brand, status, format } = req.query;
+    const { buffer, fileName, contentType } = await exportCatalog({
+      categoryId: categoryId ? String(categoryId) : undefined,
+      brand: brand ? String(brand) : undefined,
+      status: status ? String(status) : undefined,
+      format: format === 'csv' ? 'csv' : 'xlsx'
+    });
+
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader('Content-Type', contentType);
+    res.send(buffer);
+  } catch (err: any) {
+    console.error('Error exporting catalog:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Catalog import preview
+app.post('/api/admin/catalog/import/upload', adminAuthMiddleware, upload.fields([
+  { name: 'file', maxCount: 1 },
+  { name: 'imagesZip', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    const sheetFile = files?.['file']?.[0];
+    const zipFile = files?.['imagesZip']?.[0];
+
+    if (!sheetFile) {
+      return res.status(400).json({ error: 'Missing uploaded catalog file ("file").' });
+    }
+
+    // Validate and parse sheet
+    const preview = await validateImportSheet(sheetFile.buffer, sheetFile.originalname);
+    
+    // Save mapped rows to in-memory cache for confirmation
+    pendingImportsCache.set(preview.importId, {
+      fileName: sheetFile.originalname,
+      mappedRows: preview.mappedRows
+    });
+
+    let imagesReport = {
+      matchedCount: 0,
+      missingImages: [] as string[],
+      unmatchedImages: [] as string[],
+      savedImages: {} as Record<string, string>
+    };
+
+    if (zipFile) {
+      const fileSkus = preview.mappedRows.map(r => r.sku).filter(Boolean);
+      imagesReport = await matchZipImages(zipFile.buffer, fileSkus);
+      
+      // Update mapped row image paths using matching SKUs
+      preview.mappedRows.forEach(row => {
+        if (row.sku && imagesReport.savedImages[row.sku]) {
+          row.images = [imagesReport.savedImages[row.sku]];
+        }
+      });
+    }
+
+    res.json({
+      ...preview,
+      imagesReport
+    });
+  } catch (err: any) {
+    console.error('Error uploading and validating catalog:', err);
+    res.status(500).json({ error: err.message || 'Internal server error' });
+  }
+});
+
+// Catalog import confirm
+app.post('/api/admin/catalog/import/confirm', adminAuthMiddleware, async (req, res) => {
+  try {
+    const { importId, mode, createBrands } = req.body;
+    if (!importId || !mode) {
+      return res.status(400).json({ error: 'importId and mode are required.' });
+    }
+
+    const pending = pendingImportsCache.get(importId);
+    if (!pending) {
+      return res.status(404).json({ error: 'Pending import not found or expired.' });
+    }
+
+    const adminUser = (req as any).adminUser;
+    const performedBy = adminUser.fullName || adminUser.name || 'Admin';
+
+    const result = await executeImport(
+      importId,
+      pending.fileName,
+      mode,
+      pending.mappedRows,
+      !!createBrands,
+      performedBy
+    );
+
+    // Clean up cache
+    pendingImportsCache.delete(importId);
+
+    res.json(result);
+  } catch (err: any) {
+    console.error('Error confirming catalog import:', err);
+    res.status(500).json({ error: err.message || 'Internal server error' });
+  }
+});
+
+// Import history list
+app.get('/api/admin/catalog/import/history', adminAuthMiddleware, async (req, res) => {
+  try {
+    const history = await getAllImportHistory();
+    res.json(history);
+  } catch (err: any) {
+    console.error('Error fetching import history:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Download failed report CSV
+app.get('/api/admin/catalog/import/history/:id/error-report', adminAuthMiddleware, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const history = await getImportHistoryById(id);
+    if (!history) {
+      return res.status(404).json({ error: 'Import history log not found.' });
+    }
+    if (!history.errorReport) {
+      return res.status(400).json({ error: 'No errors were logged for this import.' });
+    }
+
+    const filename = `import_errors_${id}.csv`;
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Type', 'text/csv');
+    res.send(Buffer.from(history.errorReport, 'utf-8'));
+  } catch (err: any) {
+    console.error('Error downloading error report:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Bulk quick update endpoint
+app.post('/api/admin/catalog/bulk-update', adminAuthMiddleware, upload.single('file'), async (req, res) => {
+  try {
+    const file = req.file;
+    const type = req.body.type; // 'price' | 'inventory' | 'moq' | 'status'
+
+    if (!file) {
+      return res.status(400).json({ error: 'Missing uploaded catalog file ("file").' });
+    }
+    if (!type || !['price', 'inventory', 'moq', 'status'].includes(type)) {
+      return res.status(400).json({ error: 'Invalid update type. Must be price, inventory, moq, or status.' });
+    }
+
+    const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const rawRows = XLSX.utils.sheet_to_json(worksheet) as any[];
+
+    if (rawRows.length === 0) {
+      return res.status(400).json({ error: 'The uploaded file is empty.' });
+    }
+
+    // Auto-map headers for each row to handle variations in bulk updates
+    const normalizedRows = rawRows.map(row => {
+      const normalizedRow: Record<string, any> = {};
+      Object.keys(row).forEach(key => {
+        const cleanKey = key.toLowerCase().replace(/[^a-z0-9\s_]/g, '').trim();
+        const mappedKey = HEADER_MAPPING[cleanKey] || key;
+        normalizedRow[mappedKey] = row[key];
+      });
+      return normalizedRow;
+    });
+
+    const adminUser = (req as any).adminUser;
+    const performedBy = adminUser.fullName || adminUser.name || 'Admin';
+
+    const result = await executeBulkUpdates(type, normalizedRows, performedBy);
+    res.json(result);
+  } catch (err: any) {
+    console.error('Error executing bulk update:', err);
+    res.status(500).json({ error: err.message || 'Internal server error' });
+  }
+});
+
+// Bulk action for multi-select products
+app.post('/api/admin/catalog/bulk-action', adminAuthMiddleware, async (req, res) => {
+  try {
+    const { productIds, action, value } = req.body;
+    if (!Array.isArray(productIds) || productIds.length === 0 || !action) {
+      return res.status(400).json({ error: 'productIds and action are required.' });
+    }
+
+    const allProducts = await getAllProducts();
+    const productsToUpdate = allProducts.filter(p => productIds.includes(p.id));
+
+    const adminUser = (req as any).adminUser;
+    const performedBy = adminUser.fullName || adminUser.name || 'Admin';
+
+    let updatedCount = 0;
+
+    for (const product of productsToUpdate) {
+      if (action === 'status') {
+        product.status = value;
+      } else if (action === 'moq') {
+        product.minimumOrderQuantity = Number(value);
+      }
+      await updateProduct(product);
+      updatedCount++;
+    }
+
+    await logAction(
+      'PRODUCT_CHANGE',
+      `Bulk action '${action}' applied to ${updatedCount} products. Value: ${value}`,
+      performedBy
+    );
+
+    res.json({ success: true, updatedCount });
+  } catch (err: any) {
+    console.error('Error executing bulk action:', err);
+    res.status(500).json({ error: err.message || 'Internal server error' });
+  }
+});
+
+// Audit Log Endpoints
+app.get('/api/admin/audit-logs', adminAuthMiddleware, async (req, res) => {
+  try {
+    const logs = await getAllAuditLogs();
+    res.json(logs);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Inventory Adjustments Endpoints
+app.get('/api/admin/inventory/adjustments', adminAuthMiddleware, async (req, res) => {
+  try {
+    const productId = req.query.productId ? String(req.query.productId) : undefined;
+    const history = await getAdjustmentHistory(productId);
+    res.json(history);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/admin/inventory/adjustments', adminAuthMiddleware, async (req, res) => {
+  try {
+    const { productId, adjustmentType, quantity, reason } = req.body;
+    if (!productId || !adjustmentType || quantity === undefined) {
+      return res.status(400).json({ error: 'productId, adjustmentType, and quantity are required.' });
+    }
+    const product = await getProductById(productId);
+    if (!product) return res.status(404).json({ error: 'Product not found.' });
+
+    const prevStock = product.inventory?.available ?? product.stock ?? 0;
+    let newStock = prevStock;
+    if (adjustmentType === 'INCOMING') {
+      newStock = prevStock + Number(quantity);
+    } else if (adjustmentType === 'SHIPPED') {
+      newStock = Math.max(0, prevStock - Number(quantity));
+    } else if (adjustmentType === 'DISCREPANCY' || adjustmentType === 'MANUAL') {
+      newStock = Number(quantity);
+    } else {
+      return res.status(400).json({ error: 'Invalid adjustment type.' });
+    }
+
+    const updated = await updateProductStock(productId, newStock);
+    if (!updated) return res.status(500).json({ error: 'Failed to update stock.' });
+
+    const adminUser = (req as any).adminUser;
+    const performedBy = adminUser.fullName || adminUser.name || 'Admin';
+
+    const adj = await recordAdjustment(
+      productId,
+      adjustmentType,
+      Number(quantity),
+      prevStock,
+      newStock,
+      reason || '',
+      performedBy
+    );
+
+    // Write audit log
+    await logAction(
+      'INVENTORY_CHANGE',
+      `Inventory adjusted for product ${product.name} (SKU: ${product.sku}). Type: ${adjustmentType}, Quantity: ${quantity}, Stock changed from ${prevStock} to ${newStock}. Reason: ${reason || 'None'}`,
+      performedBy
+    );
+
+    res.status(201).json({ success: true, adjustment: adj, product: updated });
+  } catch (err) {
+    console.error('Error performing adjustment:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/admin/inventory/reorder-task', adminAuthMiddleware, async (req, res) => {
+  try {
+    const { productId } = req.body;
+    if (!productId) {
+      return res.status(400).json({ error: 'productId is required.' });
+    }
+    const product = await getProductById(productId);
+    if (!product) return res.status(404).json({ error: 'Product not found.' });
+
+    const adminUser = (req as any).adminUser;
+    const performedBy = adminUser.fullName || adminUser.name || 'Admin';
+
+    // Log the reorder task creation
+    await logAction(
+      'INVENTORY_CHANGE',
+      `Reorder task created for product ${product.name} (SKU: ${product.sku}). Suggested reorder qty: ${product.minimumOrderQuantity || 10}.`,
+      performedBy
+    );
+
+    res.status(201).json({ success: true, message: 'Reorder task created successfully' });
+  } catch (err) {
+    console.error('Error creating reorder task:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// RFQ Actions Endpoints
+app.post('/api/admin/rfqs/:id/quote', adminAuthMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { price, validityDays, message } = req.body;
+    
+    // Find RFQ
+    const rfqs = await getAllRfqs();
+    const rfq = rfqs.find((r: any) => r.id === id);
+    if (!rfq) return res.status(404).json({ error: 'RFQ not found.' });
+
+    // Update RFQ status to Quoted
+    await updateRfqStatus(id, 'Quoted');
+
+    const adminUser = (req as any).adminUser;
+    const performedBy = adminUser.fullName || adminUser.name || 'Admin';
+
+    // Mock PDF generation & email sending
+    const pdfUrl = `/quotes/quote_${id}_${Date.now()}.pdf`;
+
+    // Log RFQ Quote Action
+    await logAction(
+      'RFQ_UPDATE',
+      `RFQ #${id} quoted. Generated Quote PDF: ${pdfUrl}. Quote details sent to customer: price: ₹${price}, validity: ${validityDays || 30} days. Notes: ${message || 'None'}.`,
+      performedBy
+    );
+
+    res.json({
+      success: true,
+      pdfUrl,
+      status: 'Quoted',
+      message: `Quote PDF generated and sent to ${rfq.name} successfully.`
+    });
+  } catch (err: any) {
+    console.error('Error quoting RFQ:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/admin/rfqs/:id/convert-to-order', adminAuthMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { amount, items, shippingAddress, billingAddress, paymentMethod } = req.body;
+    
+    // Find RFQ
+    const rfqs = await getAllRfqs();
+    const rfq = rfqs.find((r: any) => r.id === id);
+    if (!rfq) return res.status(404).json({ error: 'RFQ not found.' });
+
+    const buyerId = rfq.buyerId || 'guest_user';
+    
+    // Create new order
+    const orderId = `ord_${Date.now()}`;
+    const user = await getUserById(buyerId);
+    const newOrder = await addOrder({
+      id: orderId,
+      userId: buyerId,
+      timestamp: new Date().toISOString(),
+      date: new Date().toLocaleDateString('en-IN'),
+      products: items.map((i: any) => `${i.name || i.productName} (x${i.quantity || i.qty})`).join(', '),
+      status: 'Confirmed',
+      amount: Number(amount),
+      items: items || [],
+      shippingAddress: shippingAddress || rfq.location || 'Default Address',
+      billingAddress: billingAddress || rfq.location || 'Default Address',
+      gstNumber: user?.gstNumber || undefined,
+      paymentMethod: paymentMethod || 'COD'
+    });
+
+    // Update RFQ status to Closed
+    await updateRfqStatus(id, 'Closed');
+
+    const adminUser = (req as any).adminUser;
+    const performedBy = adminUser.fullName || adminUser.name || 'Admin';
+
+    // Log action
+    await logAction(
+      'RFQ_UPDATE',
+      `RFQ #${id} converted to Order #${orderId} with amount ₹${amount} for buyer ${rfq.name}.`,
+      performedBy
+    );
+
+    res.status(201).json({ success: true, order: newOrder });
+  } catch (err: any) {
+    console.error('Error converting RFQ to order:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

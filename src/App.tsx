@@ -18,18 +18,48 @@ import { Agentation } from 'agentation'
 import { AuthProvider } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
 import { AuthPage } from './components/AuthPage'
-import { IndividualDashboard, BusinessDashboard, ProfessionalDashboard, AdminDashboard } from './components/Dashboards'
+import { IndividualDashboard } from './modules/individual/IndividualDashboard'
+import { BusinessDashboard } from './modules/business/BusinessDashboard'
+import { ProfessionalDashboard } from './modules/professional/ProfessionalDashboard'
+import { AdminDashboard } from './modules/admin/AdminDashboard'
+import { PortalResolver } from './core/auth/PortalResolver'
 import { Checkout, CheckoutSuccess } from './components/Checkout'
+import SearchPage from './components/SearchPage'
+import ErrorBoundary from './components/ErrorBoundary'
+
 
 function App() {
   const [currentHash, setCurrentHash] = useState(window.location.hash)
 
   useEffect(() => {
     const handleHashChange = () => {
+      const hash = window.location.hash;
+      // Legacy routes redirection maps
+      if (hash === '#/account') {
+        window.location.hash = '#/dashboard/individual';
+        return;
+      }
+      if (hash === '#/business-dashboard') {
+        window.location.hash = '#/dashboard/business';
+        return;
+      }
+      if (hash === '#/professional-dashboard') {
+        window.location.hash = '#/dashboard/professional';
+        return;
+      }
+      if (hash === '#/admin') {
+        window.location.hash = '#/portal/admin';
+        return;
+      }
+
       setCurrentHash(window.location.hash)
       // Scroll to top on navigation change
       window.scrollTo(0, 0)
     }
+
+    // Run on initial mount
+    handleHashChange();
+
     window.addEventListener('hashchange', handleHashChange)
     return () => window.removeEventListener('hashchange', handleHashChange)
   }, [])
@@ -44,20 +74,26 @@ function App() {
   const isBrandsHub = segments[0] === 'brands'
   const isProductDetail = segments[0] === 'product' || segments[0] === 'products'
   const isAuth = segments[0] === 'auth'
-  const isIndividualDb = segments[0] === 'account'
-  const isBusinessDb = segments[0] === 'business-dashboard'
-  const isProfessionalDb = segments[0] === 'professional-dashboard'
-  const isAdminDb = segments[0] === 'admin'
+  const isIndividualDb = segments[0] === 'dashboard' && segments[1] === 'individual'
+  const isBusinessDb = segments[0] === 'dashboard' && segments[1] === 'business'
+  const isProfessionalDb = segments[0] === 'dashboard' && segments[1] === 'professional'
+  const isAdminDb = segments[0] === 'portal' && segments[1] === 'admin'
+  const isResolver = (segments[0] === 'dashboard' && !segments[1]) || (segments[0] === 'portal' && !segments[1]) || segments[0] === 'resolver'
   const isCheckoutSuccess = segments[0] === 'checkout' && segments[1] === 'success'
   const isCheckout = segments[0] === 'checkout'
   const isBulkOrders = segments[0] === 'bulk-orders'
   const isProjects = segments[0] === 'projects'
   const isResources = segments[0] === 'resources'
+  const isSearch = segments[0] === 'search'
 
   return (
     <AuthProvider>
       <CartProvider>
-        <Navbar />
+        {!isAdminDb && (
+          <ErrorBoundary fallback={<div className="p-md text-red-600 bg-red-50 border-b border-red-200">Navigation bar failed to load. Please refresh the page.</div>}>
+            <Navbar />
+          </ErrorBoundary>
+        )}
         <main>
           {isCheckoutSuccess ? (
             <CheckoutSuccess />
@@ -79,6 +115,12 @@ function App() {
             <ProfessionalDashboard />
           ) : isAdminDb ? (
             <AdminDashboard />
+          ) : isResolver ? (
+            <PortalResolver />
+          ) : isSearch ? (
+            <ErrorBoundary>
+              <SearchPage />
+            </ErrorBoundary>
           ) : isMaterialsHub ? (
             <MaterialsHub
               categorySlug={segments[1]}
@@ -106,7 +148,7 @@ function App() {
             </>
           )}
         </main>
-        <Footer />
+        {!isAdminDb && <Footer />}
         <Agentation />
       </CartProvider>
     </AuthProvider>
