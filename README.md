@@ -9,13 +9,16 @@
 </p>
 
 <p align="center">
-  ARCUS is a full-stack, enterprise-grade construction commerce platform that enables builders and individual property developers to procure building materials, hire verified professionals, submit Request for Quotes (RFQs), and manage project schedules from a single, unified ecosystem.
+  ARCUS is a full-stack, enterprise-grade construction commerce platform that enables builders, contractors, and individual property developers to procure building materials, hire verified professionals, submit Request for Quotes (RFQs), and manage project workflows from a single, unified ecosystem.
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Active-success?style=flat-square" alt="Status Active" />
   <img src="https://img.shields.io/badge/Environment-Development-blue?style=flat-square" alt="Environment Development" />
-  <img src="https://img.shields.io/badge/Version-1.0.0-orange?style=flat-square" alt="Version 1.0.0" />
+  <img src="https://img.shields.io/badge/Version-2.0.0-orange?style=flat-square" alt="Version 2.0.0" />
+  <img src="https://img.shields.io/badge/Database-PostgreSQL-336791?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Frontend-React%2019%20%2B%20Vite-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React 19" />
+  <img src="https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js" />
 </p>
 
 ---
@@ -24,25 +27,25 @@
 
 <p align="center">
   <a href="#-platform-overview">
-    <img src="https://img.shields.io/badge/Overview-blue?style=for-the-badge&logo=info" alt="Overview" />
+    <img src="https://img.shields.io/badge/Overview-blue?style=for-the-badge" alt="Overview" />
   </a>
   <a href="#-module-status-dashboard">
-    <img src="https://img.shields.io/badge/Status-green?style=for-the-badge&logo=status" alt="Status" />
+    <img src="https://img.shields.io/badge/Status-green?style=for-the-badge" alt="Status" />
   </a>
   <a href="#-system-architecture">
-    <img src="https://img.shields.io/badge/Architecture-purple?style=for-the-badge&logo=architecture" alt="Architecture" />
+    <img src="https://img.shields.io/badge/Architecture-purple?style=for-the-badge" alt="Architecture" />
+  </a>
+  <a href="#-project-structure">
+    <img src="https://img.shields.io/badge/Structure-grey?style=for-the-badge" alt="Structure" />
   </a>
   <a href="#-deployment--installation">
-    <img src="https://img.shields.io/badge/Installation-orange?style=for-the-badge&logo=install" alt="Installation" />
+    <img src="https://img.shields.io/badge/Installation-orange?style=for-the-badge" alt="Installation" />
   </a>
   <a href="#-roadmap">
-    <img src="https://img.shields.io/badge/Roadmap-red?style=for-the-badge&logo=roadmap" alt="Roadmap" />
-  </a>
-  <a href="#-documentation-hub">
-    <img src="https://img.shields.io/badge/Documentation-yellow?style=for-the-badge&logo=docs" alt="Documentation" />
+    <img src="https://img.shields.io/badge/Roadmap-red?style=for-the-badge" alt="Roadmap" />
   </a>
   <a href="#-security">
-    <img src="https://img.shields.io/badge/Security-brightgreen?style=for-the-badge&logo=security" alt="Security" />
+    <img src="https://img.shields.io/badge/Security-brightgreen?style=for-the-badge" alt="Security" />
   </a>
 </p>
 
@@ -50,31 +53,281 @@
 
 ## 🔍 Platform Overview
 
-The ARCUS platform is designed to digitize the construction ecosystem:
-- **Materials Marketplace**: Buy materials (cement, steel, CPVC fittings) with dynamic cart modifiers, dimensional metrics, and role-based pricing.
-- **Services Directory**: Select and hire verified professionals (Plumbers, Electricians, Carpenters, Painters, Architects) with starting rates and reviews.
-- **RFQ System**: Create detailed project lists to receive and review dynamic supplier quotes.
-- **Loyalty Program**: Earn and redeem BuildPoints for checkout coupons (`WELCOME5` for B2C, `ARCUS10` for B2B).
+ARCUS digitizes the end-to-end construction procurement lifecycle:
+
+| Domain | Description |
+| :--- | :--- |
+| **Materials Marketplace** | Browse and procure materials (cement, steel, CPVC, pipes) with bulk pricing tiers, dimensional variant support, B2B/B2C role-based pricing, and real-time inventory tracking |
+| **Services Marketplace** | Discover and hire verified professionals — Plumbers, Electricians, Carpenters, Painters, Architects — with contractor profiles, ratings, booking, and quote request flows |
+| **RFQ Engine** | Post detailed project RFQs and receive competitive supplier quotes; manage bid pipelines via a structured admin review flow |
+| **BuildPoints & Loyalty** | Earn and redeem loyalty points on every purchase; apply discount coupons (`WELCOME5` for B2C, `ARCUS10` for B2B) |
+| **Multi-Portal Dashboards** | Role-specific dashboards for Admins, Business accounts, Individual buyers, and Professional contractors |
+| **Platform-Wide Search** | Unified real-time search across products, service categories, and professional profiles |
 
 ---
 
 ## 📊 Module Status Dashboard
 
-Below is the living product roadmap and implementation status tracker for all ARCUS subsystems. 
+| Module | Frontend | Backend | Database | Key Features | Priority |
+| :--- | :---: | :---: | :---: | :--- | :---: |
+| **Authentication & OTP** | 🟡 | 🟡 | 🟢 | Login/Register, 6-digit OTP, session tokens, GSTIN-linked B2B accounts | **Critical** |
+| **Materials Marketplace** | 🟢 | 🟢 | 🟢 | Category browser, keyword search, PDP, bulk pricing tiers, B2B/B2C price split | **High** |
+| **Services Marketplace** | 🟢 | 🟡 | 🟢 | Contractor profiles, specialization filters, Book a Visit, Request Quote, date+time+address booking | **High** |
+| **RFQ Engine** | 🟡 | 🟢 | 🟢 | RFQ submission, bid simulator, status tracking, admin review panel | **High** |
+| **BuildPoints & Loyalty** | 🟢 | 🔴 | 🔴 | Dashboard balance display, coupon validation; accrual triggers pending | **Medium** |
+| **Cart & Checkout** | 🟢 | 🟢 | 🟢 | Address parser, billing toggle, coupon engine, MOQ/multiple enforcement, GSTIN display | **High** |
+| **Admin Dashboard** | 🟢 | 🟢 | 🟢 | Product/category/brand CRUD, inventory management, order tracking, RFQ management, role management, audit logs, reports, search analytics, bulk updates, CSV/Excel import-export | **Critical** |
+| **Business Dashboard** | 🟢 | 🟡 | 🟢 | Project list, RFQ submissions, invoice view | **High** |
+| **Individual Dashboard** | 🟢 | 🟢 | 🟢 | Order history, saved addresses, profile management | **High** |
+| **Professional Dashboard** | 🟢 | 🔴 | 🔴 | Profile view; booking and earnings management pending | **Medium** |
+| **Platform-Wide Search** | 🟢 | 🟢 | 🟢 | Products, service categories, professionals; query logging & click analytics | **High** |
+| **Security & Validation** | 🟢 | 🟢 | 🟢 | XSS sanitization, SQL injection guards, rate limiting, input validation, audit log | **Critical** |
+| **Resources & Calculators** | 🟢 | 🟢 | 🟢 | Concrete volume estimator, steel bar calculator, quality audit checklists | **Medium** |
 
-| Module | Frontend | Backend | Database | Implemented Features | Missing Features | Future Enhancements | Priority |
-| :--- | :---: | :---: | :---: | :--- | :--- | :--- | :---: |
-| **Authentication & OTP** | 🟡 In Progress | 🟡 In Progress | 🟢 Ready | • Login & Registration views<br/>• 6-digit OTP verification panel<br/>• Unmount timer ref cleanup<br/>• Session token storage | • Social logins (Google/LinkedIn)<br/>• Real SMTP email delivery<br/>• Active DB password reset | • Passkey biometric logins<br/>• Authenticator App 2FA | **Critical** |
-| **Materials Marketplace** | 🟡 In Progress | 🟡 In Progress | 🟢 Ready | • Hierarchical category browser<br/>• Product keyword search<br/>• PDP details and specifications<br/>• Brand directories | • Multi-criteria side-filters<br/>• Related products recommendations<br/>• Product kits & bundles<br/>• Real vendor inventory sync | • Real-time price tracking graphs<br/>• Barcode scanner product matcher | **High** |
-| **Services Marketplace** | 🟢 Ready | 🟡 In Progress | 🟢 Ready | • Contractor trade categories<br/>• Profile listings and locations<br/>• Quote booking request forms<br/>• Ratings and reviews display | • Live customer-vendor chat<br/>• Contractor calendar scheduling<br/>• Portfolio media uploaders | • Milestone escrow payments<br/>• Nearby contractor geo-matching | **High** |
-| **RFQ Engine** | 🟡 In Progress | 🟡 In Progress | 🟢 Ready | • RFQ creation & posting form<br/>• Bid simulator for dashboard<br/>• RFQ active tracking logs | • Supplier portal bidding forms<br/>• Side-by-side quote comparisons<br/>• SMS/Email bid notifications | • Multi-round reverse auctions | **High** |
-| **BuildPoints & Loyalty** | 🟢 Ready | 🔴 Not Started | 🔴 Not Started | • Dashboard loyalty point balance<br/>• Retail/B2B coupons validation | • Post-order point increment triggers<br/>• Monthly multipliers<br/>• Tier status upgrades (Gold/Platinum) | • Partner store point redemptions | **Medium** |
-| **Procurement Dashboard** | 🟢 Ready | 🟡 In Progress | 🟢 Ready | • Order histories details view<br/>• Address split auto-fill parser<br/>• Billing address check toggling<br/>• Verified GSTIN rendering | • Monthly spend charts & graphs<br/>• PDF invoice/receipt downloads<br/>• Saved/favorite products listing | • Corporate multi-level approval flow | **High** |
-| **Admin Panel** | 🟡 In Progress | 🟡 In Progress | 🟢 Ready | • Master user list grid view<br/>• Global transaction log audits<br/>• Database cleanup APIs for dev | • Product catalog CRUD manager<br/>• Category tree management view<br/>• Vendor applications auditor | • CSV/Excel transaction exports | **Medium** |
-| **Analytics Console** | 🔴 Not Started | 🔴 Not Started | 🔴 Not Started | • Navigation placeholder tabs | • Spend dashboards & analytics grids<br/>• Cement/Steel forecasting logic<br/>• Automated cost estimators | • AI-driven procurement advice | **Low** |
-| **Checkout & Address** | 🟢 Ready | 🟢 Ready | 🟢 Ready | • Address profile management<br/>• Suburb-retaining address parser<br/>• Billing address forms toggles | • Address maps geolocation check<br/>• Address validation checks | • Google Maps pin drop selector | **High** |
-| **Security & Validation** | 🟢 Ready | 🟢 Ready | 🟢 Ready | • Centralized phone/email/GSTIN checks<br/>• XSS HTML script scrubbers<br/>• SQL injection keyword scrubbers<br/>• Auth & profile rate limiters | • DB parameterized query binds<br/>• Permanent IP blacklist bans | • Security audit alert log tracker | **Critical** |
-| **Resources & Calculators** | 🟢 Ready | 🟢 Ready | 🟢 Ready | • Concrete volume cement estimator<br/>• Steel bar reinforcement calculator<br/>• Quality audit checklists | • Structural load calculators<br/>• Estimate logs export options | • Save calculations to projects board | **Medium** |
+> 🟢 Ready &nbsp;&nbsp; 🟡 In Progress &nbsp;&nbsp; 🔴 Not Started
+
+---
+
+## 🎨 System Architecture
+
+```mermaid
+graph TD
+    subgraph Client ["Vite + React 19 (SPA)"]
+        App["App.tsx — Hash Router"] --> PortalResolver["PortalResolver.tsx — Role-Based Routing"]
+        PortalResolver --> Portals["Admin / Business / Individual / Professional Portals"]
+        App --> Contexts["AuthContext · CartContext"]
+        App --> Hubs["MaterialsHub · ServicesHub · SearchPage · ProductDetail · Checkout"]
+    end
+
+    subgraph Core ["src/core — Shared Frontend Layer"]
+        Permissions["permissions.ts — Role Guards"]
+        Hooks["useProducts · useOrders · useRFQs — API Hooks"]
+        Format["format.ts — Currency & Date Helpers"]
+    end
+
+    subgraph Shared ["shared/ — Isomorphic Validation"]
+        Val["validation.ts — Phone · Email · GSTIN · XSS · SQLi"]
+    end
+
+    subgraph Server ["Express Node.js API (port 5000)"]
+        Index["index.ts — REST Routes + Rate Limiters"] --> Modules
+        subgraph Modules ["server/src/modules/"]
+            Catalog["catalog/ — Product · Category · Brand · Import · Export"]
+            Inventory["inventory/ — Stock lifecycle & reservations"]
+            Orders["orders/ — Order placement & status"]
+            RFQ["rfq/ — RFQ · Bookings · Direct Quotes"]
+            Search["search/ — Multi-domain search & analytics"]
+            Users["users/ — Auth · OTP · Profiles · Permissions"]
+            Settings["settings/ — Global app config"]
+            Analytics["analytics/ — Audit log service"]
+        end
+        Index --> DB["database/ — db.ts Pool · initDb · migrations"]
+    end
+
+    subgraph Database ["PostgreSQL (Supabase / Neon)"]
+        PG[("PostgreSQL DB")]
+    end
+
+    Client -->|"HTTP /api/*"| Server
+    DB --> PG
+    Val -.- Client
+    Val -.- Server
+```
+
+---
+
+## 🔄 User Journey Flowcharts
+
+### 1. Material Purchase Journey
+```mermaid
+graph LR
+    A[Homepage] --> B[Materials Hub]
+    B --> C[Category Browse]
+    C --> D[Product Detail PDP]
+    D --> E[Select Variant & Quantity]
+    E --> F[Cart Drawer]
+    F --> G[Checkout + Address]
+    G --> H[Order Confirmed]
+```
+
+### 2. Professional Booking Journey
+```mermaid
+graph LR
+    A[Homepage] --> B[Services Hub]
+    B --> C[Select Trade Category]
+    C --> D[Professional Profile]
+    D -->|"Book a Visit"| E[Booking Modal — Name · Phone · Date · Time · Address]
+    D -->|"Request Quote"| F[Quote Modal — Budget · Timeline · Address · Description]
+```
+
+### 3. RFQ Submission Journey
+```mermaid
+graph TD
+    A[Builder / Buyer] -->|Post RFQ Specs| B[RFQ Engine]
+    B -->|Notify Admin| C[Admin Console Review]
+    C -->|Simulate Bids| D[Supplier Quote Dispatch]
+    D -->|Approve Quote| E[Active Order Created]
+```
+
+### 4. Admin Flow
+```mermaid
+graph LR
+    A[Admin Login] --> B[Admin Dashboard]
+    B --> C[Products · Categories · Brands]
+    B --> D[Orders · RFQs · Inventory]
+    B --> E[Customers · Roles]
+    B --> F[Import · Export · Bulk Updates]
+    B --> G[Search Analytics · Audit Logs · Reports]
+```
+
+---
+
+## 📂 Project Structure
+
+```
+ARCUS/
+├── .gitignore                    # Excludes .env, db.json, package-lock, diagnostic scripts
+├── index.html                    # Vite HTML entry point
+├── package.json                  # Frontend dependencies (React 19, Vite, Tailwind)
+├── tailwind.config.js            # Custom design tokens & theme
+├── vite.config.ts                # Vite dev server with /api proxy to :5000
+├── shared/
+│   └── validation.ts             # Isomorphic validators (phone, email, GSTIN, XSS, SQLi)
+│
+├── src/                          # React TypeScript SPA
+│   ├── App.tsx                   # Hash router & top-level route declarations
+│   ├── index.css                 # HSL design tokens, typography, utility classes
+│   ├── main.tsx                  # React root mount
+│   │
+│   ├── core/                     # Shared frontend utilities
+│   │   ├── auth/
+│   │   │   └── PortalResolver.tsx     # Role-based portal redirect guard
+│   │   ├── config/
+│   │   │   └── format.ts              # Currency, date, number formatters
+│   │   ├── hooks/
+│   │   │   ├── useOrders.ts           # Orders API hook
+│   │   │   ├── useProducts.ts         # Products API hook
+│   │   │   └── useRFQs.ts             # RFQ API hook
+│   │   └── permissions/
+│   │       ├── permissions.ts         # Role capability definitions
+│   │       └── usePermissions.ts      # Permission resolver hook
+│   │
+│   ├── context/
+│   │   ├── AuthContext.tsx            # Global auth state (user, role, customerType)
+│   │   └── CartContext.tsx            # Cart state, coupon engine, BuildPoints
+│   │
+│   ├── components/                # Page-level views & shared widgets
+│   │   ├── AuthPage.tsx               # Login / Register / OTP
+│   │   ├── Categories.tsx             # Homepage category grid
+│   │   ├── Checkout.tsx               # Address form, order summary, payment
+│   │   ├── ErrorBoundary.tsx          # Global React error boundary
+│   │   ├── Hero.tsx                   # Homepage hero banner
+│   │   ├── MaterialsHub.tsx           # Materials marketplace (PLP)
+│   │   ├── Navbar.tsx                 # Global navigation bar
+│   │   ├── ProductDetail.tsx          # Product detail page (PDP)
+│   │   ├── RfqForm.tsx                # RFQ submission form
+│   │   ├── SearchPage.tsx             # Platform-wide search results page
+│   │   └── ServicesHub.tsx            # Services marketplace + contractor profiles
+│   │
+│   └── modules/                   # Role-scoped portal modules
+│       ├── admin/                     # Admin portal (13 management screens)
+│       │   ├── AdminLayout.tsx
+│       │   ├── AdminDashboard.tsx
+│       │   ├── ProductManagement.tsx
+│       │   ├── CategoryManagement.tsx
+│       │   ├── BrandManagement.tsx
+│       │   ├── InventoryManagement.tsx
+│       │   ├── OrderManagement.tsx
+│       │   ├── RFQManagement.tsx
+│       │   ├── CustomerManagement.tsx
+│       │   ├── RoleManagement.tsx
+│       │   ├── ImportProducts.tsx
+│       │   ├── ExportProducts.tsx
+│       │   ├── BulkUpdates.tsx
+│       │   ├── SearchAnalytics.tsx
+│       │   ├── AuditLogs.tsx
+│       │   ├── Reports.tsx
+│       │   ├── Settings.tsx
+│       │   └── DashboardHome.tsx
+│       ├── business/                  # Business (B2B) portal
+│       │   ├── layouts/BusinessLayout.tsx
+│       │   ├── BusinessDashboard.tsx
+│       │   ├── BusinessProjects.tsx
+│       │   ├── BusinessRFQs.tsx
+│       │   └── BusinessInvoices.tsx
+│       ├── individual/                # Individual (B2C) portal
+│       │   ├── layouts/IndividualLayout.tsx
+│       │   ├── IndividualDashboard.tsx
+│       │   ├── IndividualOrders.tsx
+│       │   ├── IndividualAddresses.tsx
+│       │   └── IndividualProfile.tsx
+│       └── professional/              # Professional / Contractor portal
+│           ├── layouts/ProfessionalLayout.tsx
+│           └── ProfessionalDashboard.tsx
+│
+├── scripts/
+│   ├── create_admin.cjs              # CLI: seed admin user to DB
+│   └── populate_products.cjs         # CLI: bulk-load product catalog
+│
+└── server/                        # Express Node.js API Server
+    ├── package.json                   # Server dependencies (Express, pg, multer, xlsx, nodemailer)
+    ├── tsconfig.json
+    └── src/
+        ├── index.ts                   # REST API entry — all routes & rate limiters
+        ├── db.ts                      # Backwards-compatible re-export facade
+        │
+        ├── database/
+        │   ├── db.ts                  # PostgreSQL pool + JSON file fallback
+        │   ├── initDb.ts              # Table creation & seed coordinator
+        │   ├── migrations.ts          # DDL schema migrations & constraint additions
+        │   ├── cleanup_legacy.sql     # Phase 5: removes legacy schema artifacts
+        │   ├── executeCleanup.ts      # Cleanup runner with transaction safety
+        │   ├── healthCheck.ts         # DB connectivity health validator
+        │   ├── verifyApiContracts.ts  # API contract regression tests
+        │   ├── verifyBuildPoints.ts   # BuildPoints integrity checker
+        │   └── verifyInventory.ts     # Inventory constraint validator
+        │
+        ├── modules/                   # Modular domain services
+        │   ├── analytics/
+        │   │   ├── AuditLog.ts        # Audit log model
+        │   │   └── AuditLogService.ts # Admin action audit trail
+        │   ├── catalog/
+        │   │   ├── Product.ts         # Product model
+        │   │   ├── ProductService.ts  # Product CRUD & normalizer
+        │   │   ├── Category.ts        # Category model
+        │   │   ├── CategoryService.ts # Category CRUD
+        │   │   ├── Brand.ts           # Brand model
+        │   │   ├── BrandService.ts    # Brand CRUD
+        │   │   ├── CatalogSyncService.ts  # Cross-table catalog sync
+        │   │   ├── ImportHistory.ts   # Import job model
+        │   │   ├── ImportHistoryService.ts
+        │   │   ├── ProductImportService.ts  # CSV/XLSX importer
+        │   │   └── ProductExportService.ts  # CSV/XLSX exporter
+        │   ├── inventory/
+        │   │   ├── Inventory.ts       # Inventory model
+        │   │   └── InventoryService.ts  # Reserve, release, reorder lifecycle
+        │   ├── orders/
+        │   │   ├── Order.ts           # Order + OrderItem models
+        │   │   └── OrderService.ts    # Order placement & status transitions
+        │   ├── rfq/
+        │   │   ├── RFQ.ts             # RFQ, Booking, DirectQuote models
+        │   │   └── RFQService.ts      # RFQ & booking management
+        │   ├── search/
+        │   │   ├── Search.ts          # SearchQueryLog & SearchClickLog models
+        │   │   └── SearchService.ts   # Multi-domain relevance search + analytics
+        │   ├── settings/
+        │   │   ├── Settings.ts        # App settings model
+        │   │   └── SettingsService.ts # Global config read/write
+        │   └── users/
+        │       ├── User.ts            # User & OtpRecord models
+        │       ├── UserService.ts     # Auth, OTP, registration, profile updates
+        │       └── permissions.ts     # Role-based permission definitions
+        │
+        └── seed/
+            ├── categories.ts          # Material category hierarchy seed data
+            ├── products.ts            # Product catalog seed (86 products)
+            └── settings.ts            # Default app settings values
+```
 
 ---
 
@@ -84,116 +337,52 @@ Below is the living product roadmap and implementation status tracker for all AR
 graph TD
     A[ARCUS Platform] --> B[Materials Hub]
     A --> C[Services Hub]
-    A --> D[Users & Profiles]
+    A --> D[Portal Dashboards]
     A --> E[Orders & Checkout]
     A --> F[RFQ Engine]
     A --> G[BuildPoints Loyalty]
     A --> H[Authentication]
-    A --> I[Admin Controls]
+    A --> I[Search]
+    A --> J[Admin Controls]
 
-    B --> B1[Product Search]
-    B --> B2[Category Tree]
-    B --> B3[Dimension Variants]
+    B --> B1[Category Browser]
+    B --> B2[Product PDP]
+    B --> B3[Bulk Price Tiers]
+    B --> B4[B2B / B2C Pricing]
 
-    C --> C1[Contractor Lists]
-    C --> C2[Ratings Logs]
-    C --> C3[Booking Forms]
+    C --> C1[Contractor Listings]
+    C --> C2[Profile Pages]
+    C --> C3[Book a Visit Modal]
+    C --> C4[Request Quote Modal]
 
-    D --> D1[Individual B2C]
-    D --> D2[Business B2B]
-    D --> D3[Professional Contractor]
+    D --> D1[Admin Portal]
+    D --> D2[Business B2B Portal]
+    D --> D3[Individual B2C Portal]
+    D --> D4[Professional Portal]
 
-    E --> E1[Address Split Parser]
-    E --> E2[Billing Address Toggle]
-    E --> E3[Coupons Engine]
+    E --> E1[Address Parser]
+    E --> E2[Billing Toggle]
+    E --> E3[Coupon Engine]
+    E --> E4[MOQ Enforcement]
 
-    F --> F1[RFQ Submissions]
-    F --> F2[Bids Simulator]
+    F --> F1[RFQ Submission]
+    F --> F2[Bid Simulator]
+    F --> F3[Admin Review]
 
-    G --> G1[Purchase Accruals]
+    G --> G1[Point Accruals]
     G --> G2[WELCOME5 / ARCUS10]
 
-    H --> H1[6-digit OTP Validator]
-    H --> H2[Timer Cleanup Ref]
+    H --> H1[OTP Verification]
+    H --> H2[GSTIN B2B Auth]
 
-    I --> I1[Tax Registration Audit]
-    I --> I2[Vendor Status Controls]
-```
+    I --> I1[Products Search]
+    I --> I2[Services Search]
+    I --> I3[Professionals Search]
 
----
-
-## 🎨 System Architecture
-
-```mermaid
-graph TD
-    subgraph Frontend [Vite React Client]
-        App[App.tsx Router] --> Contexts[Auth & Cart Contexts]
-        Contexts --> Views[Hubs, Dashboards, Checkout]
-    end
-    subgraph Middleware [Shared Validation Library]
-        Val[validation.ts]
-    end
-    subgraph Backend [Express API Server]
-        API[index.ts Endpoints] --> Limiters[Rate Limiters]
-        Limiters --> Auth[Auth check]
-        Auth --> DB[db.ts Helper Functions]
-        DB --> JSON[(db.json file)]
-    end
-    Frontend -->|HTTP Requests| Backend
-    Val -.->|Client Validator| Frontend
-    Val -.->|Server Sanitizer| Backend
-```
-
----
-
-## 🔄 User Journey Flowcharts
-
-### 1. Product Purchase Journey
-```mermaid
-graph LR
-    A[Home Page] --> B[Categories List]
-    B --> C[Materials Hub PLP]
-    C --> D[Product Detail PDP]
-    D --> E[Cart Drawer]
-    E --> F[Checkout Billing]
-    F --> G[Order Success]
-```
-
-### 2. Professional Booking Journey
-```mermaid
-graph LR
-    A[Home Page] --> B[Services Landing]
-    B --> C[Maintenance Trades PLP]
-    C --> D[Professional Profile]
-    D --> E[Send Quote Request]
-```
-
-### 3. RFQ Submission Journey
-```mermaid
-graph TD
-    A[Builder/Customer] -->|Post RFQ Specifications| B[RFQ Pipeline]
-    B -->|Notify Admin| C[Admin Console Review]
-    C -->|Simulate Bids| D[Supplier Quote Dispatch]
-    D -->|Approve Quote| E[Persist Active Order]
-```
-
----
-
-## 📂 Project Structure
-
-```
-├── docs/                      # Technical design documents and assets
-│   ├── assets/                # Logos and hero media files
-│   └── screenshots/           # Screenshot gallery of main views
-├── public/                    # Global public folder assets and imagery
-├── server/                    # Express Node.js application
-│   ├── data/                  # Local database directory (db.json)
-│   └── src/                   # Server API routes and controllers
-├── shared/                    # Commmon shared validation layer
-└── src/                       # React TypeScript Single Page Application
-    ├── components/            # Interface views, components, and widgets
-    ├── context/               # Global state contexts (Auth, Cart)
-    └── index.css              # Custom HSL design tokens and styles
+    J --> J1[Product & Category CRUD]
+    J --> J2[Inventory Manager]
+    J --> J3[Order & RFQ Tracking]
+    J --> J4[Audit Logs & Reports]
 ```
 
 ---
@@ -203,10 +392,119 @@ graph TD
 ```mermaid
 timeline
     title ARCUS Development Roadmap
-    Phase 1 : Centralized Authentication : Core Materials Hub : Category Listings : Product Detail Pages
-    Phase 2 : Digital RFQs & Bidding : Verified Professionals : Customer Reviews : BuildPoints Accruals
-    Phase 3 : Business Procurement : Saved Addresses Split : Order Analytics : Mobile Companion App
+    Phase 1 : Authentication & OTP : Materials Hub MVP : Category Tree : Product Detail Pages
+    Phase 2 : RFQ Engine : Verified Professionals : BuildPoints : Cart & Checkout
+    Phase 3 : Modular Backend (PostgreSQL) : Role Dashboards : Import & Export : Platform Search
+    Phase 4 : Schema Integrity Validation : Legacy Cleanup : API Contract Verification : Inventory Integrity
+    Phase 5 : Legacy Schema Removal : Dead Code Cleanup : Search Expansion : UI Polish & Bug Fixes
+    Phase 6 : Live Payments Gateway : Contractor Scheduling : Geo-Matching : Mobile App
 ```
+
+---
+
+## ⚙️ Deployment & Installation
+
+<details>
+<summary><b>🛠️ Prerequisites</b></summary>
+
+- Node.js ≥ 18
+- PostgreSQL database (Supabase, Neon, or local Postgres)
+- npm ≥ 9
+
+</details>
+
+<details>
+<summary><b>🔐 Environment Variables</b></summary>
+
+Create a `.env` file under `server/`:
+
+```ini
+PORT=5000
+NODE_ENV=development
+DATABASE_URL=postgresql://user:password@host:5432/dbname?sslmode=require
+```
+
+> Without `DATABASE_URL`, the server falls back to a local `server/data/db.json` file automatically.
+
+</details>
+
+<details>
+<summary><b>🚀 Running Locally</b></summary>
+
+#### 1. Start the API Backend
+```bash
+cd server
+npm install
+npm run dev
+```
+Backend runs on `http://localhost:5000`
+
+#### 2. Start the Frontend
+```bash
+# From project root
+npm install
+npm run dev
+```
+Frontend runs on `http://localhost:5174`
+
+> The Vite dev server proxies all `/api/*` requests to `:5000` automatically.
+
+</details>
+
+<details>
+<summary><b>🌱 Seed the Database</b></summary>
+
+On first run, `initDb.ts` automatically:
+- Creates all required tables
+- Runs DDL migrations
+- Seeds 86 products, material categories, and default settings
+
+To manually seed an admin user:
+```bash
+node scripts/create_admin.cjs
+```
+
+</details>
+
+<details>
+<summary><b>🩺 Troubleshooting</b></summary>
+
+| Issue | Fix |
+| :--- | :--- |
+| OTP in development | Use bypass code `123456` |
+| `db.json` trigger nodemon restart | Handled via `server/nodemon.json` ignore patterns |
+| PostgreSQL SSL error | Ensure `?sslmode=require` is set in `DATABASE_URL` |
+| Port conflict on 5000 | Update `PORT` in `server/.env` and `vite.config.ts` proxy target |
+
+</details>
+
+---
+
+## 📖 Documentation Hub
+
+| Document | Location | Purpose |
+| :--- | :--- | :--- |
+| **Backend Architecture** | [`server/README.md`](server/README.md) | Modular server structure — modules, services, migrations |
+| **System Architecture** | [`docs/architecture.md`](docs/architecture.md) | Frontend routing, middleware, and data flow |
+| **Security Standards** | [`docs/security.md`](docs/security.md) | XSS, SQL injection guards, rate limiting |
+| **Database Schema** | [`docs/database-schema.md`](docs/database-schema.md) | Table definitions, types, and constraints |
+| **API Specification** | [`docs/api-specification.md`](docs/api-specification.md) | Endpoint listings, status codes, and payloads |
+| **Design System** | [`docs/design-system.md`](docs/design-system.md) | HSL tokens, typography, and transitions |
+| **Authentication Flow** | [`docs/authentication.md`](docs/authentication.md) | OTP sequence diagrams and session model |
+| **Loyalty Program** | [`docs/loyalty-program.md`](docs/loyalty-program.md) | BuildPoints accrual ratios and coupon rules |
+| **Validation Rules** | [`docs/validation-rules.md`](docs/validation-rules.md) | Phone normalization, GSTIN constraints |
+| **Security Audit** | [`SECURITY_AUDIT_REPORT.md`](SECURITY_AUDIT_REPORT.md) | Full security assessment report |
+
+---
+
+## 🛡️ Security
+
+- **Input validation**: Centralized phone, email, and GSTIN validators in `shared/validation.ts`
+- **XSS protection**: HTML script tag sanitizer applied on all user-submitted text fields
+- **SQL injection guards**: Keyword scrubber on all free-text inputs; parameterized queries in PostgreSQL services
+- **Rate limiting**: `loginLimiter` (5 attempts / 15 min) and `otpLimiter` (3 attempts / 10 min) on auth endpoints
+- **Audit trail**: All admin operations recorded in the `audit_logs` table via `AuditLogService`
+- **Secrets**: `.env` is gitignored and never committed; `DATABASE_URL` stays local
 
 ---
 
@@ -218,71 +516,6 @@ timeline
 
 ---
 
-## 📖 Documentation Hub
-
-Access specific modules and platform rules:
-
-| Document | Location | Purpose |
-| :--- | :--- | :--- |
-| **System Architecture** | [`docs/architecture.md`](file:///d:/Claude%20Code/Arcus/docs/architecture.md) | Deeper dive into the frontend routing and middleware flow. |
-| **Security Standards** | [`docs/security.md`](file:///d:/Claude%20Code/Arcus/docs/security.md) | Explains input sanitization rules, rate-limit logs, and JWT signatures. |
-| **Database Schema** | [`docs/database-schema.md`](file:///d:/Claude%20Code/Arcus/docs/database-schema.md) | Details type definitions for Users, OTPs, RFQs, and Orders. |
-| **API Specification** | [`docs/api-specification.md`](file:///d:/Claude%20Code/Arcus/docs/api-specification.md) | Full endpoint listings, status codes, and payloads. |
-| **Deployment Specifications** | [`docs/deployment.md`](file:///d:/Claude%20Code/Arcus/docs/deployment.md) | Environment setup guides and startup commands. |
-| **Design System** | [`docs/design-system.md`](file:///d:/Claude%20Code/Arcus/docs/design-system.md) | Outlines colors systems, typography, and transition styles. |
-| **Validation Rules** | [`docs/validation-rules.md`](file:///d:/Claude%20Code/Arcus/docs/validation-rules.md) | Explains phone normalization and GSTIN structure constraints. |
-| **Authentication Flow** | [`docs/authentication.md`](file:///d:/Claude%20Code/Arcus/docs/authentication.md) | Sequence diagram and detail logs for the OTP verification model. |
-| **Loyalty Program** | [`docs/loyalty-program.md`](file:///d:/Claude%20Code/Arcus/docs/loyalty-program.md) | Rules and accrual ratios of the BuildPoints system. |
-| **Project Roadmap** | [`docs/roadmap.md`](file:///d:/Claude%20Code/Arcus/docs/roadmap.md) | Displays developmental milestones and timelines. |
-
----
-
-## 🛡️ Security
-
-Security and validation details are kept in separate document files:
-- Validation specs: [`docs/validation-rules.md`](file:///d:/Claude%20Code/Arcus/docs/validation-rules.md)
-- Authentication rules: [`docs/authentication.md`](file:///d:/Claude%20Code/Arcus/docs/authentication.md)
-- Rate limiting and XSS: [`docs/security.md`](file:///d:/Claude%20Code/Arcus/docs/security.md)
-
----
-
-## ⚙️ Deployment & Installation
-
-<details>
-<summary><b>🛠️ Environment Variables</b></summary>
-
-Create a `.env` file under the `server/` directory:
-```ini
-PORT=5000
-NODE_ENV=development
-```
-</details>
-
-<details>
-<summary><b>🚀 Running Locally</b></summary>
-
-#### 1. Start the API Backend Server
-```bash
-cd server
-npm install
-npm run dev
-```
-The backend server runs on `http://localhost:5000`.
-
-#### 2. Start the Frontend Client
-```bash
-# From root directory
-npm install
-npm run dev
-```
-The client runs on `http://localhost:5173`.
-</details>
-
-<details>
-<summary><b>🩺 Troubleshooting & Dev Notes</b></summary>
-
-- **OTP Bypass**: In development, you can use the bypass verification code `123456`.
-- **Nodemon Reset loop**: Database updates on `db.json` do not restart the server due to ignoring patterns in `server/nodemon.json`.
-</details>
-
-
+<p align="center">
+  Built with ❤️ for the construction industry &nbsp;·&nbsp; ARCUS © 2025
+</p>
