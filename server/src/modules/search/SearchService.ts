@@ -5,7 +5,7 @@
 
 import { pgPool, usePostgres, readJsonDb, writeJsonDb } from '../../database/db';
 import { Product } from '../catalog/Product';
-import { getAllProducts } from '../catalog/ProductService';
+import { getAllProducts, mapRowToProduct } from '../catalog/ProductService';
 
 interface ServiceItem {
   name: string;
@@ -119,11 +119,10 @@ export const searchService = {
     services: any[];
     professionals: any[];
   }> {
-    const products = await getAllProducts();
     const queryLower = (query || '').toLowerCase().trim();
     
-    // 1. Search Products
-    const results = (Array.isArray(products) ? products : []).filter(p => {
+    // Helper match function for in-memory / JSON fallback
+    const matchProductInMemory = (p: Product, qLower: string): boolean => {
       if (!p) return false;
       const name = p.name ?? '';
       const description = p.description ?? '';
@@ -134,16 +133,84 @@ export const searchService = {
       const subcategorySlug = p.subcategorySlug ?? '';
       const leafSlug = p.leafSlug ?? '';
       return (
-        name.toLowerCase().includes(queryLower) ||
-        description.toLowerCase().includes(queryLower) ||
-        brand.toLowerCase().includes(queryLower) ||
-        model.toLowerCase().includes(queryLower) ||
-        categoryId.toLowerCase().includes(queryLower) ||
-        categoryTitle.toLowerCase().includes(queryLower) ||
-        subcategorySlug.toLowerCase().includes(queryLower) ||
-        leafSlug.toLowerCase().includes(queryLower)
+        name.toLowerCase().includes(qLower) ||
+        description.toLowerCase().includes(qLower) ||
+        brand.toLowerCase().includes(qLower) ||
+        model.toLowerCase().includes(qLower) ||
+        categoryId.toLowerCase().includes(qLower) ||
+        categoryTitle.toLowerCase().includes(qLower) ||
+        subcategorySlug.toLowerCase().includes(qLower) ||
+        leafSlug.toLowerCase().includes(qLower)
       );
-    });
+    };
+
+    // 1. Search Products
+    let results: Product[] = [];
+    if (usePostgres && pgPool) {
+      try {
+        const queryStr = `
+          SELECT DISTINCT ON (p.id) p.id, p.category_title, p.name, p.unit, p.rating, p.icon, p.link, p.description,
+                 p.specifications, p.recommended_accessories, p.subcategory_slug, p.leaf_slug, p.status, p.category_id,
+                 v.sku, v.name AS variant_name, v.price AS variant_price, v.unit_of_measure, v.minimum_order_quantity, v.order_multiple, v.status AS variant_status,
+                 v.procurement_price,
+                 inv.available_stock AS variant_stock, inv.reserved_stock AS inventory_reserved, inv.reorder_level AS inventory_reorder_level,
+                 (
+                     SELECT COALESCE(json_agg(json_build_object(
+                         'min', pt.min_quantity,
+                         'max', pt.max_quantity,
+                         'price', pt.price,
+                         'save', pt.discount_percentage
+                     ) ORDER BY pt.min_quantity), '[]'::json)
+                     FROM (
+                         SELECT DISTINCT min_quantity, max_quantity, price, discount_percentage, variant_id
+                         FROM product_price_tiers
+                     ) pt
+                     WHERE pt.variant_id = v.id
+                 ) AS variant_price_tiers,
+                 (
+                     SELECT COALESCE(json_agg(img.image_url ORDER BY img.display_order), '[]'::json)
+                     FROM product_images img
+                     WHERE img.product_id = p.id
+                 ) AS variant_images,
+                 (
+                     SELECT COALESCE(json_agg(json_build_object(
+                         'id', r.id,
+                         'reviewerName', r.reviewer_name,
+                         'reviewerRole', r.reviewer_role,
+                         'rating', r.rating,
+                         'comment', r.comment,
+                         'isVerifiedPurchase', r.is_verified_purchase,
+                         'status', r.status,
+                         'createdAt', r.created_at
+                     ) ORDER BY r.created_at DESC), '[]'::json)
+                     FROM product_reviews r
+                     WHERE r.product_id = p.id
+                 ) AS variant_reviews
+          FROM products p
+          LEFT JOIN product_variants v ON p.id = v.product_id
+          LEFT JOIN inventory inv ON v.id = inv.variant_id
+          WHERE (
+            p.name ILIKE $1 OR
+            p.description ILIKE $1 OR
+            p.category_id ILIKE $1 OR
+            p.category_title ILIKE $1 OR
+            p.subcategory_slug ILIKE $1 OR
+            p.leaf_slug ILIKE $1 OR
+            p.specifications::text ILIKE $1
+          )
+          ORDER BY p.id
+        `;
+        const res = await pgPool.query(queryStr, [`%${query}%`]);
+        results = res.rows.map(row => mapRowToProduct(row, 'SearchService'));
+      } catch (err) {
+        console.error('Error searching products from database, falling back to in-memory:', err);
+        const allProducts = await getAllProducts();
+        results = (allProducts || []).filter(p => matchProductInMemory(p, queryLower));
+      }
+    } else {
+      const allProducts = await getAllProducts();
+      results = (allProducts || []).filter(p => matchProductInMemory(p, queryLower));
+    }
 
     // 2. Search Services
     const matchedServices = servicesList.filter(s => {

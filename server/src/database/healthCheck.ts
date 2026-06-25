@@ -104,7 +104,7 @@ async function runHealthCheckPostgres() {
     console.log(`- Orders: tested=${metrics.orders.tested}, missingItems=${metrics.orders.missingItems}, missingAddresses=${metrics.orders.missingAddresses}`);
 
     // Generate markdown report
-    const healthReportPath = path.join('C:', 'Users', 'abhis', '.gemini', 'antigravity-ide', 'brain', '233a70f0-524a-4ecc-ae3d-469fadd59caa', 'migration_validation_health_report.md');
+    const healthReportPath = path.join('C:', 'Users', 'abhis', '.gemini', 'antigravity-ide', 'brain', '147ec9a2-e5b6-4d99-9f6e-5365a3a3af66', 'migration_validation_health_report.md');
     
     let md = `# Post-Cleanup Production Database Health Report\n\n`;
     md += `Generated on: ${new Date().toISOString()}\n\n`;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
+import { getCachedSearch, setCachedSearch } from '../core/config/searchCache'
 
 interface Product {
   id: string
@@ -140,12 +141,23 @@ export default function SearchPage() {
     setSortOption('Relevance')
     setActiveTab('all')
 
+    const cached = getCachedSearch(query)
+    if (cached) {
+      setProducts(Array.isArray(cached.products) ? cached.products : [])
+      setServices(Array.isArray(cached.services) ? cached.services : [])
+      setProfessionals(Array.isArray(cached.professionals) ? cached.professionals : [])
+      setCategories(Array.isArray(cached.categories) ? cached.categories : [])
+      setLoading(false)
+      return
+    }
+
     fetch(`/api/search?q=${encodeURIComponent(query)}`)
       .then((res) => {
         if (!res.ok) throw new Error('Search failed. Server error.')
         return res.json()
       })
       .then((data) => {
+        setCachedSearch(query, data)
         setProducts(Array.isArray(data?.products) ? data.products : [])
         setServices(Array.isArray(data?.services) ? data.services : [])
         setProfessionals(Array.isArray(data?.professionals) ? data.professionals : [])

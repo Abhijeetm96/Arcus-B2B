@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Categories from './components/Categories'
@@ -10,22 +10,24 @@ import Footer from './components/Footer'
 import MaterialsHub from './components/MaterialsHub'
 import ServicesHub from './components/ServicesHub'
 import ProductDetail from './components/ProductDetail'
-import BrandsHub from './components/BrandsHub'
-import BulkOrders from './components/BulkOrders'
-import Projects from './components/Projects'
-import Resources from './components/Resources'
 import { Agentation } from 'agentation'
 import { AuthProvider } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
 import { AuthPage } from './components/AuthPage'
 import { IndividualDashboard } from './modules/individual/IndividualDashboard'
-import { BusinessDashboard } from './modules/business/BusinessDashboard'
-import { ProfessionalDashboard } from './modules/professional/ProfessionalDashboard'
-import { AdminDashboard } from './modules/admin/AdminDashboard'
 import { PortalResolver } from './core/auth/PortalResolver'
 import { Checkout, CheckoutSuccess } from './components/Checkout'
 import SearchPage from './components/SearchPage'
 import ErrorBoundary from './components/ErrorBoundary'
+
+// Lazy loaded routes
+const BrandsHub = lazy(() => import('./components/BrandsHub'))
+const BulkOrders = lazy(() => import('./components/BulkOrders'))
+const Projects = lazy(() => import('./components/Projects'))
+const Resources = lazy(() => import('./components/Resources'))
+const BusinessDashboard = lazy(() => import('./modules/business/BusinessDashboard').then(m => ({ default: m.BusinessDashboard })))
+const ProfessionalDashboard = lazy(() => import('./modules/professional/ProfessionalDashboard').then(m => ({ default: m.ProfessionalDashboard })))
+const AdminDashboard = lazy(() => import('./modules/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })))
 
 
 function App() {
@@ -95,58 +97,64 @@ function App() {
           </ErrorBoundary>
         )}
         <main>
-          {isCheckoutSuccess ? (
-            <CheckoutSuccess />
-          ) : isCheckout ? (
-            <Checkout />
-          ) : isAuth ? (
-            <AuthPage />
-          ) : isBulkOrders ? (
-            <BulkOrders />
-          ) : isProjects ? (
-            <Projects />
-          ) : isResources ? (
-            <Resources />
-          ) : isIndividualDb ? (
-            <IndividualDashboard />
-          ) : isBusinessDb ? (
-            <BusinessDashboard />
-          ) : isProfessionalDb ? (
-            <ProfessionalDashboard />
-          ) : isAdminDb ? (
-            <AdminDashboard />
-          ) : isResolver ? (
-            <PortalResolver />
-          ) : isSearch ? (
-            <ErrorBoundary>
-              <SearchPage />
-            </ErrorBoundary>
-          ) : isMaterialsHub ? (
-            <MaterialsHub
-              categorySlug={segments[1]}
-              subcategorySlug={segments[2]}
-              leafSlug={segments[3]}
-            />
-          ) : isServicesHub ? (
-            <ServicesHub
-              categorySlug={segments[1]}
-              typeSlug={segments[2]}
-              specSlug={segments[3]}
-            />
-          ) : isBrandsHub ? (
-            <BrandsHub brandSlug={segments[1]} />
-          ) : isProductDetail ? (
-            <ProductDetail />
-          ) : (
-            <>
-              <Hero />
-              <Categories />
-              <Products />
-              <Services />
-              <RfqForm />
-              <Trust />
-            </>
-          )}
+          <Suspense fallback={
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+            </div>
+          }>
+            {isCheckoutSuccess ? (
+              <CheckoutSuccess />
+            ) : isCheckout ? (
+              <Checkout />
+            ) : isAuth ? (
+              <AuthPage />
+            ) : isBulkOrders ? (
+              <BulkOrders />
+            ) : isProjects ? (
+              <Projects />
+            ) : isResources ? (
+              <Resources />
+            ) : isIndividualDb ? (
+              <IndividualDashboard />
+            ) : isBusinessDb ? (
+              <BusinessDashboard />
+            ) : isProfessionalDb ? (
+              <ProfessionalDashboard />
+            ) : isAdminDb ? (
+              <AdminDashboard />
+            ) : isResolver ? (
+              <PortalResolver />
+            ) : isSearch ? (
+              <ErrorBoundary>
+                <SearchPage />
+              </ErrorBoundary>
+            ) : isMaterialsHub ? (
+              <MaterialsHub
+                categorySlug={segments[1]}
+                subcategorySlug={segments[2]}
+                leafSlug={segments[3]}
+              />
+            ) : isServicesHub ? (
+              <ServicesHub
+                categorySlug={segments[1]}
+                typeSlug={segments[2]}
+                specSlug={segments[3]}
+              />
+            ) : isBrandsHub ? (
+              <BrandsHub brandSlug={segments[1]} />
+            ) : isProductDetail ? (
+              <ProductDetail />
+            ) : (
+              <>
+                <Hero />
+                <Categories />
+                <Products />
+                <Services />
+                <RfqForm />
+                <Trust />
+              </>
+            )}
+          </Suspense>
         </main>
         {!isAdminDb && <Footer />}
         <Agentation />

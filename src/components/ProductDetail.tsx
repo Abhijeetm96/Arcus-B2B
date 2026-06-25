@@ -134,7 +134,7 @@ export default function ProductDetail() {
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [productUnit, setProductUnit] = useState('/ Unit')
   const [stock, setStock] = useState<number>(100)
-  const [status, setStatus] = useState<'ACTIVE' | 'OUT_OF_STOCK' | 'DISCONTINUED' | 'COMING_SOON'>('ACTIVE')
+  const [status, setStatus] = useState<'ACTIVE' | 'OUT_OF_STOCK' | 'DISCONTINUED' | 'COMING_SOON' | 'RFQ_ONLY'>('ACTIVE')
   const [syncingStock, setSyncingStock] = useState(false)
 
   const handleSyncStock = async () => {
@@ -298,6 +298,17 @@ export default function ProductDetail() {
   const [showAllReviews, setShowAllReviews] = useState(false)
   const [showLightbox, setShowLightbox] = useState(false)
   const [lightboxScale, setLightboxScale] = useState(1)
+  
+  // Quick RFQ states
+  const [showQuickRfqModal, setShowQuickRfqModal] = useState(false)
+  const [quickRfqForm, setQuickRfqForm] = useState({
+    quantity: '',
+    budget: '',
+    phone: '',
+    notes: ''
+  })
+  const [quickRfqSubmitted, setQuickRfqSubmitted] = useState(false)
+  const [quickRfqError, setQuickRfqError] = useState('')
 
   const [rfqForm, setRfqForm] = useState({
     projectType: 'Commercial',
@@ -585,6 +596,59 @@ export default function ProductDetail() {
     } catch (err) {
       console.error(err);
       setToastMessage('Error submitting RFQ. Please try again.');
+    }
+  };
+
+  const handleQuickRfqSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setQuickRfqError('');
+
+    if (!quickRfqForm.quantity || Number(quickRfqForm.quantity) < 1) {
+      return setQuickRfqError('Please enter a valid quantity.');
+    }
+    if (!quickRfqForm.phone.trim()) {
+      return setQuickRfqError('Mobile number is required.');
+    }
+
+    try {
+      const token = localStorage.getItem('arcus_token');
+      const payload = {
+        name: user?.name || 'Quick RFQ Customer',
+        phone: quickRfqForm.phone,
+        category: categoryTitle,
+        quantity: quickRfqForm.quantity,
+        location: 'Project Location',
+        timeline: 'Flexible',
+        details: `[Quick PDP RFQ] Product: ${productName} (ID: ${productSlug}). Target Budget: ${quickRfqForm.budget ? '₹' + quickRfqForm.budget : 'Not specified'}. Notes: ${quickRfqForm.notes}`,
+        budget: quickRfqForm.budget,
+        title: `Bulk Pricing Request for ${productName}`,
+        items: [{
+          itemName: productName,
+          description: brand || 'ARCUS matched spec',
+          unit: productUnit.replace('/', '').trim() || 'Piece',
+          quantity: quickRfqForm.quantity
+        }],
+        attachmentUrls: []
+      };
+
+      const res = await fetch('http://localhost:5000/api/rfq', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        setQuickRfqSubmitted(true);
+      } else {
+        const errData = await res.json();
+        setQuickRfqError(errData.error || 'Failed to submit request.');
+      }
+    } catch (err) {
+      console.error(err);
+      setQuickRfqError('Network error. Please try again.');
     }
   };
 
@@ -931,16 +995,40 @@ export default function ProductDetail() {
                   )}
                 </div>
 
-                 {/* Conditional Actions */}
-                  <div className="flex flex-col gap-sm">
-                    {status === 'COMING_SOON' ? (
+                <div className="flex flex-col gap-sm">
+                  {status === 'COMING_SOON' ? (
                       <button
                         onClick={() => {
-                          document.getElementById('enterprise-rfq-section')?.scrollIntoView({ behavior: 'smooth' });
+                          setQuickRfqForm({
+                            quantity: String(qty),
+                            budget: '',
+                            phone: user?.phone || '',
+                            notes: 'Inquiry for upcoming product: ' + productName
+                          });
+                          setQuickRfqSubmitted(false);
+                          setQuickRfqError('');
+                          setShowQuickRfqModal(true);
                         }}
-                        className="w-full h-16 bg-primary text-on-primary hover:bg-[#fabd00] hover:text-on-primary-container rounded-md font-bold transition-colors flex items-center justify-center gap-sm font-label-caps text-[16px] shadow-sm"
+                        className="w-full h-16 bg-primary text-on-primary hover:bg-[#fabd00] hover:text-on-primary-container rounded-md font-bold transition-colors flex items-center justify-center gap-sm font-label-caps text-[16px] shadow-sm border-0"
                       >
                         <span className="material-symbols-outlined text-[22px]">contact_support</span> Inquire
+                      </button>
+                    ) : status === 'RFQ_ONLY' ? (
+                      <button
+                        onClick={() => {
+                          setQuickRfqForm({
+                            quantity: String(qty),
+                            budget: '',
+                            phone: user?.phone || '',
+                            notes: ''
+                          });
+                          setQuickRfqSubmitted(false);
+                          setQuickRfqError('');
+                          setShowQuickRfqModal(true);
+                        }}
+                        className="w-full h-16 bg-[#ffc107] text-[#0a0a0a] hover:bg-[#fabd00] rounded-md font-bold transition-all flex items-center justify-center gap-sm font-label-caps text-[16px] shadow-md border-0"
+                      >
+                        <span className="material-symbols-outlined text-[22px]">sell</span> Request Bulk Pricing
                       </button>
                     ) : (
                       <>
@@ -954,20 +1042,20 @@ export default function ProductDetail() {
                         )}
                         <div className="grid grid-cols-2 gap-md" id="standardActions">
                           <button 
-                            onClick={handleAddToCart}
-                            disabled={qty > stock || stock === 0 || status === 'OUT_OF_STOCK'}
-                            className={`h-16 rounded-md font-bold transition-colors flex items-center justify-center gap-sm font-label-caps text-[16px] shadow-sm ${
-                              qty > stock || stock === 0 || status === 'OUT_OF_STOCK'
-                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                : 'bg-primary-container text-on-primary-container hover:bg-[#fabd00]'
-                            }`}
+                             onClick={handleAddToCart}
+                             disabled={qty > stock || stock === 0 || status === 'OUT_OF_STOCK'}
+                             className={`h-16 rounded-md font-bold transition-colors flex items-center justify-center gap-sm font-label-caps text-[16px] shadow-sm border-0 ${
+                               qty > stock || stock === 0 || status === 'OUT_OF_STOCK'
+                                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                 : 'bg-primary-container text-on-primary-container hover:bg-[#fabd00]'
+                             }`}
                           >
                             <span className="material-symbols-outlined text-[22px]">shopping_cart</span> Add to Cart
                           </button>
                           <button 
                             onClick={handleBuyNow}
                             disabled={qty > stock || stock === 0 || status === 'OUT_OF_STOCK'}
-                            className={`h-16 rounded-md font-bold transition-colors font-label-caps text-[16px] ${
+                            className={`h-16 rounded-md font-bold transition-colors font-label-caps text-[16px] border-0 ${
                               qty > stock || stock === 0 || status === 'OUT_OF_STOCK'
                                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                 : 'bg-[#121212] text-white hover:bg-on-surface'
@@ -984,19 +1072,25 @@ export default function ProductDetail() {
                   <div className="flex flex-col gap-md mt-sm" id="rfqActions">
                     <div className="p-md bg-primary-container/10 border border-primary-container/30 rounded-md text-center">
                       <p className="text-body-sm font-bold text-primary">
-                        {qty >= 1000 ? 'Enterprise Pricing Available' : 'Need Better Pricing?'}
+                        {qty >= 1000 ? 'Enterprise Bulk Pricing Available' : 'Need Better Pricing?'}
                       </p>
                     </div>
                     <button
                       onClick={() => {
-                        document.getElementById('enterprise-rfq-section')?.scrollIntoView({ behavior: 'smooth' })
+                        setQuickRfqForm({
+                          quantity: String(qty),
+                          budget: '',
+                          phone: user?.phone || '',
+                          notes: ''
+                        });
+                        setQuickRfqSubmitted(false);
+                        setQuickRfqError('');
+                        setShowQuickRfqModal(true);
                       }}
-                      className="w-full bg-primary-container text-on-primary-container py-xl rounded-md font-bold hover:bg-[#fabd00] transition-colors flex items-center justify-center gap-sm font-label-caps text-[13px]"
+                      className="w-full bg-[#ffc107] text-[#0a0a0a] py-xl rounded-md font-bold hover:bg-[#fabd00] transition-colors flex items-center justify-center gap-sm font-label-caps text-[13px] border-0"
                     >
-                      <span className="material-symbols-outlined text-[20px]">
-                        {qty >= 1000 ? 'headset_mic' : 'description'}
-                      </span>
-                      {qty >= 1000 ? 'Contact Procurement Team' : 'Request Bulk Quote'}
+                      <span className="material-symbols-outlined text-[20px]">sell</span>
+                      Request Bulk Pricing
                     </button>
                   </div>
                 )}
@@ -1788,6 +1882,109 @@ export default function ProductDetail() {
                 <img className="w-full h-full object-cover rounded-xs" src={img} alt="Thumbnail preview" />
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Quick RFQ Popup Modal (Type 3) */}
+      {showQuickRfqModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] flex items-center justify-center p-4 animate-fade-in select-none">
+          <div className="bg-white text-gray-900 rounded-lg p-6 max-w-md w-full shadow-2xl relative text-left border border-gray-150">
+            {/* Close Button */}
+            <button
+              onClick={() => setShowQuickRfqModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <span className="material-symbols-outlined text-[20px]">close</span>
+            </button>
+
+            {quickRfqSubmitted ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center gap-4">
+                <span className="material-symbols-outlined text-[#10B981] text-5xl">
+                  check_circle
+                </span>
+                <h3 className="text-xl font-bold text-gray-900">Request Submitted!</h3>
+                <p className="text-xs text-gray-500 max-w-xs">
+                  Your bulk pricing inquiry for <strong>{productName}</strong> has been received. Our sales managers will prepare a custom quotation and contact you shortly.
+                </p>
+                <button
+                  onClick={() => setShowQuickRfqModal(false)}
+                  className="mt-4 px-6 py-2 bg-gray-950 hover:bg-gray-800 text-white font-bold text-xs uppercase tracking-wider rounded transition-colors"
+                >
+                  Close Window
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleQuickRfqSubmit} className="flex flex-col gap-4">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Request Bulk Pricing</h3>
+                  <p className="text-[11px] text-gray-500 mt-1 font-semibold">
+                    Product: {productName}
+                  </p>
+                </div>
+
+                {quickRfqError && (
+                  <div className="bg-red-50 border-l-4 border-red-500 p-2 text-red-700 text-xs rounded">
+                    {quickRfqError}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Quantity *</label>
+                    <input
+                      required
+                      type="number"
+                      min="1"
+                      value={quickRfqForm.quantity}
+                      onChange={(e) => setQuickRfqForm({ ...quickRfqForm, quantity: e.target.value })}
+                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-gray-950"
+                      placeholder="e.g. 500"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Target Budget (INR)</label>
+                    <input
+                      type="number"
+                      value={quickRfqForm.budget}
+                      onChange={(e) => setQuickRfqForm({ ...quickRfqForm, budget: e.target.value })}
+                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-gray-950"
+                      placeholder="e.g. 120000"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Mobile Number *</label>
+                  <input
+                    required
+                    type="tel"
+                    value={quickRfqForm.phone}
+                    onChange={(e) => setQuickRfqForm({ ...quickRfqForm, phone: e.target.value })}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-gray-950"
+                    placeholder="+91 XXXXX XXXXX"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Notes / Requirements</label>
+                  <textarea
+                    rows={3}
+                    value={quickRfqForm.notes}
+                    onChange={(e) => setQuickRfqForm({ ...quickRfqForm, notes: e.target.value })}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-gray-950 resize-none"
+                    placeholder="Specific delivery instructions, brands, or payment terms desired..."
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full h-11 bg-primary text-gray-950 hover:bg-[#fabd00] font-bold uppercase tracking-wider text-xs rounded transition-colors mt-2"
+                >
+                  Submit Request
+                </button>
+              </form>
+            )}
           </div>
         </div>
       )}

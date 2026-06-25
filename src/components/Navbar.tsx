@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
+import { getCachedSearch, setCachedSearch } from '../core/config/searchCache'
 
 const materialsCategories = [
   {
@@ -122,11 +123,24 @@ export default function Navbar() {
   const searchInputRef = useRef<HTMLInputElement>(null)
   const mobileSearchInputRef = useRef<HTMLInputElement>(null)
 
-  // Debounce query by 300ms
+  // Debounce query by 300ms with caching
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSearchResults({ products: [], brands: [], categories: [], services: [], professionals: [] })
       setShowDropdown(false)
+      return
+    }
+
+    const cached = getCachedSearch(searchQuery)
+    if (cached) {
+      setSearchResults({
+        products: Array.isArray(cached.products) ? cached.products.slice(0, 5) : [],
+        brands: Array.isArray(cached.brands) ? cached.brands.slice(0, 3) : [],
+        categories: Array.isArray(cached.categories) ? cached.categories.slice(0, 3) : [],
+        services: Array.isArray(cached.services) ? cached.services.slice(0, 5) : [],
+        professionals: Array.isArray(cached.professionals) ? cached.professionals.slice(0, 5) : []
+      })
+      setShowDropdown(true)
       return
     }
 
@@ -135,6 +149,7 @@ export default function Navbar() {
         const res = await fetch(`http://localhost:5000/api/search?q=${encodeURIComponent(searchQuery)}`)
         if (res.ok) {
           const data = await res.json()
+          setCachedSearch(searchQuery, data)
           setSearchResults({
             products: Array.isArray(data?.products) ? data.products.slice(0, 5) : [],
             brands: Array.isArray(data?.brands) ? data.brands.slice(0, 3) : [],

@@ -122,6 +122,7 @@ export interface RFQ {
   createdAt?: string;
   description?: string;
   email?: string;
+  items?: any[];
 }
 
 export interface User {

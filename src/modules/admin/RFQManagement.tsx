@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import type { RFQ } from './types';
-
+import { QuotationBuilder } from './QuotationBuilder';
+import { NegotiationCenter } from './NegotiationCenter';
 
 export const RFQManagement: React.FC = () => {
   const [rfqs, setRfqs] = useState<RFQ[]>([]);
@@ -11,6 +12,10 @@ export const RFQManagement: React.FC = () => {
   // Search & Filter
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+
+  // View state: 'list' | 'builder' | 'history'
+  const [viewMode, setViewMode] = useState<'list' | 'builder' | 'history'>('list');
+  const [existingQuotations, setExistingQuotations] = useState<any[]>([]);
 
   // Drawer / Modals
   const [selectedRfq, setSelectedRfq] = useState<RFQ | null>(null);
@@ -49,6 +54,21 @@ export const RFQManagement: React.FC = () => {
       setError(err.message || 'Error fetching RFQs');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRfqQuotations = async (rfqId: string) => {
+    try {
+      const token = localStorage.getItem('arcus_token');
+      const res = await fetch(`http://localhost:5000/api/rfqs/${rfqId}/quotations`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setExistingQuotations(data);
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -184,6 +204,37 @@ export const RFQManagement: React.FC = () => {
     return matchSearch && matchStatus;
   });
 
+  if (viewMode === 'builder' && selectedRfq) {
+    return (
+      <QuotationBuilder
+        rfq={selectedRfq as any}
+        existingQuotations={existingQuotations}
+        onSuccess={() => {
+          setViewMode('list');
+          setSelectedRfq(null);
+          fetchRfqs();
+        }}
+        onCancel={() => {
+          setViewMode('list');
+          setSelectedRfq(null);
+        }}
+      />
+    );
+  }
+
+  if (viewMode === 'history' && selectedRfq) {
+    return (
+      <NegotiationCenter
+        rfq={selectedRfq as any}
+        quotations={existingQuotations}
+        onBack={() => {
+          setViewMode('list');
+          setSelectedRfq(null);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="space-y-md text-left">
       {/* Notifications */}
@@ -284,6 +335,7 @@ export const RFQManagement: React.FC = () => {
                         <button
                           onClick={() => {
                             setSelectedRfq(r);
+                            if (r.id) fetchRfqQuotations(r.id);
                             setShowInlineQuote(false);
                             setShowInlineConvert(false);
                             // Populate convert defaults
@@ -549,6 +601,31 @@ export const RFQManagement: React.FC = () => {
                         <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold mb-xs">Detailed Requirements</span>
                         <span className="font-semibold text-slate-650 leading-relaxed block bg-white p-sm rounded border border-slate-100">{selectedRfq.details || 'No additional details provided.'}</span>
                       </div>
+                      {selectedRfq.items && selectedRfq.items.length > 0 && (
+                        <div className="mt-md">
+                          <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold mb-xs">Materials Sheet Table</span>
+                          <div className="border border-slate-200 rounded-lg overflow-hidden bg-white">
+                            <table className="w-full text-left border-collapse text-[10px]">
+                              <thead>
+                                <tr className="bg-slate-50 text-slate-500 font-bold uppercase border-b border-slate-200">
+                                  <th className="p-2">Material / Item</th>
+                                  <th className="p-2">Spec / Description</th>
+                                  <th className="p-2">Qty</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {selectedRfq.items.map((it: any, index: number) => (
+                                  <tr key={index} className="border-b border-slate-150">
+                                    <td className="p-2 font-bold text-slate-800">{it.itemName || it.item_name}</td>
+                                    <td className="p-2 text-slate-550">{it.description || 'N/A'}</td>
+                                    <td className="p-2 font-mono font-bold text-slate-700">{it.quantity} {it.unit}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -599,43 +676,26 @@ export const RFQManagement: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    // Pre-fill quote form with budget if empty
-                    setQuoteForm({
-                      price: selectedRfq.budget ? String(selectedRfq.budget).replace(/[^\d.]/g, '') : '',
-                      validityDays: 30,
-                      message: 'Price quote for materials requested.'
-                    });
-                    setShowInlineQuote(true);
+                    setViewMode('builder');
                   }}
-                  className="flex-1 flex items-center justify-center gap-xs px-md h-11 border border-[#FFC107] text-[#FFC107] hover:bg-[#FFFDF5] font-bold text-xs rounded-xl transition-all shadow-sm bg-white"
+                  className="flex-1 flex items-center justify-center gap-xs bg-slate-900 hover:bg-slate-800 text-white px-md h-11 rounded-xl font-bold text-xs transition-all shadow-sm border-0"
                 >
-                  <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
-                  Send Quote PDF
+                  <span className="material-symbols-outlined text-[16px]">edit_document</span>
+                  {existingQuotations.length > 0 ? 'Revise Proposal' : 'Prepare Proposal'}
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    // Pre-fill order with quoted price if status is quoted
-                    const calculatedPrice = quoteForm.price || (selectedRfq.budget ? String(selectedRfq.budget).replace(/[^\d.]/g, '') : '0');
-                    setConvertForm({
-                      amount: calculatedPrice,
-                      items: [{
-                        name: `${selectedRfq.category || 'Materials'} procurement`,
-                        quantity: Number(selectedRfq.quantity) || 1,
-                        price: parseFloat(calculatedPrice) || 0
-                      }],
-                      shippingAddress: selectedRfq.location || '',
-                      billingAddress: selectedRfq.location || '',
-                      paymentMethod: 'COD'
-                    });
-                    setShowInlineConvert(true);
-                  }}
-                  className="flex-1 flex items-center justify-center gap-xs bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-md h-11 rounded-xl font-bold text-xs transition-all shadow-sm"
-                >
-                  <span className="material-symbols-outlined text-[16px]">shopping_cart_checkout</span>
-                  Convert to Order
-                </button>
+                {existingQuotations.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setViewMode('history');
+                    }}
+                    className="flex-1 flex items-center justify-center gap-xs bg-amber-500 text-gray-950 hover:bg-amber-600 px-md h-11 rounded-xl font-bold text-xs transition-all shadow-sm border-0"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">history</span>
+                    Negotiation Center ({existingQuotations.length})
+                  </button>
+                )}
               </div>
             )}
           </div>

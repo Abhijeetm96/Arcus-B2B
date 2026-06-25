@@ -16,6 +16,7 @@ import {
   validateImportSheet, matchZipImages, generateTemplate, exportCatalog, executeImport, executeBulkUpdates, getAllImportHistory, getImportHistoryById, HEADER_MAPPING
 } from './db';
 import { validateEmail, validatePhone, validatePassword, validateName, validateBusinessName, validateGST, validateExperience, validateURL, normalizePhone, sanitizeText, trimAndClean, RateLimiter } from '../../shared/validation';
+import { createQuotation, getQuotationById, getQuotationsForRfq, updateQuotationStatus, convertQuotationToOrder } from './modules/rfq/QuotationService';
 
 dotenv.config();
 
@@ -295,13 +296,18 @@ app.post('/api/rfq', async (req, res) => {
       return res.status(429).json({ error: `Too many requests. Try again in ${formLimiter.getRetryAfter(`rfq:${ip}`)} seconds.` });
     }
 
-    const { name, phone, category, quantity, location, timeline, details, buyerId, title, budget, attachmentUrls } = req.body;
+    const { name, phone, category, quantity, location, timeline, details, buyerId, title, budget, attachmentUrls, items } = req.body;
     // Validate
     const nameV = validateName(sanitizeText(name || ''), 'Name');
     if (!nameV.valid) return res.status(400).json({ error: nameV.error });
     const phoneV = validatePhone(phone || '');
     if (!phoneV.valid) return res.status(400).json({ error: phoneV.error });
-    if (!quantity || !quantity.trim()) return res.status(400).json({ error: 'Quantity is required.' });
+
+    const finalQuantity = (items && Array.isArray(items) && items.length > 0)
+      ? "Detailed Table"
+      : quantity;
+
+    if (!finalQuantity || !finalQuantity.trim()) return res.status(400).json({ error: 'Quantity is required.' });
     if (!location || !location.trim()) return res.status(400).json({ error: 'Delivery location is required.' });
     if (details && details.length > 2000) return res.status(400).json({ error: 'Details must be 2000 characters or less.' });
 
@@ -327,14 +333,137 @@ app.post('/api/rfq', async (req, res) => {
       name: sanitizeText(name),
       phone: cleanPhone,
       category: sanitizeText(category || ''),
-      quantity: sanitizeText(quantity),
+      quantity: sanitizeText(finalQuantity),
       location: sanitizeText(location),
       timeline: sanitizeText(timeline || ''),
-      details: sanitizeText(details || '')
+      details: sanitizeText(details || ''),
+      items: Array.isArray(items) ? items : undefined
     });
     res.status(201).json({ success: true, rfq: newRfq });
   } catch (err: any) {
     console.error('Error creating RFQ:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Quotation Management Endpoints
+app.post('/api/rfqs/:id/quotations', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized. Token required.' });
+    }
+    const token = authHeader.split(' ')[1];
+    const userId = verifyToken(token);
+    if (!userId) return res.status(401).json({ error: 'Unauthorized. Invalid token.' });
+    const user = await getUserById(userId);
+    if (!user || user.role !== 'Admin') {
+      return res.status(403).json({ error: 'Access denied. Admin only.' });
+    }
+
+    const rfqId = req.params.id;
+    const { quoteData, items } = req.body;
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'Quotation items must be a non-empty array.' });
+    }
+
+    const quote = await createQuotation(rfqId, quoteData || {}, items, user.name);
+    res.status(201).json(quote);
+  } catch (err: any) {
+    console.error('Error creating quotation:', err);
+    res.status(500).json({ error: err.message || 'Internal server error' });
+  }
+});
+
+app.get('/api/rfqs/:id/quotations', async (req, res) => {
+  try {
+    const rfqId = req.params.id;
+    const quotes = await getQuotationsForRfq(rfqId);
+    res.json(quotes);
+  } catch (err: any) {
+    console.error('Error fetching quotations for RFQ:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/quotations/:id', async (req, res) => {
+  try {
+    const quoteId = req.params.id;
+    const quote = await getQuotationById(quoteId);
+    if (!quote) return res.status(404).json({ error: 'Quotation not found.' });
+    res.json(quote);
+  } catch (err: any) {
+    console.error('Error fetching quotation:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/quotations/:id/accept', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized. Token required.' });
+    }
+    const token = authHeader.split(' ')[1];
+    const userId = verifyToken(token);
+    if (!userId) return res.status(401).json({ error: 'Unauthorized. Invalid token.' });
+
+    const quoteId = req.params.id;
+    const order = await convertQuotationToOrder(quoteId);
+    res.status(200).json({ success: true, order });
+  } catch (err: any) {
+    console.error('Error accepting quotation:', err);
+    res.status(500).json({ error: err.message || 'Internal server error' });
+  }
+});
+
+app.post('/api/quotations/:id/reject', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized. Token required.' });
+    }
+    const token = authHeader.split(' ')[1];
+    const userId = verifyToken(token);
+    if (!userId) return res.status(401).json({ error: 'Unauthorized. Invalid token.' });
+
+    const quoteId = req.params.id;
+    const { declineReason } = req.body;
+
+    if (!declineReason || !declineReason.trim()) {
+      return res.status(400).json({ error: 'Decline reason is required.' });
+    }
+
+    const quote = await updateQuotationStatus(quoteId, 'DECLINED', { declineReason });
+    res.json({ success: true, quotation: quote });
+  } catch (err: any) {
+    console.error('Error declining quotation:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/quotations/:id/renegotiate', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized. Token required.' });
+    }
+    const token = authHeader.split(' ')[1];
+    const userId = verifyToken(token);
+    if (!userId) return res.status(401).json({ error: 'Unauthorized. Invalid token.' });
+
+    const quoteId = req.params.id;
+    const { customerComments } = req.body;
+
+    if (!customerComments || !customerComments.trim()) {
+      return res.status(400).json({ error: 'Renegotiation comments/budget are required.' });
+    }
+
+    const quote = await updateQuotationStatus(quoteId, 'NEGOTIATION_REQUESTED', { customerComments });
+    res.json({ success: true, quotation: quote });
+  } catch (err: any) {
+    console.error('Error requesting negotiation:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

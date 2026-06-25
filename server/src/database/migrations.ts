@@ -319,6 +319,42 @@ export async function runMigrations(pgPool: Pool): Promise<void> {
         total_amount NUMERIC(12,2) NOT NULL,
         CONSTRAINT chk_order_items_qty CHECK (quantity > 0)
     );
+
+    CREATE TABLE IF NOT EXISTS quotations (
+        id VARCHAR(50) PRIMARY KEY,
+        quotation_number VARCHAR(50) NOT NULL,
+        version INTEGER NOT NULL,
+        rfq_id VARCHAR(50) NOT NULL REFERENCES rfqs(id) ON DELETE CASCADE,
+        status VARCHAR(50) NOT NULL DEFAULT 'SENT',
+        subtotal NUMERIC(12,2) NOT NULL,
+        discount_type VARCHAR(50) DEFAULT 'NONE',
+        discount_value NUMERIC(12,2) DEFAULT 0.00,
+        shipping_charges NUMERIC(12,2) DEFAULT 0.00,
+        free_shipping BOOLEAN DEFAULT FALSE,
+        gst_amount NUMERIC(12,2) NOT NULL,
+        grand_total NUMERIC(12,2) NOT NULL,
+        delivery_terms TEXT,
+        payment_terms TEXT,
+        validity_date DATE,
+        notes TEXT,
+        customer_comments TEXT,
+        decline_reason TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        created_by VARCHAR(100)
+    );
+
+    CREATE TABLE IF NOT EXISTS quotation_items (
+        id VARCHAR(50) PRIMARY KEY,
+        quotation_id VARCHAR(50) NOT NULL REFERENCES quotations(id) ON DELETE CASCADE,
+        item_name VARCHAR(150) NOT NULL,
+        description TEXT,
+        unit VARCHAR(50) NOT NULL,
+        quantity INTEGER NOT NULL,
+        unit_price NUMERIC(12,2) NOT NULL,
+        discount_percentage NUMERIC(5,2) DEFAULT 0.00,
+        gst_rate NUMERIC(5,2) DEFAULT 18.00,
+        line_total NUMERIC(12,2) NOT NULL
+    );
   `);
 
   // 3. Create indexes
@@ -349,6 +385,19 @@ export async function runMigrations(pgPool: Pool): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_points_ledger_wallet ON buildpoints_ledger(wallet_user_id);
     CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
     CREATE INDEX IF NOT EXISTS idx_order_items_variant ON order_items(variant_id);
+    CREATE INDEX IF NOT EXISTS idx_quotations_rfq ON quotations(rfq_id);
+    CREATE INDEX IF NOT EXISTS idx_quotations_number ON quotations(quotation_number);
+    CREATE INDEX IF NOT EXISTS idx_quotation_items_quotation ON quotation_items(quotation_id);
+    
+    -- Optimized indexes recommended by query plan evaluation
+    CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
+    CREATE INDEX IF NOT EXISTS idx_rfqs_buyer ON rfqs(buyer_id);
+    CREATE INDEX IF NOT EXISTS idx_products_category_id ON products(category_id);
+    CREATE INDEX IF NOT EXISTS idx_products_leaf_slug ON products(leaf_slug);
+    CREATE INDEX IF NOT EXISTS idx_professional_category ON professional_profiles(service_category);
+    CREATE INDEX IF NOT EXISTS idx_professional_city ON professional_profiles(city);
+    CREATE INDEX IF NOT EXISTS idx_rfqs_status ON rfqs(status);
+    CREATE INDEX IF NOT EXISTS idx_rfqs_timestamp ON rfqs(timestamp DESC);
     
     -- Enforce uniqueness constraints
     CREATE UNIQUE INDEX IF NOT EXISTS idx_ledger_uniqueness 

@@ -2202,7 +2202,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
     setTimeout(() => {
       setBookSubmitted(false)
       setShowBookModal(false)
-      setBookForm({ name: '', phone: '', date: '', notes: '' })
+      setBookForm({ name: '', phone: '', date: '', time: '', address: '', notes: '' })
     }, 3000)
   }
 
@@ -2233,7 +2233,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
     setTimeout(() => {
       setDirectQuoteSubmitted(false)
       setShowDirectQuoteModal(false)
-      setDirectQuoteForm({ name: '', phone: '', budget: '', timeline: '', desc: '' })
+      setDirectQuoteForm({ name: '', phone: '', budget: '', timeline: '', address: '', desc: '' })
     }, 3000)
   }
 

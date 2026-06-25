@@ -8,7 +8,7 @@ const connectionString = process.env.DATABASE_URL;
 
 async function run() {
   console.log('🔍 Starting BuildPoints Integrity Verification...');
-  const reportPath = path.join('C:', 'Users', 'abhis', '.gemini', 'antigravity-ide', 'brain', '233a70f0-524a-4ecc-ae3d-469fadd59caa', 'buildpoints_integrity_report.md');
+  const reportPath = path.join('C:', 'Users', 'abhis', '.gemini', 'antigravity-ide', 'brain', '147ec9a2-e5b6-4d99-9f6e-5365a3a3af66', 'buildpoints_integrity_report.md');
   
   let totalUsers = 0;
   let mismatchedUsersCount = 0;

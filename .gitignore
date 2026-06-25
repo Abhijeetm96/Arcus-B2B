@@ -1,42 +1,46 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Node dependencies
+node_modules/
 
-node_modules
-dist
-dist-ssr
-*.local
+# Production build artifacts
+dist/
+build/
+coverage/
+.next/
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# Audit logs
-audit/
-
-# Environment variables (secrets)
+# Environment configurations (secrets)
 .env
 .env.*
 !.env.example
 
-# Local database file
-server/data/db.json
+# Runtime logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
 
-# Lock files (environment-specific)
-package-lock.json
-server/package-lock.json
+# Temporary cache and files
+.cache/
+tmp/
+temp/
+subagent_log.txt
+
+# Editor and IDE settings
+.idea/
+.vscode/settings.json
+.vscode/*
+!.vscode/extensions.json
+.gemini/
+.claude/
+
+# System specific files
+.DS_Store
+Thumbs.db
+
+# Databases (Local & SQLite)
+*.sqlite
+*.db
+server/data/db.json
 
 # Diagnostic / scratch scripts
 server/check_*.js

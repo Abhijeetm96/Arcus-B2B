@@ -292,6 +292,8 @@ function initJsonDb() {
       if (!parsed.buildpoints_wallets) parsed.buildpoints_wallets = [];
       if (!parsed.buildpoints_ledger) parsed.buildpoints_ledger = [];
       if (!parsed.order_items) parsed.order_items = [];
+      if (!parsed.quotations) parsed.quotations = [];
+      if (!parsed.quotation_items) parsed.quotation_items = [];
 
       // Sync users to profiles in JSON DB
       parsed.users.forEach((u: any) => {
@@ -433,6 +435,42 @@ async function initDb() {
           budget VARCHAR(50) NOT NULL,
           timeline VARCHAR(50) NOT NULL,
           description TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS quotations (
+            id VARCHAR(50) PRIMARY KEY,
+            quotation_number VARCHAR(50) NOT NULL,
+            version INTEGER NOT NULL,
+            rfq_id VARCHAR(50) NOT NULL REFERENCES rfqs(id) ON DELETE CASCADE,
+            status VARCHAR(50) NOT NULL DEFAULT 'SENT',
+            subtotal NUMERIC(12,2) NOT NULL,
+            discount_type VARCHAR(50) DEFAULT 'NONE',
+            discount_value NUMERIC(12,2) DEFAULT 0.00,
+            shipping_charges NUMERIC(12,2) DEFAULT 0.00,
+            free_shipping BOOLEAN DEFAULT FALSE,
+            gst_amount NUMERIC(12,2) NOT NULL,
+            grand_total NUMERIC(12,2) NOT NULL,
+            delivery_terms TEXT,
+            payment_terms TEXT,
+            validity_date DATE,
+            notes TEXT,
+            customer_comments TEXT,
+            decline_reason TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            created_by VARCHAR(100)
+        );
+
+        CREATE TABLE IF NOT EXISTS quotation_items (
+            id VARCHAR(50) PRIMARY KEY,
+            quotation_id VARCHAR(50) NOT NULL REFERENCES quotations(id) ON DELETE CASCADE,
+            item_name VARCHAR(150) NOT NULL,
+            description TEXT,
+            unit VARCHAR(50) NOT NULL,
+            quantity INTEGER NOT NULL,
+            unit_price NUMERIC(12,2) NOT NULL,
+            discount_percentage NUMERIC(5,2) DEFAULT 0.00,
+            gst_rate NUMERIC(5,2) DEFAULT 18.00,
+            line_total NUMERIC(12,2) NOT NULL
         );
 
         CREATE TABLE IF NOT EXISTS products (
