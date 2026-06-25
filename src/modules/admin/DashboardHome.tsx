@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { MetricCard, Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/shared/Card';
+import { IndianRupee, ShoppingBag, FileText, Package, Users, UserCheck, AlertTriangle, ShieldCheck } from 'lucide-react';
 
 interface KPIData {
   revenue: { today: number; thisMonth: number; prevMonth: number; trend: number };
@@ -45,7 +47,7 @@ export const DashboardHome: React.FC = () => {
 
   if (error || !kpis) {
     return (
-      <div className="bg-red-50 text-red-800 p-md rounded-2xl border border-red-200">
+      <div className="bg-red-50 text-red-800 p-4 rounded-2xl border border-red-200">
         <p className="font-semibold">Error: {error || 'Could not fetch KPI metrics.'}</p>
       </div>
     );
@@ -71,220 +73,186 @@ export const DashboardHome: React.FC = () => {
     : '';
 
   return (
-    <div className="space-y-lg text-left">
+    <div className="space-y-6 text-left">
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Revenue */}
-        <div className="bg-white border border-slate-200 p-lg rounded-2xl shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between h-40">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Monthly Revenue</p>
-              <h3 className="text-headline-h5 font-extrabold text-slate-900 mt-xs">₹{kpis.revenue.thisMonth.toLocaleString('en-IN')}</h3>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-[#FFC107]">
-              <span className="material-symbols-outlined text-[24px]">payments</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-xs text-xs">
-            <span className={`flex items-center font-bold ${kpis.revenue.trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              <span className="material-symbols-outlined text-[16px]">{kpis.revenue.trend >= 0 ? 'trending_up' : 'trending_down'}</span>
-              {Math.abs(kpis.revenue.trend)}%
-            </span>
-            <span className="text-slate-400 font-medium">vs last month</span>
-          </div>
-        </div>
+        <MetricCard
+          title="Monthly Revenue"
+          value={`₹${kpis.revenue.thisMonth.toLocaleString('en-IN')}`}
+          description="vs last month"
+          icon={<IndianRupee className="h-4 w-4" />}
+          trend={{ value: `${Math.abs(kpis.revenue.trend)}%`, isPositive: kpis.revenue.trend >= 0 }}
+        />
 
         {/* Orders */}
-        <div className="bg-white border border-slate-200 p-lg rounded-2xl shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between h-40">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Monthly Orders</p>
-              <h3 className="text-headline-h5 font-extrabold text-slate-900 mt-xs">{kpis.orders.thisMonth}</h3>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
-              <span className="material-symbols-outlined text-[24px]">local_mall</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-xs text-xs">
-            <span className={`flex items-center font-bold ${kpis.orders.trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              <span className="material-symbols-outlined text-[16px]">{kpis.orders.trend >= 0 ? 'trending_up' : 'trending_down'}</span>
-              {Math.abs(kpis.orders.trend)}%
-            </span>
-            <span className="text-slate-400 font-medium">vs last month</span>
-          </div>
-        </div>
+        <MetricCard
+          title="Monthly Orders"
+          value={kpis.orders.thisMonth}
+          description="vs last month"
+          icon={<ShoppingBag className="h-4 w-4" />}
+          trend={{ value: `${Math.abs(kpis.orders.trend)}%`, isPositive: kpis.orders.trend >= 0 }}
+        />
 
         {/* RFQs */}
-        <div className="bg-white border border-slate-200 p-lg rounded-2xl shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between h-40">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active RFQs</p>
-              <h3 className="text-headline-h5 font-extrabold text-slate-900 mt-xs">{kpis.rfqs.thisMonth}</h3>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600">
-              <span className="material-symbols-outlined text-[24px]">description</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-xs text-xs">
-            <span className={`flex items-center font-bold ${kpis.rfqs.trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              <span className="material-symbols-outlined text-[16px]">{kpis.rfqs.trend >= 0 ? 'trending_up' : 'trending_down'}</span>
-              {Math.abs(kpis.rfqs.trend)}%
-            </span>
-            <span className="text-slate-400 font-medium">vs last month</span>
-          </div>
-        </div>
+        <MetricCard
+          title="Active RFQs"
+          value={kpis.rfqs.thisMonth}
+          description="vs last month"
+          icon={<FileText className="h-4 w-4" />}
+          trend={{ value: `${Math.abs(kpis.rfqs.trend)}%`, isPositive: kpis.rfqs.trend >= 0 }}
+        />
 
         {/* Inventory */}
-        <div className="bg-white border border-slate-200 p-lg rounded-2xl shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between h-40">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Inventory Value</p>
-              <h3 className="text-headline-h5 font-extrabold text-slate-900 mt-xs">₹{kpis.inventory.totalValue.toLocaleString('en-IN')}</h3>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center text-teal-600">
-              <span className="material-symbols-outlined text-[24px]">warehouse</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-xs text-xs text-slate-500 font-bold">
-            <span className={`px-2 py-0.5 rounded-full ${kpis.inventory.lowStockCount > 0 ? 'bg-red-50 text-red-600 border border-red-200 animate-pulse' : 'bg-green-50 text-green-600 border border-green-200'}`}>
-              {kpis.inventory.lowStockCount} Low stock items
-            </span>
-          </div>
-        </div>
+        <MetricCard
+          title="Inventory Value"
+          value={`₹${kpis.inventory.totalValue.toLocaleString('en-IN')}`}
+          description={`${kpis.inventory.lowStockCount} Low stock items`}
+          icon={<Package className="h-4 w-4" />}
+          trend={{ value: kpis.inventory.lowStockCount > 0 ? 'Reorder' : 'Healthy', isPositive: kpis.inventory.lowStockCount === 0 }}
+        />
       </div>
 
       {/* Main Charts & Overview Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-lg">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Trend Area Chart (SVG) */}
-        <div className="lg:col-span-2 bg-white border border-slate-200 p-lg rounded-2xl shadow-sm space-y-md">
-          <div className="flex justify-between items-center border-b border-slate-100 pb-sm">
+        <Card className="lg:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-border">
             <div>
-              <h4 className="font-extrabold text-slate-900 text-body-md">Daily Sales Revenue Trend</h4>
-              <p className="text-xs text-slate-400 font-medium mt-0.5">Rolling 7-day transaction volumes</p>
+              <CardTitle className="text-base font-extrabold">Daily Sales Revenue Trend</CardTitle>
+              <CardDescription>Rolling 7-day transaction volumes</CardDescription>
             </div>
-            <div className="text-xs bg-[#FFC107]/10 text-amber-900 border border-[#FFC107]/20 rounded-xl px-md py-sm font-bold">
+            <div className="text-xs bg-[#FFC107]/10 text-amber-900 border border-[#FFC107]/20 rounded-xl px-3 py-1 font-bold">
               INR (₹) Total
             </div>
-          </div>
+          </CardHeader>
 
-          <div className="relative">
-            <svg viewBox={`0 0 ${chartWidth} ${chartHeight + 30}`} className="w-full h-auto overflow-visible">
-              <defs>
-                <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#FFC107" stopOpacity="0.4" />
-                  <stop offset="100%" stopColor="#FFC107" stopOpacity="0.0" />
-                </linearGradient>
-              </defs>
+          <CardContent className="p-6">
+            <div className="relative">
+              <svg viewBox={`0 0 ${chartWidth} ${chartHeight + 30}`} className="w-full h-auto overflow-visible">
+                <defs>
+                  <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#FFC107" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="#FFC107" stopOpacity="0.0" />
+                  </linearGradient>
+                </defs>
 
-              {/* Grid Lines */}
-              {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => (
-                <line
-                  key={i}
-                  x1="0"
-                  y1={chartHeight * ratio + 10}
-                  x2={chartWidth}
-                  y2={chartHeight * ratio + 10}
-                  stroke="#E2E8F0"
-                  strokeWidth="1"
-                  strokeDasharray="4 4"
-                />
-              ))}
-
-              {/* Area */}
-              {areaD && <path d={areaD} fill="url(#chartGradient)" />}
-
-              {/* Line */}
-              {pathD && <path d={pathD} fill="none" stroke="#FFC107" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />}
-
-              {/* Circles / Dots */}
-              {points.map((p, i) => (
-                <g key={i}>
-                  <circle
-                    cx={p.x}
-                    cy={p.y}
-                    r="5"
-                    fill="#FFC107"
-                    stroke="#FFFFFF"
-                    strokeWidth="2"
-                    className="hover:scale-150 transition-transform cursor-pointer"
+                {/* Grid Lines */}
+                {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => (
+                  <line
+                    key={i}
+                    x1="0"
+                    y1={chartHeight * ratio + 10}
+                    x2={chartWidth}
+                    y2={chartHeight * ratio + 10}
+                    stroke="#E2E8F0"
+                    strokeWidth="1"
+                    strokeDasharray="4 4"
                   />
-                  {/* Tooltip-like values */}
+                ))}
+
+                {/* Area */}
+                {areaD && <path d={areaD} fill="url(#chartGradient)" />}
+
+                {/* Line */}
+                {pathD && <path d={pathD} fill="none" stroke="#FFC107" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />}
+
+                {/* Circles / Dots */}
+                {points.map((p, i) => (
+                  <g key={i}>
+                    <circle
+                      cx={p.x}
+                      cy={p.y}
+                      r="5"
+                      fill="#FFC107"
+                      stroke="#FFFFFF"
+                      strokeWidth="2"
+                      className="hover:scale-150 transition-transform cursor-pointer"
+                    />
+                    {/* Tooltip-like values */}
+                    <text
+                      x={p.x}
+                      y={p.y - 10}
+                      textAnchor="middle"
+                      fill="#1E293B"
+                      fontSize="9"
+                      fontWeight="bold"
+                    >
+                      ₹{Math.round(p.val / 100) / 10}k
+                    </text>
+                  </g>
+                ))}
+
+                {/* Dates labels */}
+                {points.map((p, i) => (
                   <text
+                    key={i}
                     x={p.x}
-                    y={p.y - 10}
+                    y={chartHeight + 25}
                     textAnchor="middle"
-                    fill="#1E293B"
-                    fontSize="9"
+                    fill="#94A3B8"
+                    fontSize="10"
                     fontWeight="bold"
                   >
-                    ₹{Math.round(p.val / 100) / 10}k
+                    {p.date}
                   </text>
-                </g>
-              ))}
-
-              {/* Dates labels */}
-              {points.map((p, i) => (
-                <text
-                  key={i}
-                  x={p.x}
-                  y={chartHeight + 25}
-                  textAnchor="middle"
-                  fill="#94A3B8"
-                  fontSize="10"
-                  fontWeight="bold"
-                >
-                  {p.date}
-                </text>
-              ))}
-            </svg>
-          </div>
-        </div>
+                ))}
+              </svg>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Operational Overview Cards */}
-        <div className="bg-white border border-slate-200 p-lg rounded-2xl shadow-sm flex flex-col justify-between space-y-md">
-          <div>
-            <h4 className="font-extrabold text-slate-900 text-body-md border-b border-slate-100 pb-sm mb-md">Operational Demographics</h4>
-            <div className="space-y-md">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-sm">
-                  <span className="material-symbols-outlined text-amber-500 bg-amber-50 p-xs rounded-xl text-[20px]">people</span>
-                  <div>
-                    <p className="text-body-sm font-bold text-slate-900">Total Customers</p>
-                    <p className="text-[10px] text-slate-400 font-medium">Platform registered</p>
-                  </div>
+        <Card className="flex flex-col justify-between">
+          <CardHeader>
+            <CardTitle className="text-base font-extrabold">Operational Demographics</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-amber-50 p-2 rounded-xl text-amber-500">
+                  <Users className="h-5 w-5" />
                 </div>
-                <span className="font-extrabold text-slate-900 text-body-md">{kpis.customers.total}</span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-sm">
-                  <span className="material-symbols-outlined text-green-500 bg-green-50 p-xs rounded-xl text-[20px]">how_to_reg</span>
-                  <div>
-                    <p className="text-body-sm font-bold text-slate-900">Active Procurement Partners</p>
-                    <p className="text-[10px] text-slate-400 font-medium">Made orders or RFQs</p>
-                  </div>
+                <div>
+                  <p className="text-sm font-bold text-text-primary">Total Customers</p>
+                  <p className="text-[10px] text-text-secondary font-medium">Platform registered</p>
                 </div>
-                <span className="font-extrabold text-slate-900 text-body-md">{kpis.customers.activeCount}</span>
               </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-sm">
-                  <span className="material-symbols-outlined text-red-500 bg-red-50 p-xs rounded-xl text-[20px]">error_med</span>
-                  <div>
-                    <p className="text-body-sm font-bold text-slate-900">Low Stock Indicators</p>
-                    <p className="text-[10px] text-slate-400 font-medium">Critical reorder warning</p>
-                  </div>
-                </div>
-                <span className="font-extrabold text-red-600 text-body-md bg-red-50 px-md py-0.5 rounded border border-red-200">{kpis.inventory.lowStockCount}</span>
-              </div>
+              <span className="font-extrabold text-text-primary text-base">{kpis.customers.total}</span>
             </div>
-          </div>
 
-          <div className="bg-slate-50 border border-slate-200 p-md rounded-xl text-xs leading-relaxed text-slate-600 font-semibold flex gap-xs">
-            <span className="material-symbols-outlined text-[#FFC107] text-[18px]">verified_user</span>
-            System status: Operating normally. All database sync channels are fully active.
-          </div>
-        </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-green-50 p-2 rounded-xl text-green-500">
+                  <UserCheck className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-text-primary">Active Procurement Partners</p>
+                  <p className="text-[10px] text-text-secondary font-medium">Made orders or RFQs</p>
+                </div>
+              </div>
+              <span className="font-extrabold text-text-primary text-base">{kpis.customers.activeCount}</span>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-red-50 p-2 rounded-xl text-red-500">
+                  <AlertTriangle className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-text-primary">Low Stock Indicators</p>
+                  <p className="text-[10px] text-text-secondary font-medium">Critical reorder warning</p>
+                </div>
+              </div>
+              <span className="font-extrabold text-red-600 text-base bg-red-50 px-2 py-0.5 rounded border border-red-200">{kpis.inventory.lowStockCount}</span>
+            </div>
+
+            <div className="bg-surface-secondary border border-border p-3 rounded-xl text-xs leading-relaxed text-text-secondary font-semibold flex gap-2 mt-4">
+              <ShieldCheck className="text-primary h-5 w-5 flex-shrink-0" />
+              System status: Operating normally. All database sync channels are fully active.
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

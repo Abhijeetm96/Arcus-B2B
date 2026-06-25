@@ -19,6 +19,7 @@ import { PortalResolver } from './core/auth/PortalResolver'
 import { Checkout, CheckoutSuccess } from './components/Checkout'
 import SearchPage from './components/SearchPage'
 import ErrorBoundary from './components/ErrorBoundary'
+import { UIPlayground } from './components/shared/UIPlayground'
 
 // Lazy loaded routes
 const BrandsHub = lazy(() => import('./components/BrandsHub'))
@@ -87,11 +88,14 @@ function App() {
   const isProjects = segments[0] === 'projects'
   const isResources = segments[0] === 'resources'
   const isSearch = segments[0] === 'search'
+  const isPlayground = segments[0] === 'playground'
+
+  const isDashboardRoute = isAdminDb || isBusinessDb || isIndividualDb || isProfessionalDb || isPlayground;
 
   return (
     <AuthProvider>
       <CartProvider>
-        {!isAdminDb && (
+        {!isDashboardRoute && (
           <ErrorBoundary fallback={<div className="p-md text-red-600 bg-red-50 border-b border-red-200">Navigation bar failed to load. Please refresh the page.</div>}>
             <Navbar />
           </ErrorBoundary>
@@ -122,6 +126,8 @@ function App() {
               <ProfessionalDashboard />
             ) : isAdminDb ? (
               <AdminDashboard />
+            ) : isPlayground ? (
+              <UIPlayground />
             ) : isResolver ? (
               <PortalResolver />
             ) : isSearch ? (
@@ -156,7 +162,7 @@ function App() {
             )}
           </Suspense>
         </main>
-        {!isAdminDb && <Footer />}
+        {!isDashboardRoute && <Footer />}
         <Agentation />
       </CartProvider>
     </AuthProvider>

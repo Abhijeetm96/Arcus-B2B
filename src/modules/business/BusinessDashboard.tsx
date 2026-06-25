@@ -8,6 +8,8 @@ import { IndividualAddresses } from '../individual/IndividualAddresses';
 import { useAuth } from '../../context/AuthContext';
 import { useOrders } from '../../core/hooks/useOrders';
 import { formatCurrency } from '../../core/config/format';
+import { MetricCard, Card, CardHeader, CardTitle, CardContent } from '../../components/shared/Card';
+import { Building, Percent, FileSpreadsheet, TrendingUp, ShieldAlert, Bookmark, Users } from 'lucide-react';
 
 export const BusinessDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -26,54 +28,61 @@ export const BusinessDashboard: React.FC = () => {
 
   const renderOverview = () => {
     return (
-      <div className="space-y-lg text-left">
+      <div className="space-y-6 text-left">
         {/* Banner */}
-        <div className="bg-[#1a1c1c] text-white p-xl rounded-3xl relative overflow-hidden flex flex-col justify-center min-h-[140px] shadow-md">
-          <div className="absolute right-0 top-0 h-full w-1/3 bg-[#FFC107]/10 skew-x-12 translate-x-1/3 pointer-events-none"></div>
-          <div className="flex items-center gap-sm">
-            <span className="material-symbols-outlined text-[#FFC107] text-[40px]">apartment</span>
+        <div className="bg-slate-900 text-white p-6 rounded-2xl relative overflow-hidden flex flex-col justify-center min-h-[140px] shadow-sm">
+          <div className="absolute right-0 top-0 h-full w-1/3 bg-primary/10 skew-x-12 translate-x-1/3 pointer-events-none"></div>
+          <div className="flex items-center gap-3">
+            <Building className="text-primary h-10 w-10" />
             <div>
               <h2 className="text-xl font-extrabold tracking-tight">Corporate Procurement Portal</h2>
-              <p className="text-[#FFC107] text-xs font-bold font-label-caps uppercase tracking-widest mt-0.5">{user?.companyName || 'Corporate Entity'}</p>
+              <p className="text-primary text-xs font-bold uppercase tracking-wider mt-0.5">{user?.companyName || 'Corporate Entity'}</p>
             </div>
           </div>
         </div>
 
         {/* Core Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
-          <div className="bg-[#FFFDF5] border border-[#FFC107]/20 p-md rounded-2xl">
-            <span className="material-symbols-outlined text-[#FFC107] text-[32px]">percent</span>
-            <p className="text-[24px] font-bold text-[#FFC107] mt-2">{formatCurrency(totalSpend * 0.18)}</p>
-            <p className="text-xs text-secondary font-semibold font-label-caps uppercase tracking-wide">GST Savings Input</p>
-          </div>
-          <div className="bg-white border border-slate-200 p-md rounded-2xl shadow-sm">
-            <span className="material-symbols-outlined text-[#FFC107] text-[32px]">assignment</span>
-            <p className="text-[24px] font-bold text-[#0A0A0A] mt-2">Active Workspace</p>
-            <p className="text-xs text-secondary font-semibold font-label-caps uppercase tracking-wide">B2B RFQs</p>
-          </div>
-          <div className="bg-white border border-slate-200 p-md rounded-2xl shadow-sm">
-            <span className="material-symbols-outlined text-[#FFC107] text-[32px]">analytics</span>
-            <p className="text-[24px] font-bold text-[#0A0A0A] mt-2">{formatCurrency(totalSpend)}</p>
-            <p className="text-xs text-secondary font-semibold font-label-caps uppercase tracking-wide">Annual Spend</p>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <MetricCard
+            title="GST Savings Input"
+            value={formatCurrency(totalSpend * 0.18)}
+            description="Equivalent to 18% tax deduction"
+            icon={<Percent className="h-4 w-4" />}
+            trend={{ value: '18%', isPositive: true }}
+          />
+          <MetricCard
+            title="Active Workspace"
+            value="B2B RFQs"
+            description="Negotiations in progress"
+            icon={<FileSpreadsheet className="h-4 w-4" />}
+          />
+          <MetricCard
+            title="Annual Spend"
+            value={formatCurrency(totalSpend)}
+            description="Based on delivered purchases"
+            icon={<TrendingUp className="h-4 w-4" />}
+            trend={{ value: '12%', isPositive: true }}
+          />
         </div>
 
         {/* Corporate Profile Card */}
-        <div className="border border-slate-200 rounded-2xl p-lg space-y-md bg-white shadow-sm">
-          <h3 className="font-bold text-slate-800 text-sm flex items-center gap-xs">
-            <span className="material-symbols-outlined text-sm">badge</span> Corporate Profile
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-md text-xs">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm uppercase tracking-wider flex items-center gap-1.5">
+              <ShieldAlert className="h-4 w-4 text-primary" /> Corporate Profile
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
             <div>
-              <p className="font-bold text-secondary">Company Name</p>
-              <p className="text-sm font-bold text-slate-800 mt-xs">{user?.companyName || 'Corporate Entity'}</p>
+              <p className="font-semibold text-text-secondary">Company Name</p>
+              <p className="text-sm font-bold text-text-primary mt-1">{user?.companyName || 'Corporate Entity'}</p>
             </div>
             <div>
-              <p className="font-bold text-secondary">GSTIN Number</p>
-              <p className="text-sm font-bold text-slate-800 mt-xs">{user?.gstNumber || 'Unverified GST Profile'}</p>
+              <p className="font-semibold text-text-secondary">GSTIN Number</p>
+              <p className="text-sm font-bold text-text-primary mt-1">{user?.gstNumber || 'Unverified GST Profile'}</p>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     );
   };
@@ -92,29 +101,35 @@ export const BusinessDashboard: React.FC = () => {
         return <BusinessProjects />;
       case 'quotes':
         return (
-          <div className="bg-white border border-slate-200 rounded-2xl p-lg shadow-sm text-center text-slate-500 text-xs py-xl">
-            <span className="material-symbols-outlined text-[48px] text-slate-300">bookmark</span>
-            <p className="mt-sm">Saved Quotes module coming soon in Phase 2.</p>
-          </div>
+          <Card className="text-center text-text-secondary py-12">
+            <CardContent className="flex flex-col items-center">
+              <Bookmark className="h-12 w-12 text-muted mb-3" />
+              <p className="text-xs">Saved Quotes module coming soon in Phase 2.</p>
+            </CardContent>
+          </Card>
         );
       case 'team':
         return (
-          <div className="bg-white border border-slate-200 rounded-2xl p-lg shadow-sm text-center text-slate-500 text-xs py-xl">
-            <span className="material-symbols-outlined text-[48px] text-slate-300">group</span>
-            <p className="mt-sm">Team Members module coming soon in Phase 2.</p>
-          </div>
+          <Card className="text-center text-text-secondary py-12">
+            <CardContent className="flex flex-col items-center">
+              <Users className="h-12 w-12 text-muted mb-3" />
+              <p className="text-xs">Team Members module coming soon in Phase 2.</p>
+            </CardContent>
+          </Card>
         );
       case 'gst':
         return (
-          <div className="bg-white border border-slate-200 rounded-2xl p-lg shadow-sm text-left space-y-md text-xs">
-            <h3 className="font-bold text-md text-slate-800 border-b border-slate-100 pb-sm">GSTIN Profile Details</h3>
-            <div className="space-y-xs">
-              <p><span className="font-bold text-secondary">Verified Entity:</span> {user?.companyName}</p>
-              <p><span className="font-bold text-secondary">GSTIN:</span> {user?.gstNumber}</p>
-              <p><span className="font-bold text-secondary">Authorized Signatory:</span> {user?.name}</p>
-              <p><span className="font-bold text-secondary">Email:</span> {user?.email}</p>
-            </div>
-          </div>
+          <Card className="text-left">
+            <CardHeader>
+              <CardTitle className="text-sm uppercase tracking-wider">GSTIN Profile Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-xs">
+              <p><span className="font-semibold text-text-secondary">Verified Entity:</span> {user?.companyName}</p>
+              <p><span className="font-semibold text-text-secondary">GSTIN:</span> {user?.gstNumber}</p>
+              <p><span className="font-semibold text-text-secondary">Authorized Signatory:</span> {user?.name}</p>
+              <p><span className="font-semibold text-text-secondary">Email:</span> {user?.email}</p>
+            </CardContent>
+          </Card>
         );
       case 'addresses':
         return <IndividualAddresses />;

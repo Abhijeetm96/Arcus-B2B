@@ -2,40 +2,87 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  .nav-link-hover {
-    @apply relative after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full;
+@layer base {
+  :root {
+    --background: #f9f9f9;
+    --foreground: #1c1b1b;
+    
+    --primary: #fabd00; /* Industrial / Golden Yellow */
+    --primary-hover: #e5ad00;
+    --primary-foreground: #000000;
+    
+    --secondary: #5f5e5e;
+    --secondary-hover: #4e4d4d;
+    --secondary-foreground: #ffffff;
+    
+    --surface: #ffffff;
+    --surface-secondary: #f3f3f3;
+    
+    --card: #ffffff;
+    --card-foreground: #1c1b1b;
+    
+    --border: #e2e2e2;
+    
+    --text-primary: #1c1b1b;
+    --text-secondary: #5f5e5e;
+    --muted: #8e8d8d;
+    
+    --accent: #fabd00;
+    
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #3b82f6;
+    
+    --focus: #fabd00;
+    --disabled: #e5e2e1;
+
+    --sidebar: #0f172a; /* slate-900 */
+    --sidebar-foreground: #f8fafc;
+    --hover: #f1f5f9;
+    --selected: #fabd00;
   }
 
-  .glass-card {
-    @apply bg-surface/80 backdrop-blur-md border border-surface-variant shadow-sm;
-  }
+  .dark {
+    --background: #121212;
+    --foreground: #f9f9f9;
+    
+    --primary: #fabd00;
+    --primary-hover: #e5ad00;
+    --primary-foreground: #000000;
+    
+    --secondary: #8e8d8d;
+    --secondary-hover: #a5a4a4;
+    --secondary-foreground: #000000;
+    
+    --surface: #1e1e1e;
+    --surface-secondary: #2a2a2a;
+    
+    --card: #1e1e1e;
+    --card-foreground: #f9f9f9;
+    
+    --border: #333333;
+    
+    --text-primary: #f9f9f9;
+    --text-secondary: #a5a4a4;
+    --muted: #5f5e5e;
+    
+    --accent: #fabd00;
+    
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #3b82f6;
+    
+    --focus: #fabd00;
+    --disabled: #333333;
 
-  .perspective-1000 {
-    perspective: 1000px;
-  }
-
-  /* 3D Dashboard Mockup Transforms */
-  .rotate-y-\[-5deg\] {
-    transform: rotateY(-5deg);
-  }
-
-  .rotate-x-\[2deg\] {
-    transform: rotateX(2deg);
-  }
-
-  .hover\:rotate-y-0:hover {
-    transform: rotateY(0deg);
-  }
-
-  .hover\:rotate-x-0:hover {
-    transform: rotateX(0deg);
+    --sidebar: #020617;
+    --sidebar-foreground: #f8fafc;
+    --hover: #1e293b;
+    --selected: #fabd00;
   }
 }
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 @layer utilities {
   .nav-link-hover {

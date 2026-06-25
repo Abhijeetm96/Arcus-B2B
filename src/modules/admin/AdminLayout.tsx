@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import * as perm from '../../core/permissions/permissions';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { Button } from '../../components/ui/Button';
+import * as Lucide from 'lucide-react';
 
 export type AdminRole = perm.AdminRole;
 
@@ -11,6 +14,28 @@ interface AdminLayoutProps {
   setCurrentRole: (role: AdminRole) => void;
 }
 
+const iconMap: Record<string, React.ComponentType<any>> = {
+  dashboard: Lucide.LayoutDashboard,
+  category: Lucide.FolderTree,
+  inventory_2: Lucide.Layers,
+  account_tree: Lucide.GitFork,
+  verified: Lucide.ShieldCheck,
+  upload_file: Lucide.Upload,
+  download: Lucide.Download,
+  published_with_changes: Lucide.RefreshCw,
+  warehouse: Lucide.Warehouse,
+  dashboard_customize: Lucide.Grid,
+  settings_backup_restore: Lucide.Undo2,
+  shopping_cart: Lucide.ShoppingCart,
+  request_quote: Lucide.FileText,
+  group: Lucide.Users,
+  analytics: Lucide.BarChart,
+  description: Lucide.FileCode,
+  history: Lucide.History,
+  admin_panel_settings: Lucide.ShieldAlert,
+  settings: Lucide.Settings,
+};
+
 export const AdminLayout: React.FC<AdminLayoutProps> = ({
   children,
   activeSection,
@@ -18,7 +43,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   currentRole,
   setCurrentRole
 }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showRoleSelector, setShowRoleSelector] = useState(false);
 
@@ -236,248 +260,224 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     return role.replace('_', ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
   };
 
-  return (
-    <div className="min-h-screen bg-slate-50 flex text-slate-800">
-      {/* Sidebar */}
-      <aside className={`bg-slate-900 text-slate-200 w-64 flex-shrink-0 transition-all duration-300 flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-64 absolute md:relative'}`}>
-        {/* Sidebar Header */}
-        <div className="h-16 flex items-center justify-between px-lg border-b border-slate-800">
-          <div className="flex items-center gap-xs">
-            <span className="material-symbols-outlined text-[#FFC107] text-[28px] font-bold">bubble_chart</span>
-            <span className="font-extrabold text-lg tracking-wider text-white">ARCUS <span className="text-[#FFC107] text-xs font-semibold px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">ADMIN</span></span>
-          </div>
-          <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-slate-400 hover:text-white">
-            <span className="material-symbols-outlined">menu_open</span>
-          </button>
+  const sidebarContent = (
+    <div className="flex flex-col h-full bg-slate-900 text-slate-200">
+      <div className="h-16 flex items-center justify-between px-6 border-b border-slate-800">
+        <div className="flex items-center gap-2">
+          <span className="font-extrabold text-lg tracking-wider text-white">
+            ARCUS <span className="text-[#FFC107] text-xs font-semibold px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">ADMIN</span>
+          </span>
         </div>
+      </div>
+      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+        {menuItems.map((item) => {
+          if (!item.check(simulatedUser)) return null;
 
-        {/* Sidebar Navigation */}
-        <nav className="flex-1 overflow-y-auto py-md px-sm space-y-xs">
-          {menuItems.map((item) => {
-            if (!item.check(simulatedUser)) return null;
+          if (item.isGroup) {
+            const visibleSubItems = item.subItems?.filter(sub => sub.check(simulatedUser)) || [];
+            if (visibleSubItems.length === 0) return null;
+            const GroupIcon = iconMap[item.icon] || Lucide.HelpCircle;
 
-            if (item.isGroup) {
-              const visibleSubItems = item.subItems?.filter(sub => sub.check(simulatedUser)) || [];
-              if (visibleSubItems.length === 0) return null;
-
-              return (
-                <div key={item.id} className="space-y-xs pt-xs">
-                  <div className="px-md py-xs text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-xs">
-                    <span className="material-symbols-outlined text-[12px]">{item.icon}</span>
-                    {item.name}
-                  </div>
-                  {visibleSubItems.map((sub) => (
+            return (
+              <div key={item.id} className="space-y-1 pt-2">
+                <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                  <GroupIcon className="h-3 w-3" />
+                  {item.name}
+                </div>
+                {visibleSubItems.map((sub) => {
+                  const SubIcon = iconMap[sub.icon] || Lucide.HelpCircle;
+                  return (
                     <button
                       key={sub.id}
                       onClick={() => setActiveSection(sub.id)}
-                      className={`w-full flex items-center gap-md px-md py-sm rounded-xl text-body-sm font-semibold transition-all ${
+                      className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                         activeSection === sub.id
-                          ? 'bg-[#FFC107] text-slate-950 shadow-sm shadow-[#FFC107]/20 font-bold'
+                          ? 'bg-[#FFC107] text-slate-950 shadow-sm font-bold'
                           : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                       }`}
                     >
-                      <span className="material-symbols-outlined text-[18px]">{sub.icon}</span>
+                      <SubIcon className="h-4 w-4" />
                       {sub.name}
                     </button>
-                  ))}
-                </div>
-              );
-            }
-
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveSection(item.id)}
-                className={`w-full flex items-center gap-md px-md py-sm rounded-xl text-body-sm font-semibold transition-all ${
-                  activeSection === item.id
-                    ? 'bg-[#FFC107] text-slate-950 shadow-sm shadow-[#FFC107]/20 font-bold'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
-                {item.name}
-              </button>
+                  );
+                })}
+              </div>
             );
-          })}
-        </nav>
+          }
 
-        {/* Sidebar Footer */}
-        <div className="p-md border-t border-slate-800 bg-slate-950/40">
-          <div className="flex items-center gap-sm">
-            <div className="w-9 h-9 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-[#FFC107] font-bold text-sm">
-              AD
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-body-sm font-bold text-white truncate">Administrator</p>
-              <p className="text-[10px] text-slate-500 font-mono truncate">{getFriendlyRoleName(currentRole)}</p>
-            </div>
+          const ItemIcon = iconMap[item.icon] || Lucide.HelpCircle;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveSection(item.id)}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                activeSection === item.id
+                  ? 'bg-[#FFC107] text-slate-950 shadow-sm font-bold'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+              }`}
+            >
+              <ItemIcon className="h-4 w-4" />
+              {item.name}
+            </button>
+          );
+        })}
+      </nav>
+      <div className="p-4 border-t border-slate-800 bg-slate-950/40">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-[#FFC107] font-bold text-sm">
+            AD
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-white truncate">Administrator</p>
+            <p className="text-[10px] text-slate-500 font-mono truncate">{getFriendlyRoleName(currentRole)}</p>
           </div>
         </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
-        {/* Top Header */}
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-lg shadow-sm sticky top-0 z-20">
-          {/* Left: Hamburger & Page Title */}
-          <div className="flex items-center gap-md">
-            {!isSidebarOpen && (
-              <button onClick={() => setIsSidebarOpen(true)} className="text-slate-600 hover:text-slate-950">
-                <span className="material-symbols-outlined">menu</span>
-              </button>
-            )}
-            <h2 className="text-headline-h6 font-extrabold text-slate-900 capitalize">
-              {activeSection.replace('-', ' ')}
-            </h2>
-          </div>
-
-          {/* Right: Role Simulator, Notifications, Profile */}
-          <div className="flex items-center gap-md">
-            {/* Command Search Bar Trigger */}
-            <button
-              onClick={() => setIsSearchOpen(true)}
-              className="hidden lg:flex items-center gap-sm px-md h-10 w-64 border border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-400 text-xs transition-all select-none cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[18px]">search</span>
-              <span>Search Command...</span>
-              <kbd className="ml-auto bg-white border border-slate-200 px-1.5 py-0.5 rounded text-[10px] text-slate-500 font-mono">Ctrl+K</kbd>
-            </button>
-            <button
-              onClick={() => setIsSearchOpen(true)}
-              className="lg:hidden w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-all border border-slate-200 cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[20px]">search</span>
-            </button>
-            {/* Role Switcher Simulator */}
-            <div className="relative">
-              <button
-                onClick={() => setShowRoleSelector(!showRoleSelector)}
-                className="flex items-center gap-xs px-md py-sm bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all border border-slate-200"
-              >
-                <span className="material-symbols-outlined text-[16px] text-[#FFC107]">supervised_user_circle</span>
-                Role: {getFriendlyRoleName(currentRole)}
-                <span className="material-symbols-outlined text-[14px]">arrow_drop_down</span>
-              </button>
-              {showRoleSelector && (
-                <div className="absolute right-0 mt-sm w-56 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 py-sm">
-                  <div className="px-md py-xs text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Simulate Admin Role
-                  </div>
-                  {roles.map((r) => (
-                    <button
-                      key={r}
-                      onClick={() => {
-                        setCurrentRole(r);
-                        setShowRoleSelector(false);
-                      }}
-                      className={`w-full text-left px-md py-sm text-body-sm font-semibold flex items-center justify-between transition-colors ${
-                        currentRole === r ? 'bg-amber-50 text-amber-900 font-bold' : 'hover:bg-slate-50 text-slate-600'
-                      }`}
-                    >
-                      {getFriendlyRoleName(r)}
-                      {currentRole === r && (
-                        <span className="material-symbols-outlined text-[#FFC107] text-[16px]">check_circle</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Notification Bell */}
-            <div className="relative">
-              <button
-                onClick={() => setShowNotifications(!showNotifications)}
-                className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center relative transition-all border border-slate-200"
-              >
-                <span className="material-symbols-outlined text-[22px]">notifications</span>
-                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white"></span>
-              </button>
-              {showNotifications && (
-                <div className="absolute right-0 mt-sm w-80 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden">
-                  <div className="px-md py-md bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-                    <span className="font-bold text-body-sm text-slate-900">Platform Notifications</span>
-                    <span className="text-[10px] font-bold bg-amber-500/10 text-[#FFC107] px-md py-0.5 rounded-full">3 New</span>
-                  </div>
-                  <div className="divide-y divide-slate-100 max-h-64 overflow-y-auto">
-                    {notifications.map((n) => (
-                      <div key={n.id} className="p-md hover:bg-slate-50 transition-colors flex gap-sm">
-                        <span className={`material-symbols-outlined text-[18px] mt-0.5 ${
-                          n.type === 'warning' ? 'text-amber-500' :
-                          n.type === 'success' ? 'text-green-500' : 'text-blue-500'
-                        }`}>
-                          {n.type === 'warning' ? 'warning' : n.type === 'success' ? 'check_circle' : 'info'}
-                        </span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-body-sm font-bold text-slate-900">{n.title}</p>
-                          <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{n.desc}</p>
-                          <p className="text-[9px] text-slate-400 font-medium mt-1">{n.time}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Back to Site Button */}
-            <a
-              href="#/"
-              className="flex items-center gap-xs px-md h-10 border border-slate-200 hover:border-slate-800 text-slate-600 hover:text-slate-950 font-bold text-xs rounded-xl transition-all"
-            >
-              <span className="material-symbols-outlined text-[16px]">logout</span>
-              Exit Dashboard
-            </a>
-          </div>
-        </header>
-
-        {/* Content Box */}
-        <main className="flex-1 p-lg overflow-y-auto">
-          {children}
-        </main>
       </div>
+    </div>
+  );
+
+  const breadcrumbs = [
+    { label: 'Admin Portal', href: '#/portal/admin' },
+    { label: activeSection.replace('-', ' ') }
+  ];
+
+  const headerActions = (
+    <div className="flex items-center gap-3">
+      {/* Command Search Bar Trigger */}
+      <button
+        onClick={() => setIsSearchOpen(true)}
+        className="hidden lg:flex items-center gap-2 px-3 h-10 w-64 border border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-400 text-xs transition-all select-none cursor-pointer"
+      >
+        <Lucide.Search className="h-4 w-4 text-slate-400" />
+        <span>Search Command...</span>
+        <kbd className="ml-auto bg-white border border-slate-200 px-1.5 py-0.5 rounded text-[10px] text-slate-500 font-mono">Ctrl+K</kbd>
+      </button>
+
+      {/* Role Switcher Simulator */}
+      <div className="relative">
+        <button
+          onClick={() => setShowRoleSelector(!showRoleSelector)}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all border border-slate-200"
+        >
+          <Lucide.Users className="h-3.5 w-3.5 text-[#FFC107]" />
+          Role: {getFriendlyRoleName(currentRole)}
+          <Lucide.ChevronDown className="h-3 w-3" />
+        </button>
+        {showRoleSelector && (
+          <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-xl z-50 py-1">
+            <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              Simulate Admin Role
+            </div>
+            {roles.map((r) => (
+              <button
+                key={r}
+                onClick={() => {
+                  setCurrentRole(r);
+                  setShowRoleSelector(false);
+                }}
+                className={`w-full text-left px-3 py-1.5 text-xs font-semibold flex items-center justify-between transition-colors ${
+                  currentRole === r ? 'bg-amber-50 text-amber-900 font-bold' : 'hover:bg-slate-50 text-slate-600'
+                }`}
+              >
+                {getFriendlyRoleName(r)}
+                {currentRole === r && (
+                  <Lucide.Check className="h-3.5 w-3.5 text-[#FFC107]" />
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Notification Bell */}
+      <div className="relative">
+        <button
+          onClick={() => setShowNotifications(!showNotifications)}
+          className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center relative transition-all border border-slate-200"
+        >
+          <Lucide.Bell className="h-4.5 w-4.5" />
+          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+        </button>
+        {showNotifications && (
+          <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden">
+            <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+              <span className="font-bold text-xs text-slate-900">Platform Notifications</span>
+              <span className="text-[10px] font-bold bg-amber-500/10 text-[#FFC107] px-2 py-0.5 rounded-full">3 New</span>
+            </div>
+            <div className="divide-y divide-slate-100 max-h-64 overflow-y-auto">
+              {notifications.map((n) => (
+                <div key={n.id} className="p-3 hover:bg-slate-50 transition-colors flex gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-slate-900">{n.title}</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{n.desc}</p>
+                    <p className="text-[9px] text-slate-400 font-medium mt-1">{n.time}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Exit Dashboard */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => window.location.hash = '#/'}
+        className="flex items-center gap-1.5 text-slate-600 hover:text-slate-950 border-slate-200"
+      >
+        <Lucide.LogOut className="h-3.5 w-3.5" />
+        Exit Dashboard
+      </Button>
+    </div>
+  );
+
+  return (
+    <PageLayout
+      sidebar={sidebarContent}
+      breadcrumbItems={breadcrumbs}
+      title={activeSection.replace('-', ' ')}
+      actions={headerActions}
+      className="bg-slate-50"
+    >
+      {children}
 
       {/* Command Center Search Modal */}
       {isSearchOpen && (
-        <div className="fixed inset-0 overflow-y-auto z-50 p-md sm:p-lg flex justify-center items-start pt-16">
-          {/* Backdrop */}
+        <div className="fixed inset-0 overflow-y-auto z-50 p-4 flex justify-center items-start pt-16">
           <div 
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity cursor-pointer"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity cursor-pointer animate-in fade-in duration-200"
             onClick={() => setIsSearchOpen(false)}
           ></div>
 
-          {/* Modal Container */}
-          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[75vh]">
-            {/* Input Header */}
-            <div className="p-md border-b border-slate-200 flex items-center gap-md">
-              <span className="material-symbols-outlined text-slate-400 text-[24px]">search</span>
+          <div className="relative w-full max-w-2xl bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[75vh] animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-4 border-b border-slate-200 flex items-center gap-3">
+              <Lucide.Search className="text-slate-400 h-5 w-5" />
               <input
                 type="text"
                 autoFocus
                 placeholder="Search products, orders, RFQs, customers, brands..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="flex-1 h-10 bg-transparent border-0 outline-hidden focus:ring-0 text-body-md font-medium text-slate-800 placeholder-slate-400"
+                className="flex-1 h-10 bg-transparent border-0 outline-none focus:ring-0 text-sm font-medium text-slate-800 placeholder-slate-400"
               />
               <button 
                 onClick={() => setIsSearchOpen(false)}
                 className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[16px]">close</span>
+                <Lucide.X className="h-4 w-4" />
               </button>
             </div>
 
-            {/* Results Body */}
-            <div className="flex-1 overflow-y-auto p-md space-y-md">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {searchLoading ? (
-                <div className="flex flex-col justify-center items-center py-xl space-y-md">
+                <div className="flex flex-col justify-center items-center py-8 space-y-2">
                   <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#FFC107]"></div>
                   <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Searching dashboard...</p>
                 </div>
               ) : !searchQuery.trim() ? (
-                <div className="text-center py-xl text-slate-400 space-y-sm">
-                  <span className="material-symbols-outlined text-[40px] text-slate-300">bubble_chart</span>
-                  <p className="font-extrabold text-body-xs uppercase tracking-wider text-slate-400">ARCUS Command Center Search</p>
+                <div className="text-center py-8 text-slate-400 space-y-2">
+                  <p className="font-extrabold text-xs uppercase tracking-wider text-slate-400">ARCUS Command Center Search</p>
                   <p className="text-xs text-slate-400 max-w-sm mx-auto">Start typing to search across catalog products, RFQ worksheets, customer profiles, order history, and brands.</p>
                 </div>
               ) : (searchResults.products.length === 0 && 
@@ -485,18 +485,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                    searchResults.rfqs.length === 0 && 
                    searchResults.customers.length === 0 && 
                    searchResults.brands.length === 0) ? (
-                <div className="text-center py-xl text-slate-400 space-y-sm">
-                  <span className="material-symbols-outlined text-[40px] text-slate-300">search_off</span>
-                  <p className="font-semibold text-body-sm">No results match "{searchQuery}"</p>
+                <div className="text-center py-8 text-slate-400 space-y-2">
+                  <p className="font-semibold text-sm">No results match "{searchQuery}"</p>
                   <p className="text-xs text-slate-400">Try searching for other keywords, SKU numbers, or status terms.</p>
                 </div>
               ) : (
-                <div className="space-y-md text-left">
+                <div className="space-y-4 text-left">
                   {/* Products Results */}
                   {searchResults.products.length > 0 && (
-                    <div className="space-y-sm">
-                      <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-xs px-sm">
-                        <span className="material-symbols-outlined text-[14px]">inventory_2</span>
+                    <div className="space-y-2">
+                      <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5 px-2">
+                        <Lucide.Layers className="h-3.5 w-3.5" />
                         Products ({searchResults.products.length})
                       </h4>
                       <div className="divide-y divide-slate-100 border border-slate-100 rounded-xl overflow-hidden shadow-xs">
@@ -507,7 +506,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                               setActiveSection('products');
                               setIsSearchOpen(false);
                             }}
-                            className="w-full p-md bg-white hover:bg-slate-50 transition-colors flex justify-between items-center text-xs text-left cursor-pointer"
+                            className="w-full p-3 bg-white hover:bg-slate-50 transition-colors flex justify-between items-center text-xs text-left cursor-pointer"
                           >
                             <div>
                               <p className="font-bold text-slate-900">{p.name}</p>
@@ -522,9 +521,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
                   {/* RFQs Results */}
                   {searchResults.rfqs.length > 0 && (
-                    <div className="space-y-sm">
-                      <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-xs px-sm">
-                        <span className="material-symbols-outlined text-[14px]">request_quote</span>
+                    <div className="space-y-2">
+                      <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5 px-2">
+                        <Lucide.FileText className="h-3.5 w-3.5" />
                         RFQs ({searchResults.rfqs.length})
                       </h4>
                       <div className="divide-y divide-slate-100 border border-slate-100 rounded-xl overflow-hidden shadow-xs">
@@ -535,13 +534,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                               setActiveSection('rfqs');
                               setIsSearchOpen(false);
                             }}
-                            className="w-full p-md bg-white hover:bg-slate-50 transition-colors flex justify-between items-center text-xs text-left cursor-pointer"
+                            className="w-full p-3 bg-white hover:bg-slate-50 transition-colors flex justify-between items-center text-xs text-left cursor-pointer"
                           >
                             <div>
                               <p className="font-bold text-slate-900">{r.title || 'RFQ Worksheet'}</p>
                               <p className="text-slate-400 text-[10px]">ID: {r.id} | Buyer: {r.buyerId}</p>
                             </div>
-                            <span className="px-md py-0.5 rounded-full text-[9px] font-black uppercase bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-amber-500/10 text-amber-600 border border-amber-500/20">
                               {r.status}
                             </span>
                           </button>
@@ -552,9 +551,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
                   {/* Orders Results */}
                   {searchResults.orders.length > 0 && (
-                    <div className="space-y-sm">
-                      <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-xs px-sm">
-                        <span className="material-symbols-outlined text-[14px]">shopping_cart</span>
+                    <div className="space-y-2">
+                      <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5 px-2">
+                        <Lucide.ShoppingCart className="h-3.5 w-3.5" />
                         Orders ({searchResults.orders.length})
                       </h4>
                       <div className="divide-y divide-slate-100 border border-slate-100 rounded-xl overflow-hidden shadow-xs">
@@ -565,7 +564,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                               setActiveSection('orders');
                               setIsSearchOpen(false);
                             }}
-                            className="w-full p-md bg-white hover:bg-slate-50 transition-colors flex justify-between items-center text-xs text-left cursor-pointer"
+                            className="w-full p-3 bg-white hover:bg-slate-50 transition-colors flex justify-between items-center text-xs text-left cursor-pointer"
                           >
                             <div>
                               <p className="font-bold text-slate-900">Order #{o.id}</p>
@@ -583,9 +582,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
                   {/* Customers Results */}
                   {searchResults.customers.length > 0 && (
-                    <div className="space-y-sm">
-                      <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-xs px-sm">
-                        <span className="material-symbols-outlined text-[14px]">group</span>
+                    <div className="space-y-2">
+                      <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5 px-2">
+                        <Lucide.Users className="h-3.5 w-3.5" />
                         Customers ({searchResults.customers.length})
                       </h4>
                       <div className="divide-y divide-slate-100 border border-slate-100 rounded-xl overflow-hidden shadow-xs">
@@ -596,13 +595,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                               setActiveSection('customers');
                               setIsSearchOpen(false);
                             }}
-                            className="w-full p-md bg-white hover:bg-slate-50 transition-colors flex justify-between items-center text-xs text-left cursor-pointer"
+                            className="w-full p-3 bg-white hover:bg-slate-50 transition-colors flex justify-between items-center text-xs text-left cursor-pointer"
                           >
                             <div>
                               <p className="font-bold text-slate-900">{c.fullName || c.full_name || c.name}</p>
                               <p className="text-slate-400 text-[10px]">{c.email} | {c.phone || 'No Phone'}</p>
                             </div>
-                            <span className="px-md py-0.5 rounded-full text-[9px] font-black uppercase bg-slate-100 text-slate-600">
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-slate-100 text-slate-600">
                               {c.customerType || 'INDIVIDUAL'}
                             </span>
                           </button>
@@ -613,9 +612,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
                   {/* Brands Results */}
                   {searchResults.brands.length > 0 && (
-                    <div className="space-y-sm">
-                      <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-xs px-sm">
-                        <span className="material-symbols-outlined text-[14px]">verified</span>
+                    <div className="space-y-2">
+                      <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5 px-2">
+                        <Lucide.ShieldCheck className="h-3.5 w-3.5" />
                         Brands ({searchResults.brands.length})
                       </h4>
                       <div className="divide-y divide-slate-100 border border-slate-100 rounded-xl overflow-hidden shadow-xs">
@@ -626,7 +625,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                               setActiveSection('brands');
                               setIsSearchOpen(false);
                             }}
-                            className="w-full p-md bg-white hover:bg-slate-50 transition-colors flex justify-between items-center text-xs text-left cursor-pointer"
+                            className="w-full p-3 bg-white hover:bg-slate-50 transition-colors flex justify-between items-center text-xs text-left cursor-pointer"
                           >
                             <div>
                               <p className="font-bold text-slate-900">{b.name}</p>
@@ -642,13 +641,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               )}
             </div>
 
-            {/* Footer tips */}
-            <div className="p-sm bg-slate-50 border-t border-slate-200 text-center text-[10px] text-slate-400 font-medium">
+            <div className="p-3 bg-slate-50 border-t border-slate-200 text-center text-[10px] text-slate-400 font-medium">
               Tip: Press <kbd className="bg-white border border-slate-200 px-1.5 py-0.5 rounded font-mono">Esc</kbd> to dismiss.
             </div>
           </div>
         </div>
       )}
-    </div>
+    </PageLayout>
   );
 };

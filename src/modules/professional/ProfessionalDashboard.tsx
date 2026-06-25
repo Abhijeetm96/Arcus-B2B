@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ProfessionalLayout } from './layouts/ProfessionalLayout';
 import { useAuth } from '../../context/AuthContext';
+import { MetricCard, Card, CardHeader, CardTitle, CardContent } from '../../components/shared/Card';
+import { Wrench, Star, Briefcase, ShieldCheck, Award, FileText } from 'lucide-react';
 
 export const ProfessionalDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -8,50 +10,67 @@ export const ProfessionalDashboard: React.FC = () => {
 
   const renderOverview = () => {
     return (
-      <div className="space-y-lg text-left">
+      <div className="space-y-6 text-left">
         {/* Banner */}
-        <div className="bg-[#1a1c1c] text-white p-xl rounded-3xl relative overflow-hidden flex flex-col justify-center min-h-[140px] shadow-md">
-          <div className="absolute right-0 top-0 h-full w-1/3 bg-[#FFC107]/10 skew-x-12 translate-x-1/3 pointer-events-none"></div>
-          <div className="flex items-center gap-sm">
-            <span className="material-symbols-outlined text-[#FFC107] text-[40px]">handyman</span>
+        <div className="bg-slate-900 text-white p-6 rounded-2xl relative overflow-hidden flex flex-col justify-center min-h-[140px] shadow-sm">
+          <div className="absolute right-0 top-0 h-full w-1/3 bg-primary/10 skew-x-12 translate-x-1/3 pointer-events-none"></div>
+          <div className="flex items-center gap-3">
+            <Wrench className="text-primary h-10 w-10" />
             <div>
               <h2 className="text-xl font-extrabold tracking-tight">Professional Service Desk</h2>
-              <p className="text-[#FFC107] text-xs font-bold font-label-caps uppercase tracking-widest mt-0.5">Manage details and work history</p>
+              <p className="text-primary text-xs font-bold uppercase tracking-wider mt-0.5">Manage details and work history</p>
             </div>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
-          <div className="bg-[#FFFDF5] border border-[#FFC107]/20 p-md rounded-2xl">
-            <span className="material-symbols-outlined text-[#FFC107] text-[32px]">star</span>
-            <p className="text-[24px] font-bold text-[#FFC107] mt-2">4.9 / 5.0</p>
-            <p className="text-xs text-secondary font-semibold font-label-caps uppercase tracking-wide">Client Rating</p>
-          </div>
-          <div className="bg-white border border-slate-200 p-md rounded-2xl shadow-sm">
-            <span className="material-symbols-outlined text-[#FFC107] text-[32px]">construction</span>
-            <p className="text-[24px] font-bold text-[#0A0A0A] mt-2">{user?.experience || '10+'} Years</p>
-            <p className="text-xs text-secondary font-semibold font-label-caps uppercase tracking-wide">Experience</p>
-          </div>
-          <div className="bg-white border border-slate-200 p-md rounded-2xl shadow-sm">
-            <span className="material-symbols-outlined text-[#FFC107] text-[32px]">verified</span>
-            <p className="text-[20px] font-bold text-green-700 mt-2">ARCUS Verified</p>
-            <p className="text-xs text-secondary font-semibold font-label-caps uppercase tracking-wide">Trust Badge</p>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <MetricCard
+            title="Client Rating"
+            value="4.9 / 5.0"
+            description="Based on client feedback"
+            icon={<Star className="h-4 w-4 text-text-secondary" />}
+          />
+          <MetricCard
+            title="Experience"
+            value={`${user?.experience || '10+'} Years`}
+            description="Industry practice duration"
+            icon={<Briefcase className="h-4 w-4 text-text-secondary" />}
+          />
+          <MetricCard
+            title="Trust Badge"
+            value="Verified Partner"
+            description="Vetted by ARCUS operations"
+            icon={<ShieldCheck className="h-4 w-4 text-success" />}
+          />
         </div>
 
         {/* Profile Card */}
-        <div className="border border-slate-200 rounded-2xl p-lg space-y-md bg-white shadow-sm">
-          <h3 className="font-bold text-slate-800 text-sm flex items-center gap-xs">
-            <span className="material-symbols-outlined text-sm">badge</span> Professional Details
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-md text-xs">
-            <p><span className="font-bold text-secondary">Specialization:</span> {user?.serviceCategory || 'General Contractor'}</p>
-            <p><span className="font-bold text-secondary">City:</span> {user?.city || 'Bengaluru'}, {user?.state || 'Karnataka'}</p>
-            <p><span className="font-bold text-secondary">Website:</span> {user?.website || 'N/A'}</p>
-            <p><span className="font-bold text-secondary">Portfolio URL:</span> {user?.portfolioUrl || 'N/A'}</p>
-          </div>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm uppercase tracking-wider flex items-center gap-1.5">
+              <Award className="h-4 w-4 text-primary" /> Professional Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div>
+              <p className="font-semibold text-text-secondary">Specialization</p>
+              <p className="text-sm font-bold text-text-primary mt-1">{user?.serviceCategory || 'General Contractor'}</p>
+            </div>
+            <div>
+              <p className="font-semibold text-text-secondary">Location</p>
+              <p className="text-sm font-bold text-text-primary mt-1">{user?.city || 'Bengaluru'}, {user?.state || 'Karnataka'}</p>
+            </div>
+            <div>
+              <p className="font-semibold text-text-secondary">Website</p>
+              <p className="text-sm font-bold text-text-primary mt-1">{user?.website || 'N/A'}</p>
+            </div>
+            <div>
+              <p className="font-semibold text-text-secondary">Portfolio URL</p>
+              <p className="text-sm font-bold text-text-primary mt-1">{user?.portfolioUrl || 'N/A'}</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   };
@@ -62,64 +81,84 @@ export const ProfessionalDashboard: React.FC = () => {
         return renderOverview();
       case 'profile':
         return (
-          <div className="bg-white border border-slate-200 rounded-2xl p-lg shadow-sm text-left space-y-md text-xs">
-            <h3 className="font-bold text-slate-800 text-sm border-b border-slate-100 pb-sm">Professional Profile</h3>
-            <p><span className="font-bold text-secondary">Name:</span> {user?.name}</p>
-            <p><span className="font-bold text-secondary">Email:</span> {user?.email}</p>
-            <p><span className="font-bold text-secondary">Phone:</span> {user?.phone}</p>
-            <p><span className="font-bold text-secondary">Experience:</span> {user?.experience || '10+'} Years</p>
-            <p><span className="font-bold text-secondary">Category:</span> {user?.serviceCategory || 'General Contractor'}</p>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm uppercase tracking-wider">Professional Profile</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-xs">
+              <p><span className="font-semibold text-text-secondary">Name:</span> {user?.name}</p>
+              <p><span className="font-semibold text-text-secondary">Email:</span> {user?.email}</p>
+              <p><span className="font-semibold text-text-secondary">Phone:</span> {user?.phone}</p>
+              <p><span className="font-semibold text-text-secondary">Experience:</span> {user?.experience || '10+'} Years</p>
+              <p><span className="font-semibold text-text-secondary">Category:</span> {user?.serviceCategory || 'General Contractor'}</p>
+            </CardContent>
+          </Card>
         );
       case 'verification':
         return (
-          <div className="bg-white border border-slate-200 rounded-2xl p-lg shadow-sm text-left space-y-sm text-xs">
-            <h3 className="font-bold text-slate-800 text-sm border-b border-slate-100 pb-sm">Verification Badge</h3>
-            <div className="p-md bg-green-50 text-green-800 rounded-xl border border-green-200 flex items-center gap-sm">
-              <span className="material-symbols-outlined text-[32px] text-green-600">verified</span>
-              <div>
-                <p className="font-bold text-sm">Verified Service Partner</p>
-                <p className="text-[10px]">Your profile has been vetted and marked as a trusted service associate on ARCUS.</p>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm uppercase tracking-wider">Verification Badge</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="p-4 bg-success/10 text-success rounded-xl border border-success/20 flex items-center gap-3">
+                <ShieldCheck className="h-10 w-10 text-success flex-shrink-0" />
+                <div>
+                  <p className="font-bold text-sm">Verified Service Partner</p>
+                  <p className="text-[10px] text-text-secondary">Your profile has been vetted and marked as a trusted service associate on ARCUS.</p>
+                </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         );
       case 'portfolio':
         return (
-          <div className="bg-white border border-slate-200 rounded-2xl p-lg shadow-sm text-center text-slate-500 text-xs py-xl">
-            <span className="material-symbols-outlined text-[48px] text-slate-300">photo_library</span>
-            <p className="mt-sm">Portfolio showcase module coming soon.</p>
-          </div>
+          <Card className="text-center text-text-secondary py-12">
+            <CardContent className="flex flex-col items-center">
+              <Briefcase className="h-12 w-12 text-muted mb-3" />
+              <p className="text-xs">Portfolio showcase module coming soon.</p>
+            </CardContent>
+          </Card>
         );
       case 'projects':
         return (
-          <div className="bg-white border border-slate-200 rounded-2xl p-lg shadow-sm text-center text-slate-500 text-xs py-xl">
-            <span className="material-symbols-outlined text-[48px] text-slate-300">assignment_turned_in</span>
-            <p className="mt-sm">Active project coordination workspace coming soon.</p>
-          </div>
+          <Card className="text-center text-text-secondary py-12">
+            <CardContent className="flex flex-col items-center">
+              <FileText className="h-12 w-12 text-muted mb-3" />
+              <p className="text-xs">Active project coordination workspace coming soon.</p>
+            </CardContent>
+          </Card>
         );
       case 'history':
         return (
-          <div className="bg-white border border-slate-200 rounded-2xl p-lg shadow-sm text-left space-y-md text-xs">
-            <h3 className="font-bold text-slate-800 text-sm border-b border-slate-100 pb-sm">Past Completed Works</h3>
-            <div className="p-md bg-slate-50 rounded-xl border border-slate-200 space-y-xs">
-              <h4 className="font-bold text-slate-900">Whitefield Villa Plumbing System</h4>
-              <p className="text-slate-500 text-[10px]">Completed on April 2026 • Rating: 5.0 ★</p>
-            </div>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm uppercase tracking-wider">Past Completed Works</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="p-4 bg-surface-secondary/50 rounded-xl border border-border space-y-1">
+                <h4 className="font-bold text-text-primary text-xs">Whitefield Villa Plumbing System</h4>
+                <p className="text-text-secondary text-[10px]">Completed on April 2026 • Rating: 5.0 ★</p>
+              </div>
+            </CardContent>
+          </Card>
         );
       case 'ratings':
         return (
-          <div className="bg-white border border-slate-200 rounded-2xl p-lg shadow-sm text-left space-y-md text-xs">
-            <h3 className="font-bold text-slate-800 text-sm border-b border-slate-100 pb-sm">Client Reviews</h3>
-            <div className="p-md bg-slate-50 rounded-xl border border-slate-200 space-y-sm">
-              <div className="flex justify-between">
-                <span className="font-bold">Rahul Sen (Homeowner)</span>
-                <span className="text-amber-500 font-bold">5.0 ★</span>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm uppercase tracking-wider">Client Reviews</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="p-4 bg-surface-secondary/50 rounded-xl border border-border space-y-2">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-bold text-text-primary">Rahul Sen (Homeowner)</span>
+                  <span className="text-primary font-bold flex items-center gap-0.5">5.0 <Star className="h-3 w-3 fill-current" /></span>
+                </div>
+                <p className="text-text-secondary italic text-xs">"Excellent CPVC plumbing installations. Extremely professional and fast delivery."</p>
               </div>
-              <p className="text-slate-600 italic">"Excellent CPVC plumbing installations. Extremely professional and fast delivery."</p>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         );
       default:
         return renderOverview();

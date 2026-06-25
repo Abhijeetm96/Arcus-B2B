@@ -6,6 +6,9 @@ import { IndividualProfile } from './IndividualProfile';
 import { useAuth } from '../../context/AuthContext';
 import { useOrders } from '../../core/hooks/useOrders';
 import { formatCurrency, formatDate } from '../../core/config/format';
+import { MetricCard, Card, CardHeader, CardTitle, CardContent } from '../../components/shared/Card';
+import { Button } from '../../components/ui/Button';
+import { Award, TrendingUp, Sparkles, Heart } from 'lucide-react';
 
 export const IndividualDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -46,63 +49,70 @@ export const IndividualDashboard: React.FC = () => {
 
   const renderOverview = () => {
     return (
-      <div className="space-y-lg text-left">
+      <div className="space-y-6 text-left">
         {/* Banner */}
-        <div className="bg-[#1a1c1c] text-white p-xl rounded-3xl relative overflow-hidden flex flex-col justify-center min-h-[140px] shadow-md">
-          <div className="absolute right-0 top-0 h-full w-1/3 bg-[#FFC107]/10 skew-x-12 translate-x-1/3 pointer-events-none"></div>
-          <div className="flex items-center gap-sm">
-            <span className="material-symbols-outlined text-[#FFC107] text-[40px]">stars</span>
+        <div className="bg-slate-900 text-white p-6 rounded-2xl relative overflow-hidden flex flex-col justify-center min-h-[140px] shadow-sm">
+          <div className="absolute right-0 top-0 h-full w-1/3 bg-primary/10 skew-x-12 translate-x-1/3 pointer-events-none"></div>
+          <div className="flex items-center gap-3">
+            <Award className="text-primary h-10 w-10" />
             <div>
               <h2 className="text-xl font-extrabold tracking-tight">Welcome, {user?.name}!</h2>
-              <p className="text-[#FFC107] text-xs font-bold font-label-caps uppercase tracking-widest mt-0.5">Build More, Earn More with ARCUS BuildPoints™</p>
+              <p className="text-primary text-xs font-bold uppercase tracking-wider mt-0.5">Build More, Earn More with ARCUS BuildPoints™</p>
             </div>
           </div>
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
-          <div className="bg-white border border-slate-200 p-md rounded-2xl shadow-sm relative overflow-hidden">
-            <p className="text-[10px] text-secondary font-bold uppercase tracking-wider">BuildPoints Balance</p>
-            <p className="text-[28px] font-extrabold text-[#0A0A0A] mt-sm leading-none">{totalPoints.toLocaleString()}</p>
-            <p className="text-[10px] text-green-700 bg-green-50 rounded-lg px-sm py-1 font-bold w-fit mt-md">Equivalent to ₹{(totalPoints * 0.5).toLocaleString()} Credit</p>
-          </div>
-          <div className="bg-white border border-slate-200 p-md rounded-2xl shadow-sm">
-            <p className="text-[10px] text-secondary font-bold uppercase tracking-wider">Total Monthly Spend</p>
-            <p className="text-[28px] font-extrabold text-[#0A0A0A] mt-sm leading-none">{formatCurrency(calculatedMonthlySpend)}</p>
-            <p className="text-[10px] text-secondary font-medium mt-md">Rate: ₹500 spend = 2 BuildPoints</p>
-          </div>
-          <div className="bg-white border border-slate-200 p-md rounded-2xl shadow-sm">
-            <p className="text-[10px] text-secondary font-bold uppercase tracking-wider">Loyalty Tier Status</p>
-            <p className="text-[20px] font-extrabold text-primary mt-sm leading-none flex items-center gap-xs">🏗️ {activeTier}</p>
-            <p className="text-[10px] text-secondary font-medium mt-md">Progressing to next reward level</p>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <MetricCard
+            title="BuildPoints Balance"
+            value={totalPoints.toLocaleString()}
+            description={`Equivalent to ₹${(totalPoints * 0.5).toLocaleString()} Credit`}
+            icon={<Award className="h-4 w-4 text-text-secondary" />}
+          />
+          <MetricCard
+            title="Total Monthly Spend"
+            value={formatCurrency(calculatedMonthlySpend)}
+            description="Rate: ₹500 spend = 2 BuildPoints"
+            icon={<TrendingUp className="h-4 w-4 text-text-secondary" />}
+          />
+          <MetricCard
+            title="Loyalty Tier Status"
+            value={`🏗️ ${activeTier}`}
+            description="Progressing to next reward level"
+            icon={<Sparkles className="h-4 w-4 text-text-secondary" />}
+          />
         </div>
 
         {/* Recent Orders Short-list */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-lg shadow-sm space-y-md">
-          <div className="flex justify-between items-center border-b border-slate-100 pb-sm">
-            <h3 className="font-bold text-sm text-slate-800">Recent Orders</h3>
-            <button onClick={() => setActiveTab('orders')} className="text-xs font-bold text-[#FFC107] hover:underline">View All</button>
-          </div>
-          {orders.length === 0 ? (
-            <p className="text-xs text-slate-500 text-center py-md">No orders placed yet.</p>
-          ) : (
-            <div className="divide-y divide-slate-100">
-              {orders.slice(0, 3).map((o: any) => (
-                <div key={o.id} className="py-md flex justify-between items-center text-xs">
-                  <div>
-                    <p className="font-bold text-slate-800">{o.id}</p>
-                    <p className="text-[10px] text-slate-500 mt-xs">{formatDate(o.timestamp || o.date)}</p>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between py-4">
+            <CardTitle className="text-sm uppercase tracking-wider">Recent Orders</CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => setActiveTab('orders')} className="text-primary font-bold">
+              View All
+            </Button>
+          </CardHeader>
+          <CardContent className="p-6 pt-0">
+            {orders.length === 0 ? (
+              <p className="text-xs text-text-secondary text-center py-4">No orders placed yet.</p>
+            ) : (
+              <div className="divide-y divide-border">
+                {orders.slice(0, 3).map((o: any) => (
+                  <div key={o.id} className="py-3 flex justify-between items-center text-xs">
+                    <div>
+                      <p className="font-bold text-text-primary">{o.id}</p>
+                      <p className="text-[10px] text-text-secondary mt-0.5">{formatDate(o.timestamp || o.date)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-text-primary">{formatCurrency(o.amount)}</p>
+                      <span className="text-[9px] font-bold text-text-secondary uppercase">{o.status}</span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-bold text-slate-900">{formatCurrency(o.amount)}</p>
-                    <span className="text-[9px] font-bold text-slate-500 uppercase">{o.status}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     );
   };
@@ -117,34 +127,39 @@ export const IndividualDashboard: React.FC = () => {
         return <IndividualAddresses />;
       case 'wishlist':
         return (
-          <div className="bg-white border border-slate-200 rounded-2xl p-lg shadow-sm text-center text-slate-500 text-xs py-xl">
-            <span className="material-symbols-outlined text-[48px] text-slate-300">favorite</span>
-            <p className="mt-sm">Wishlist module coming soon in Phase 2.</p>
-          </div>
+          <Card className="text-center text-text-secondary py-12">
+            <CardContent className="flex flex-col items-center">
+              <Heart className="h-12 w-12 text-muted mb-3" />
+              <p className="text-xs">Wishlist module coming soon in Phase 2.</p>
+            </CardContent>
+          </Card>
         );
       case 'rewards':
         return (
-          <div className="bg-white border border-slate-200 rounded-2xl p-lg shadow-sm text-left space-y-md">
-            <h3 className="font-bold text-md text-slate-800 border-b border-slate-100 pb-sm">Rewards Challenges</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-md pt-xs">
-              <div className="bg-slate-50 p-md rounded-2xl border border-slate-200 flex justify-between items-center text-xs">
+          <Card className="text-left">
+            <CardHeader>
+              <CardTitle className="text-sm uppercase tracking-wider">Rewards Challenges</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-surface-secondary/50 p-4 rounded-xl border border-border flex justify-between items-center text-xs">
                 <div>
-                  <h4 className="font-bold text-slate-800">Complete Profile Details</h4>
-                  <p className="text-slate-500 text-[10px] mt-xs">Earn bonus points for setting up your account profile.</p>
+                  <h4 className="font-bold text-text-primary">Complete Profile Details</h4>
+                  <p className="text-text-secondary text-[10px] mt-1">Earn bonus points for setting up your account profile.</p>
                 </div>
-                <button
+                <Button
+                  variant="primary"
+                  size="sm"
                   disabled={challengesClaimed.includes('challenge_profile')}
                   onClick={() => {
                     setChallengesClaimed([...challengesClaimed, 'challenge_profile']);
                     alert('Claimed 100 BuildPoints!');
                   }}
-                  className="px-md py-1.5 bg-[#FFC107] text-[#0A0A0A] font-bold rounded-lg hover:bg-[#fabd00] disabled:bg-slate-200 disabled:text-slate-400"
                 >
                   {challengesClaimed.includes('challenge_profile') ? 'Claimed' : 'Claim 100 Pts'}
-                </button>
+                </Button>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         );
       case 'profile':
         return <IndividualProfile />;
