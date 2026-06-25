@@ -102,27 +102,27 @@ export const CategoryManagement: React.FC = () => {
     <div className="space-y-md text-left">
       {/* Notifications */}
       {error && (
-        <div className="bg-red-50 text-red-800 p-md rounded-2xl border border-red-200 flex justify-between items-center">
+        <div className="bg-red-50 text-red-800 p-md rounded border border-red-200 flex justify-between items-center">
           <span>{error}</span>
           <button onClick={() => setError(null)} className="material-symbols-outlined text-[18px]">close</button>
         </div>
       )}
       {success && (
-        <div className="bg-green-50 text-green-800 p-md rounded-2xl border border-green-200 flex justify-between items-center">
+        <div className="bg-green-50 text-green-800 p-md rounded border border-green-200 flex justify-between items-center">
           <span>{success}</span>
           <button onClick={() => setSuccess(null)} className="material-symbols-outlined text-[18px]">close</button>
         </div>
       )}
 
       {/* Header Panel */}
-      <div className="flex justify-between items-center bg-white p-md rounded-2xl border border-slate-200 shadow-sm">
+      <div className="flex justify-between items-center bg-white p-md rounded border border-slate-200 shadow-sm">
         <div>
           <h4 className="font-extrabold text-slate-900 text-body-md">Procurement Categories Tree</h4>
           <p className="text-xs text-slate-400 font-medium mt-0.5">Manage category tree mapping for catalog browsing</p>
         </div>
         <button
           onClick={openAddModal}
-          className="flex items-center gap-xs bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-lg h-11 rounded-xl font-bold text-xs transition-all shadow-sm"
+          className="flex items-center gap-xs bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-lg h-11 rounded font-bold text-xs transition-all shadow-sm"
         >
           <span className="material-symbols-outlined text-[16px]">add</span>
           Add Main Category
@@ -132,10 +132,10 @@ export const CategoryManagement: React.FC = () => {
       {/* Categories List */}
       {loading ? (
         <div className="flex justify-center py-xl">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#FFC107]"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm max-w-4xl">
+        <div className="bg-white border border-slate-200 rounded overflow-hidden shadow-sm max-w-4xl">
           <table className="w-full text-body-sm text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
@@ -151,7 +151,7 @@ export const CategoryManagement: React.FC = () => {
                 <tr key={c.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="px-lg py-md font-bold text-slate-900">
                     <div className="flex items-center gap-sm">
-                      <span className="material-symbols-outlined text-[#FFC107] text-[20px]">{c.icon || 'folder'}</span>
+                      <span className="material-symbols-outlined text-primary text-[20px]">{c.icon || 'folder'}</span>
                       {c.name}
                     </div>
                   </td>
@@ -162,14 +162,14 @@ export const CategoryManagement: React.FC = () => {
                     <div className="flex gap-sm justify-end">
                       <button
                         onClick={() => openEditModal(c)}
-                        className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center hover:bg-slate-100 text-slate-600 hover:text-slate-900"
+                        className="w-8 h-8 rounded border border-slate-200 flex items-center justify-center hover:bg-slate-100 text-slate-600 hover:text-slate-900"
                         title="Edit Category"
                       >
                         <span className="material-symbols-outlined text-[16px]">edit</span>
                       </button>
                       <button
                         onClick={() => handleDeleteCategory(c.id, c.name)}
-                        className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center hover:bg-red-50 text-slate-600 hover:text-red-600"
+                        className="w-8 h-8 rounded border border-slate-200 flex items-center justify-center hover:bg-red-50 text-slate-600 hover:text-red-600"
                         title="Delete Category"
                       >
                         <span className="material-symbols-outlined text-[16px]">delete</span>
@@ -193,7 +193,7 @@ export const CategoryManagement: React.FC = () => {
       {/* Editor Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-md">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
+          <div className="w-full max-w-md bg-white rounded shadow overflow-hidden">
             <div className="px-lg py-md border-b border-slate-200 bg-slate-50 flex justify-between items-center">
               <h3 className="font-extrabold text-slate-900 text-body-md">
                 {editingCategory ? 'Edit Category Properties' : 'Create Category Entity'}
@@ -216,7 +216,7 @@ export const CategoryManagement: React.FC = () => {
                   placeholder="e.g. plumbing"
                   value={form.id || ''}
                   onChange={e => setForm({ ...form, id: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '') })}
-                  className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm font-mono"
+                  className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm font-mono"
                 />
               </div>
 
@@ -228,7 +228,7 @@ export const CategoryManagement: React.FC = () => {
                   placeholder="e.g. Plumbing"
                   value={form.name || ''}
                   onChange={e => setForm({ ...form, name: e.target.value })}
-                  className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm font-bold"
+                  className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm font-bold"
                 />
               </div>
 
@@ -239,7 +239,7 @@ export const CategoryManagement: React.FC = () => {
                   placeholder="e.g. folder, plumbing, electrical_services"
                   value={form.icon || ''}
                   onChange={e => setForm({ ...form, icon: e.target.value })}
-                  className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm"
+                  className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm"
                 />
               </div>
 
@@ -250,7 +250,7 @@ export const CategoryManagement: React.FC = () => {
                   placeholder="e.g. #/materials/plumbing"
                   value={form.href || ''}
                   onChange={e => setForm({ ...form, href: e.target.value })}
-                  className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm font-mono"
+                  className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm font-mono"
                 />
               </div>
 
@@ -261,7 +261,7 @@ export const CategoryManagement: React.FC = () => {
                   placeholder="e.g. 150 products"
                   value={form.count || ''}
                   onChange={e => setForm({ ...form, count: e.target.value })}
-                  className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm"
+                  className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm"
                 />
               </div>
 
@@ -269,13 +269,13 @@ export const CategoryManagement: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-lg h-11 border border-slate-200 hover:border-slate-800 rounded-xl font-bold text-xs text-slate-600 hover:text-slate-800 transition-all"
+                  className="px-lg h-11 border border-slate-200 hover:border-slate-800 rounded font-bold text-xs text-slate-600 hover:text-slate-800 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-xl h-11 rounded-xl font-bold text-xs transition-all shadow-sm"
+                  className="bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-xl h-11 rounded font-bold text-xs transition-all shadow-sm"
                 >
                   Save Category
                 </button>

@@ -53,7 +53,7 @@ const SheetContent = React.forwardRef<
     <SheetPrimitive.Content
       ref={ref}
       className={cn(
-        'fixed z-50 gap-4 bg-surface p-6 shadow-xl border-border transition ease-in-out duration-300 max-w-md w-full',
+        'fixed z-50 gap-4 bg-surface p-6 shadow border-border transition ease-in-out duration-300 max-w-md w-full',
         side === 'top' && 'inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top',
         side === 'bottom' && 'inset-x-0 bottom-0 border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom max-h-[85vh]',
         side === 'left' && 'inset-y-0 left-0 h-full border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',

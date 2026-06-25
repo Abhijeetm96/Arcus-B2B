@@ -333,7 +333,7 @@ export default function BrandsHub({ brandSlug }: BrandsHubProps) {
             <span className="material-symbols-outlined text-[64px] text-red-500 block mb-md">cancel_presentation</span>
             <h1 className="font-headline-h1 text-[36px] font-extrabold text-[#0A0A0A] mb-md">Brand Not Found</h1>
             <p className="text-[#6C757D] text-body-md max-w-md mx-auto mb-xl">The manufacturer profile you are looking for does not exist or has been deactivated.</p>
-            <a href="#/brands" className="bg-[#0A0A0A] text-white font-bold px-xxl py-lg rounded-xl shadow-md hover:bg-primary hover:text-[#0A0A0A] transition-all">
+            <a href="#/brands" className="bg-[#0A0A0A] text-white font-bold px-xxl py-lg rounded shadow-md hover:bg-primary hover:text-[#0A0A0A] transition-all">
               Back to Brands Directory
             </a>
           </div>
@@ -358,7 +358,7 @@ export default function BrandsHub({ brandSlug }: BrandsHubProps) {
     return (
       <div className="w-full bg-[#FFFFFF] min-h-screen text-[#212529] pt-lg pb-5xl text-left select-none relative">
         {toastMessage && (
-          <div className="fixed bottom-6 right-6 z-[999] bg-[#0A0A0A] text-white px-xl py-lg rounded-xl shadow-2xl font-semibold flex items-center gap-md border border-white/10 animate-fade-in">
+          <div className="fixed bottom-6 right-6 z-[999] bg-[#0A0A0A] text-white px-xl py-lg rounded shadow font-semibold flex items-center gap-md border border-white/10 animate-fade-in">
             <span className="material-symbols-outlined text-green-500">check_circle</span>
             {toastMessage}
           </div>
@@ -397,7 +397,7 @@ export default function BrandsHub({ brandSlug }: BrandsHubProps) {
                 <p className="text-[#495057] text-body-md leading-relaxed max-w-4xl">{brand.desc}</p>
                 <div className="flex flex-wrap justify-center md:justify-start gap-md pt-xs">
                   {brand.categories.map((cat, idx) => (
-                    <span key={idx} className="bg-[#FFFFFF] border border-[#E9ECEF] text-[#495057] font-bold px-lg py-md rounded-xl text-xs uppercase tracking-wide shadow-sm">
+                    <span key={idx} className="bg-[#FFFFFF] border border-[#E9ECEF] text-[#495057] font-bold px-lg py-md rounded text-xs uppercase tracking-wide shadow-sm">
                       {cat}
                     </span>
                   ))}
@@ -427,7 +427,7 @@ export default function BrandsHub({ brandSlug }: BrandsHubProps) {
                               <div className="flex justify-between items-start">
                                 <h4 className="font-bold text-body-md text-[#0A0A0A] line-clamp-1">{product.name}</h4>
                                 <div className="flex items-center gap-xs text-xs font-bold text-[#0A0A0A]">
-                                  <span className="material-symbols-outlined text-[#FFC107] text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                                  <span className="material-symbols-outlined text-primary text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                                   {product.rating || '4.8'}
                                 </div>
                               </div>
@@ -446,7 +446,7 @@ export default function BrandsHub({ brandSlug }: BrandsHubProps) {
                             </p>
                             {/* Quantity selection */}
                             <div className="flex flex-col items-end gap-1">
-                              <div className="inline-flex items-center border border-[#CED4DA] rounded-lg h-9 bg-white overflow-hidden shadow-sm">
+                              <div className="inline-flex items-center border border-[#CED4DA] rounded h-9 bg-white overflow-hidden shadow-sm">
                                 <button
                                   onClick={() => decrementQty(product.id)}
                                   className="w-8 h-full flex items-center justify-center text-[#495057] hover:bg-[#F8F9FA] font-bold"
@@ -476,7 +476,7 @@ export default function BrandsHub({ brandSlug }: BrandsHubProps) {
                             </a>
                             <button
                               onClick={() => handleAddToCart(product)}
-                              className="bg-[#FFC107] text-[#0A0A0A] rounded-[12px] h-10 text-xs font-bold hover:bg-[#fabd00] transition-colors"
+                              className="bg-primary text-[#0A0A0A] rounded-[12px] h-10 text-xs font-bold hover:bg-[#fabd00] transition-colors"
                             >
                               Add to Cart
                             </button>
@@ -569,7 +569,7 @@ export default function BrandsHub({ brandSlug }: BrandsHubProps) {
                       </div>
                       <button
                         onClick={() => handleDownload(doc.name)}
-                        className="material-symbols-outlined text-[#0A0A0A] hover:text-[#FFC107] shrink-0 p-sm hover:bg-[#F8F9FA] rounded-full transition-all duration-200"
+                        className="material-symbols-outlined text-[#0A0A0A] hover:text-primary shrink-0 p-sm hover:bg-[#F8F9FA] rounded-full transition-all duration-200"
                         title="Download Document"
                       >
                         download
@@ -618,7 +618,7 @@ export default function BrandsHub({ brandSlug }: BrandsHubProps) {
         </nav>
 
         {/* Directory Header Banner */}
-        <div className="bg-[#1a1c1c] text-white rounded-[32px] p-xl md:p-xxl flex flex-col md:flex-row items-center justify-between gap-xl mb-4xl border border-white/5 relative overflow-hidden shadow-lg">
+        <div className="bg-[#1a1c1c] text-white rounded-[32px] p-xl md:p-xxl flex flex-col md:flex-row items-center justify-between gap-xl mb-4xl border border-white/5 relative overflow-hidden shadow-sm">
           <div className="absolute right-0 top-0 h-full w-1/3 bg-primary/10 skew-x-12 translate-x-1/2 pointer-events-none"></div>
           <div className="space-y-md relative z-10 max-w-3xl">
             <span className="material-symbols-outlined text-primary text-[48px] block">
@@ -647,7 +647,7 @@ export default function BrandsHub({ brandSlug }: BrandsHubProps) {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-12 pl-12 pr-md rounded-xl border border-[#E9ECEF] bg-[#F8F9FA] focus:bg-white focus:border-2 focus:border-primary-container focus:ring-0 text-body-sm outline-none transition-all"
+              className="w-full h-12 pl-12 pr-md rounded border border-[#E9ECEF] bg-[#F8F9FA] focus:bg-white focus:border-2 focus:border-primary-container focus:ring-0 text-body-sm outline-none transition-all"
               placeholder="e.g. Astral, Supreme, UltraTech, Finolex..."
             />
           </div>
@@ -667,11 +667,11 @@ export default function BrandsHub({ brandSlug }: BrandsHubProps) {
               <div
                 key={brand.slug}
                 onClick={() => { window.location.hash = `#/brands/${brand.slug}` }}
-                className="bg-white border border-[#E9ECEF] rounded-[24px] p-xl flex flex-col justify-between hover:shadow-md hover:-translate-y-1 hover:border-[#FFC107] transition-all duration-300 cursor-pointer group"
+                className="bg-white border border-[#E9ECEF] rounded-[24px] p-xl flex flex-col justify-between hover:shadow-md hover:-translate-y-1 hover:border-primary transition-all duration-300 cursor-pointer group"
               >
                 <div className="space-y-md">
                   <div className="flex items-center gap-md">
-                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${brand.gradient} text-white font-extrabold text-xl flex items-center justify-center shrink-0`}>
+                    <div className={`w-14 h-14 rounded bg-gradient-to-br ${brand.gradient} text-white font-extrabold text-xl flex items-center justify-center shrink-0`}>
                       {brand.logoText}
                     </div>
                     <div>
@@ -711,7 +711,7 @@ export default function BrandsHub({ brandSlug }: BrandsHubProps) {
                     >
                       <div className="space-y-md">
                         <div className="flex items-center gap-md">
-                          <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${brand.gradient} text-white font-extrabold text-xl flex items-center justify-center shrink-0`}>
+                          <div className={`w-14 h-14 rounded bg-gradient-to-br ${brand.gradient} text-white font-extrabold text-xl flex items-center justify-center shrink-0`}>
                             {brand.logoText}
                           </div>
                           <div>

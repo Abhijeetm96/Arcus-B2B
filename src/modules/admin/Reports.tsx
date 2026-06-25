@@ -133,12 +133,12 @@ export const Reports: React.FC = () => {
   return (
     <div className="space-y-md text-left">
       {exportSuccess && (
-        <div className="bg-green-50 text-green-800 p-md rounded-2xl border border-green-200">
+        <div className="bg-green-50 text-green-800 p-md rounded border border-green-200">
           <p className="font-semibold">{exportSuccess}</p>
         </div>
       )}
       {error && (
-        <div className="bg-red-50 text-red-800 p-md rounded-2xl border border-red-200 flex justify-between items-center">
+        <div className="bg-red-50 text-red-800 p-md rounded border border-red-200 flex justify-between items-center">
           <span>{error}</span>
           <button onClick={() => setError(null)} className="material-symbols-outlined text-[18px]">close</button>
         </div>
@@ -147,9 +147,9 @@ export const Reports: React.FC = () => {
       {/* Reports Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
         {/* Sales Widget */}
-        <div className="bg-white border border-slate-200 p-lg rounded-2xl shadow-sm flex flex-col justify-between space-y-md">
+        <div className="bg-white border border-slate-200 p-lg rounded shadow-sm flex flex-col justify-between space-y-md">
           <div className="space-y-sm">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-[#FFC107]">
+            <div className="w-10 h-10 rounded bg-amber-100 flex items-center justify-center text-primary">
               <span className="material-symbols-outlined text-[24px]">trending_up</span>
             </div>
             <h4 className="font-extrabold text-slate-900 text-body-md">Sales & Revenue Reports</h4>
@@ -160,7 +160,7 @@ export const Reports: React.FC = () => {
           <button
             onClick={handleExportSales}
             disabled={exportingSales}
-            className="flex items-center justify-center gap-xs px-md h-10 border border-[#FFC107] text-[#FFC107] hover:bg-[#FFFDF5] disabled:border-slate-200 disabled:text-slate-400 disabled:bg-slate-50 font-bold text-xs rounded-xl transition-all bg-white cursor-pointer"
+            className="flex items-center justify-center gap-xs px-md h-10 border border-primary text-primary hover:bg-[#FFFDF5] disabled:border-slate-200 disabled:text-slate-400 disabled:bg-slate-50 font-bold text-xs rounded transition-all bg-white cursor-pointer"
           >
             <span className="material-symbols-outlined text-[16px]">download</span>
             {exportingSales ? 'Exporting...' : 'Export Sales CSV'}
@@ -168,9 +168,9 @@ export const Reports: React.FC = () => {
         </div>
 
         {/* Inventory Widget */}
-        <div className="bg-white border border-slate-200 p-lg rounded-2xl shadow-sm flex flex-col justify-between space-y-md">
+        <div className="bg-white border border-slate-200 p-lg rounded shadow-sm flex flex-col justify-between space-y-md">
           <div className="space-y-sm">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
+            <div className="w-10 h-10 rounded bg-blue-100 flex items-center justify-center text-blue-600">
               <span className="material-symbols-outlined text-[24px]">warehouse</span>
             </div>
             <h4 className="font-extrabold text-slate-900 text-body-md">Inventory & Stock Reports</h4>
@@ -181,7 +181,7 @@ export const Reports: React.FC = () => {
           <button
             onClick={handleExportInventory}
             disabled={exportingInventory}
-            className="flex items-center justify-center gap-xs px-md h-10 border border-blue-200 text-blue-600 hover:bg-blue-50/30 disabled:border-slate-200 disabled:text-slate-400 disabled:bg-slate-50 font-bold text-xs rounded-xl transition-all bg-white cursor-pointer"
+            className="flex items-center justify-center gap-xs px-md h-10 border border-blue-200 text-blue-600 hover:bg-blue-50/30 disabled:border-slate-200 disabled:text-slate-400 disabled:bg-slate-50 font-bold text-xs rounded transition-all bg-white cursor-pointer"
           >
             <span className="material-symbols-outlined text-[16px]">download</span>
             {exportingInventory ? 'Exporting...' : 'Export Inventory CSV'}
@@ -189,9 +189,9 @@ export const Reports: React.FC = () => {
         </div>
 
         {/* RFQ Widget */}
-        <div className="bg-white border border-slate-200 p-lg rounded-2xl shadow-sm flex flex-col justify-between space-y-md">
+        <div className="bg-white border border-slate-200 p-lg rounded shadow-sm flex flex-col justify-between space-y-md">
           <div className="space-y-sm">
-            <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600">
+            <div className="w-10 h-10 rounded bg-purple-100 flex items-center justify-center text-purple-600">
               <span className="material-symbols-outlined text-[24px]">assignment</span>
             </div>
             <h4 className="font-extrabold text-slate-900 text-body-md">RFQ Workspace Pipeline</h4>
@@ -202,7 +202,7 @@ export const Reports: React.FC = () => {
           <button
             onClick={handleExportRfqs}
             disabled={exportingRfqs}
-            className="flex items-center justify-center gap-xs px-md h-10 border border-purple-200 text-purple-600 hover:bg-purple-50/30 disabled:border-slate-200 disabled:text-slate-400 disabled:bg-slate-50 font-bold text-xs rounded-xl transition-all bg-white cursor-pointer"
+            className="flex items-center justify-center gap-xs px-md h-10 border border-purple-200 text-purple-600 hover:bg-purple-50/30 disabled:border-slate-200 disabled:text-slate-400 disabled:bg-slate-50 font-bold text-xs rounded transition-all bg-white cursor-pointer"
           >
             <span className="material-symbols-outlined text-[16px]">download</span>
             {exportingRfqs ? 'Exporting...' : 'Export RFQ CSV'}

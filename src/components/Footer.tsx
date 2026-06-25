@@ -41,25 +41,25 @@ export default function Footer() {
               Company
             </h4>
             <a
-              className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
+              className="font-body-sm text-[14px] hover:text-primary transition-colors duration-200 w-fit"
               href="#"
             >
               About ARCUS
             </a>
             <a
-              className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
+              className="font-body-sm text-[14px] hover:text-primary transition-colors duration-200 w-fit"
               href="#"
             >
               Careers
             </a>
             <a
-              className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
+              className="font-body-sm text-[14px] hover:text-primary transition-colors duration-200 w-fit"
               href="#"
             >
               Press & Media
             </a>
             <a
-              className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
+              className="font-body-sm text-[14px] hover:text-primary transition-colors duration-200 w-fit"
               href="#"
             >
               Contact Us
@@ -71,25 +71,25 @@ export default function Footer() {
               Products
             </h4>
             <a
-              className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
+              className="font-body-sm text-[14px] hover:text-primary transition-colors duration-200 w-fit"
               href="#/materials"
             >
               All Materials
             </a>
             <a
-              className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
+              className="font-body-sm text-[14px] hover:text-primary transition-colors duration-200 w-fit"
               href="#/brands"
             >
               Partner Brands
             </a>
             <a
-              className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
+              className="font-body-sm text-[14px] hover:text-primary transition-colors duration-200 w-fit"
               href="#/materials/building-materials"
             >
               Building Materials
             </a>
             <a
-              className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
+              className="font-body-sm text-[14px] hover:text-primary transition-colors duration-200 w-fit"
               href="#/materials/hardware-tools"
             >
               Tools & Equipment
@@ -101,25 +101,25 @@ export default function Footer() {
               Services
             </h4>
             <a
-              className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
+              className="font-body-sm text-[14px] hover:text-primary transition-colors duration-200 w-fit"
               href="#/services"
             >
               Hire Contractors
             </a>
             <a
-              className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
+              className="font-body-sm text-[14px] hover:text-primary transition-colors duration-200 w-fit"
               href="#/services/equipment-rental"
             >
               Equipment Rental
             </a>
             <a
-              className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
+              className="font-body-sm text-[14px] hover:text-primary transition-colors duration-200 w-fit"
               href="#/services/architecture-design"
             >
               Architecture & Design
             </a>
             <a
-              className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
+              className="font-body-sm text-[14px] hover:text-primary transition-colors duration-200 w-fit"
               href="#/"
               onClick={() => {
                 setTimeout(() => {
@@ -136,25 +136,25 @@ export default function Footer() {
               Support
             </h4>
             <a
-              className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
+              className="font-body-sm text-[14px] hover:text-primary transition-colors duration-200 w-fit"
               href="#"
             >
               Help Center
             </a>
             <a
-              className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
+              className="font-body-sm text-[14px] hover:text-primary transition-colors duration-200 w-fit"
               href="#/account"
             >
               Track Order
             </a>
             <a
-              className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
+              className="font-body-sm text-[14px] hover:text-primary transition-colors duration-200 w-fit"
               href="#"
             >
               Return Policy
             </a>
             <a
-              className="font-body-sm text-[14px] hover:text-[#FFC107] transition-colors duration-200 w-fit"
+              className="font-body-sm text-[14px] hover:text-primary transition-colors duration-200 w-fit"
               href="#"
             >
               Supplier Guidelines

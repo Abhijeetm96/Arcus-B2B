@@ -54,13 +54,13 @@ export const CustomerManagement: React.FC = () => {
     <div className="space-y-md text-left">
       {/* Notifications */}
       {error && (
-        <div className="bg-red-50 text-red-800 p-md rounded-2xl border border-red-200">
+        <div className="bg-red-50 text-red-800 p-md rounded border border-red-200">
           <p className="font-semibold">Error: {error}</p>
         </div>
       )}
 
       {/* Filter Toolbar */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-md bg-white p-md rounded-2xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-md bg-white p-md rounded border border-slate-200 shadow-sm">
         <div className="flex flex-wrap items-center gap-sm w-full md:w-auto">
           {/* Search Box */}
           <div className="relative flex-1 min-w-[200px] md:max-w-xs">
@@ -70,7 +70,7 @@ export const CustomerManagement: React.FC = () => {
               placeholder="Search customers, companies, GSTIN..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-11 pl-xxl pr-md border border-slate-200 rounded-xl text-body-sm focus:border-[#FFC107] focus:ring-0 bg-slate-50"
+              className="w-full h-11 pl-xxl pr-md border border-slate-200 rounded text-body-sm focus:border-primary focus:ring-0 bg-slate-50"
             />
           </div>
 
@@ -78,7 +78,7 @@ export const CustomerManagement: React.FC = () => {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="h-11 px-md border border-slate-200 rounded-xl text-body-sm bg-slate-50 focus:border-[#FFC107] focus:ring-0 font-bold"
+            className="h-11 px-md border border-slate-200 rounded text-body-sm bg-slate-50 focus:border-primary focus:ring-0 font-bold"
           >
             <option value="all">All Customer Types</option>
             <option value="INDIVIDUAL">B2C (Individual)</option>
@@ -86,7 +86,7 @@ export const CustomerManagement: React.FC = () => {
           </select>
         </div>
 
-        <div className="text-xs bg-slate-100 text-slate-500 rounded-xl px-md py-sm font-extrabold font-label-caps uppercase tracking-wide">
+        <div className="text-xs bg-slate-100 text-slate-500 rounded px-md py-sm font-extrabold font-label-caps uppercase tracking-wide">
           {filteredCustomers.length} Client Profiles
         </div>
       </div>
@@ -94,10 +94,10 @@ export const CustomerManagement: React.FC = () => {
       {/* Client Accounts Table */}
       {loading ? (
         <div className="flex justify-center py-xl">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#FFC107]"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-white border border-slate-200 rounded overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-body-sm text-left border-collapse">
               <thead>

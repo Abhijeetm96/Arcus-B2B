@@ -97,29 +97,29 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ currentRole, set
           <div
             key={r}
             onClick={() => setCurrentRole(r)}
-            className={`cursor-pointer border p-md rounded-2xl transition-all flex flex-col justify-between h-44 ${
+            className={`cursor-pointer border p-md rounded transition-all flex flex-col justify-between h-44 ${
               currentRole === r 
-                ? 'bg-amber-50/50 border-[#FFC107] shadow-md shadow-[#FFC107]/10' 
+                ? 'bg-amber-50/50 border-primary shadow-md shadow-primary/10' 
                 : 'bg-white border-slate-200 hover:border-slate-350 shadow-sm'
             }`}
           >
             <div className="space-y-xs">
               <div className="flex justify-between items-center">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">System Role</span>
-                {currentRole === r && <span className="material-symbols-outlined text-[#FFC107] text-[16px]">check_circle</span>}
+                {currentRole === r && <span className="material-symbols-outlined text-primary text-[16px]">check_circle</span>}
               </div>
               <h4 className="font-extrabold text-slate-900 text-body-sm">{getRoleLabel(r)}</h4>
               <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
                 {getRoleDesc(r)}
               </p>
             </div>
-            <span className="text-[9px] font-extrabold text-[#FFC107] uppercase tracking-wider">Select to simulate</span>
+            <span className="text-[9px] font-extrabold text-primary uppercase tracking-wider">Select to simulate</span>
           </div>
         ))}
       </div>
 
       {/* Permission Matrix Grid */}
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm max-w-4xl">
+      <div className="bg-white border border-slate-200 rounded overflow-hidden shadow-sm max-w-4xl">
         <div className="p-md bg-slate-50 border-b border-slate-200">
           <h4 className="font-extrabold text-slate-900 text-body-sm">Role Authorization Matrix</h4>
           <p className="text-xs text-slate-400 font-semibold mt-0.5">Authorization checks validated in frontend views & API controllers</p>

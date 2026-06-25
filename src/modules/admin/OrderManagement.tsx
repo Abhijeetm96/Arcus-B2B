@@ -86,20 +86,20 @@ export const OrderManagement: React.FC = () => {
     <div className="space-y-md text-left">
       {/* Notifications */}
       {error && (
-        <div className="bg-red-50 text-red-800 p-md rounded-2xl border border-red-200 flex justify-between items-center">
+        <div className="bg-red-50 text-red-800 p-md rounded border border-red-200 flex justify-between items-center">
           <span>{error}</span>
           <button onClick={() => setError(null)} className="material-symbols-outlined text-[18px]">close</button>
         </div>
       )}
       {success && (
-        <div className="bg-green-50 text-green-800 p-md rounded-2xl border border-green-200 flex justify-between items-center">
+        <div className="bg-green-50 text-green-800 p-md rounded border border-green-200 flex justify-between items-center">
           <span>{success}</span>
           <button onClick={() => setSuccess(null)} className="material-symbols-outlined text-[18px]">close</button>
         </div>
       )}
 
       {/* Filter Toolbar */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-md bg-white p-md rounded-2xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-md bg-white p-md rounded border border-slate-200 shadow-sm">
         <div className="flex flex-wrap items-center gap-sm w-full md:w-auto">
           {/* Search Box */}
           <div className="relative flex-1 min-w-[200px] md:max-w-xs">
@@ -109,7 +109,7 @@ export const OrderManagement: React.FC = () => {
               placeholder="Search by Order ID, buyer..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-11 pl-xxl pr-md border border-slate-200 rounded-xl text-body-sm focus:border-[#FFC107] focus:ring-0 bg-slate-50"
+              className="w-full h-11 pl-xxl pr-md border border-slate-200 rounded text-body-sm focus:border-primary focus:ring-0 bg-slate-50"
             />
           </div>
 
@@ -117,7 +117,7 @@ export const OrderManagement: React.FC = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-11 px-md border border-slate-200 rounded-xl text-body-sm bg-slate-50 focus:border-[#FFC107] focus:ring-0 font-bold"
+            className="h-11 px-md border border-slate-200 rounded text-body-sm bg-slate-50 focus:border-primary focus:ring-0 font-bold"
           >
             <option value="all">All Orders</option>
             <option value="Pending">Pending</option>
@@ -128,7 +128,7 @@ export const OrderManagement: React.FC = () => {
           </select>
         </div>
 
-        <div className="text-xs bg-slate-100 text-slate-500 rounded-xl px-md py-sm font-extrabold font-label-caps uppercase tracking-wide">
+        <div className="text-xs bg-slate-100 text-slate-500 rounded px-md py-sm font-extrabold font-label-caps uppercase tracking-wide">
           {filteredOrders.length} Orders
         </div>
       </div>
@@ -136,10 +136,10 @@ export const OrderManagement: React.FC = () => {
       {/* Orders List Table */}
       {loading ? (
         <div className="flex justify-center py-xl">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#FFC107]"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-white border border-slate-200 rounded overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-body-sm text-left border-collapse">
               <thead>
@@ -159,7 +159,7 @@ export const OrderManagement: React.FC = () => {
                   const dateStr = o.timestamp ? new Date(o.timestamp).toLocaleDateString('en-IN') : (o.date || 'N/A');
                   return (
                     <tr key={o.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-lg py-md font-mono text-xs font-bold text-[#FFC107]">{o.id}</td>
+                      <td className="px-lg py-md font-mono text-xs font-bold text-primary">{o.id}</td>
                       <td className="px-lg py-md">
                         <div className="font-semibold text-slate-900">{o.userId}</div>
                         <div className="text-[10px] text-slate-400 truncate max-w-xs">{o.shippingAddress}</div>
@@ -183,7 +183,7 @@ export const OrderManagement: React.FC = () => {
                             setSelectedOrder(o);
                             setOrderNotes('');
                           }}
-                          className="flex items-center gap-xs px-md h-8 border border-slate-200 hover:border-slate-800 text-slate-600 hover:text-slate-950 font-bold text-xs rounded-lg transition-all ml-auto"
+                          className="flex items-center gap-xs px-md h-8 border border-slate-200 hover:border-slate-800 text-slate-600 hover:text-slate-950 font-bold text-xs rounded transition-all ml-auto"
                         >
                           <span className="material-symbols-outlined text-[16px]">visibility</span>
                           View Details
@@ -208,7 +208,7 @@ export const OrderManagement: React.FC = () => {
       {/* Details Side Drawer Modal */}
       {selectedOrder && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
-          <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col justify-between overflow-hidden">
+          <div className="w-full max-w-md bg-white h-full shadow flex flex-col justify-between overflow-hidden">
             {/* Header */}
             <div className="px-lg py-md border-b border-slate-200 bg-slate-50 flex justify-between items-center">
               <div>
@@ -228,7 +228,7 @@ export const OrderManagement: React.FC = () => {
             {/* Scroll Area */}
             <div className="flex-1 overflow-y-auto p-lg space-y-lg text-xs font-semibold text-slate-600">
               {/* Status Controller */}
-              <div className="bg-slate-50 p-md rounded-2xl border border-slate-100 space-y-sm">
+              <div className="bg-slate-50 p-md rounded border border-slate-100 space-y-sm">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Update Order State</p>
                 <div className="flex flex-wrap gap-xs">
                   {(['Pending', 'Confirmed', 'Dispatched', 'Delivered', 'Cancelled'] as const).map(st => (
@@ -236,9 +236,9 @@ export const OrderManagement: React.FC = () => {
                       key={st}
                       type="button"
                       onClick={() => handleStatusChange(selectedOrder.id, st)}
-                      className={`px-md py-sm rounded-lg border font-bold text-[10px] transition-all ${
+                      className={`px-md py-sm rounded border font-bold text-[10px] transition-all ${
                         selectedOrder.status === st 
-                          ? 'bg-[#FFC107] text-slate-950 border-[#FFC107]' 
+                          ? 'bg-primary text-slate-950 border-primary' 
                           : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
                       }`}
                     >
@@ -251,7 +251,7 @@ export const OrderManagement: React.FC = () => {
               {/* Order Items List */}
               <div className="space-y-sm">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Ordered Products</p>
-                <div className="border border-slate-100 rounded-xl overflow-hidden divide-y divide-slate-100">
+                <div className="border border-slate-100 rounded overflow-hidden divide-y divide-slate-100">
                   {selectedOrder.items?.map((item, idx) => {
                     const price = item.price || item.unitPrice || 0;
                     const qty = item.qty || item.quantity || 1;
@@ -304,12 +304,12 @@ export const OrderManagement: React.FC = () => {
                   onChange={e => setOrderNotes(e.target.value)}
                   placeholder="Add internal processing updates, delivery instructions..."
                   rows={3}
-                  className="w-full p-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm font-semibold"
+                  className="w-full p-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm font-semibold"
                 />
                 <button
                   type="button"
                   onClick={handleSaveNotes}
-                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-md py-xs rounded-lg font-bold text-[10px]"
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-md py-xs rounded font-bold text-[10px]"
                 >
                   Save Internal Notes
                 </button>
@@ -321,7 +321,7 @@ export const OrderManagement: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSelectedOrder(null)}
-                className="px-lg h-11 border border-slate-200 hover:border-slate-800 rounded-xl font-bold text-xs text-slate-600 hover:text-slate-800 transition-all"
+                className="px-lg h-11 border border-slate-200 hover:border-slate-800 rounded font-bold text-xs text-slate-600 hover:text-slate-800 transition-all"
               >
                 Close Drawer
               </button>

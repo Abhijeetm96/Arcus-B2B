@@ -515,7 +515,7 @@ export const AuthPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4xl items-center w-full">
           
           {/* LEFT BRANDING PANEL (Hidden on Mobile) */}
-          <div className="hidden lg:flex lg:col-span-5 flex-col justify-between min-h-[720px] bg-[#0A0A0A] text-white rounded-[32px] p-xxl relative overflow-hidden shadow-2xl">
+          <div className="hidden lg:flex lg:col-span-5 flex-col justify-between min-h-[720px] bg-[#0A0A0A] text-white rounded-[32px] p-xxl relative overflow-hidden shadow">
             {/* Logo */}
             <div className="z-10">
               <a href="#/">
@@ -550,7 +550,7 @@ export const AuthPage: React.FC = () => {
               </svg>
 
               {/* Floating Labels over the canvas */}
-              <div className="absolute inset-0 flex flex-col justify-between p-xxl text-xs font-bold text-center text-[#FFC107] uppercase tracking-widest font-label-caps pointer-events-none">
+              <div className="absolute inset-0 flex flex-col justify-between p-xxl text-xs font-bold text-center text-primary uppercase tracking-widest font-label-caps pointer-events-none">
                 <div className="flex justify-between">
                   <span className="bg-[#0A0A0A] px-2 py-1 rounded border border-white/10">Materials</span>
                   <span className="bg-[#0A0A0A] px-2 py-1 rounded border border-white/10">Professionals</span>
@@ -581,19 +581,19 @@ export const AuthPage: React.FC = () => {
             {/* Trust Metrics 2x2 */}
             <div className="grid grid-cols-2 gap-lg border-t border-b border-white/10 py-xl my-xl z-10 text-left">
               <div>
-                <p className="text-[28px] font-bold text-[#FFC107]">10,000+</p>
+                <p className="text-[28px] font-bold text-primary">10,000+</p>
                 <p className="text-xs text-white/60 font-semibold font-label-caps uppercase tracking-wide">Products</p>
               </div>
               <div>
-                <p className="text-[28px] font-bold text-[#FFC107]">5,000+</p>
+                <p className="text-[28px] font-bold text-primary">5,000+</p>
                 <p className="text-xs text-white/60 font-semibold font-label-caps uppercase tracking-wide">Professionals</p>
               </div>
               <div>
-                <p className="text-[28px] font-bold text-[#FFC107]">500+</p>
+                <p className="text-[28px] font-bold text-primary">500+</p>
                 <p className="text-xs text-white/60 font-semibold font-label-caps uppercase tracking-wide">Cities Covered</p>
               </div>
               <div>
-                <p className="text-[28px] font-bold text-[#FFC107]">25,000+</p>
+                <p className="text-[28px] font-bold text-primary">25,000+</p>
                 <p className="text-xs text-white/60 font-semibold font-label-caps uppercase tracking-wide">Projects Delivered</p>
               </div>
             </div>
@@ -668,7 +668,7 @@ export const AuthPage: React.FC = () => {
                         type="text"
                         value={emailOtpCode}
                         onChange={(e) => setEmailOtpCode(e.target.value.replace(/\D/g, '').substring(0, 6))}
-                        className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-center text-lg tracking-widest outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0 font-bold"
+                        className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-center text-lg tracking-widest outline-none focus:border-2 focus:border-primary focus:ring-0 font-bold"
                         placeholder="0 0 0 0 0 0"
                         required
                       />
@@ -677,7 +677,7 @@ export const AuthPage: React.FC = () => {
                     <button
                       type="submit"
                       disabled={emailOtpLoading || emailOtpCode.length !== 6}
-                      className="w-full bg-[#FFC107] hover:bg-[#fabd00] disabled:bg-gray-100 disabled:text-gray-400 disabled:opacity-50 text-[#0A0A0A] font-bold h-11 rounded-xl transition-colors shadow flex items-center justify-center gap-xs"
+                      className="w-full bg-primary hover:bg-[#fabd00] disabled:bg-gray-100 disabled:text-gray-400 disabled:opacity-50 text-[#0A0A0A] font-bold h-11 rounded transition-colors shadow flex items-center justify-center gap-xs"
                     >
                       {emailOtpLoading ? 'Verifying...' : 'Verify Email'}
                     </button>
@@ -687,7 +687,7 @@ export const AuthPage: React.FC = () => {
                         type="button"
                         onClick={handleResendEmailOtp}
                         disabled={emailOtpCountdown > 0}
-                        className="text-xs font-bold text-[#FFC107] hover:underline disabled:text-gray-400"
+                        className="text-xs font-bold text-primary hover:underline disabled:text-gray-400"
                       >
                         {emailOtpCountdown > 0 ? `Resend Code in ${emailOtpCountdown}s` : 'Resend Verification Email'}
                       </button>
@@ -707,13 +707,13 @@ export const AuthPage: React.FC = () => {
                       <div className="grid grid-cols-2 gap-md pt-md">
                         <a
                           href="#/materials"
-                          className="py-3 bg-[#FFC107] text-[#0A0A0A] font-bold rounded-lg text-center hover:bg-[#fabd00] transition-colors"
+                          className="py-3 bg-primary text-[#0A0A0A] font-bold rounded text-center hover:bg-[#fabd00] transition-colors"
                         >
                           Browse Products
                         </a>
                         <a
                           href="#/services"
-                          className="py-3 bg-[#0A0A0A] text-white font-bold rounded-lg text-center hover:bg-[#212529] transition-colors"
+                          className="py-3 bg-[#0A0A0A] text-white font-bold rounded text-center hover:bg-[#212529] transition-colors"
                         >
                           Browse Services
                         </a>
@@ -726,8 +726,8 @@ export const AuthPage: React.FC = () => {
                       <h2 className="font-headline-h2 text-[26px] text-[#0A0A0A] font-bold leading-tight">Business Account Created</h2>
                       
                       {/* B2B benefits checklist */}
-                      <div className="bg-[#FFFDF5] border border-[#FFC107]/20 rounded-xl p-md text-left space-y-xs max-w-sm mx-auto">
-                        <p className="text-xs font-bold text-[#FFC107] uppercase tracking-wider font-label-caps">B2B Core Benefits Activated</p>
+                      <div className="bg-[#FFFDF5] border border-primary/20 rounded p-md text-left space-y-xs max-w-sm mx-auto">
+                        <p className="text-xs font-bold text-primary uppercase tracking-wider font-label-caps">B2B Core Benefits Activated</p>
                         <ul className="space-y-1 text-xs text-secondary font-medium pt-1">
                           <li className="flex items-center gap-xs"><span className="material-symbols-outlined text-green-600 text-sm">check</span> GST Input Invoices</li>
                           <li className="flex items-center gap-xs"><span className="material-symbols-outlined text-green-600 text-sm">check</span> Tiered Bulk Pricing</li>
@@ -739,13 +739,13 @@ export const AuthPage: React.FC = () => {
                       <div className="grid grid-cols-2 gap-md pt-md">
                         <a
                           href="#/materials"
-                          className="py-3 bg-[#FFC107] text-[#0A0A0A] font-bold rounded-lg text-center hover:bg-[#fabd00] transition-colors"
+                          className="py-3 bg-primary text-[#0A0A0A] font-bold rounded text-center hover:bg-[#fabd00] transition-colors"
                         >
                           Browse Materials
                         </a>
                         <a
                           href="#/"
-                          className="py-3 bg-[#0A0A0A] text-white font-bold rounded-lg text-center hover:bg-[#212529] transition-colors"
+                          className="py-3 bg-[#0A0A0A] text-white font-bold rounded text-center hover:bg-[#212529] transition-colors"
                         >
                           Create RFQ
                         </a>
@@ -762,13 +762,13 @@ export const AuthPage: React.FC = () => {
                       <div className="flex flex-col gap-sm pt-md">
                         <a
                           href="#/professional-dashboard"
-                          className="py-3 bg-[#FFC107] text-[#0A0A0A] font-bold rounded-lg text-center hover:bg-[#fabd00] transition-colors"
+                          className="py-3 bg-primary text-[#0A0A0A] font-bold rounded text-center hover:bg-[#fabd00] transition-colors"
                         >
                           Complete Profile
                         </a>
                         <a
                           href="#/professional-dashboard"
-                          className="py-3 bg-transparent border border-[#0A0A0A] text-[#0A0A0A] font-bold rounded-lg text-center hover:bg-[#F8F9FA] transition-colors"
+                          className="py-3 bg-transparent border border-[#0A0A0A] text-[#0A0A0A] font-bold rounded text-center hover:bg-[#F8F9FA] transition-colors"
                         >
                           Upload Portfolio
                         </a>
@@ -816,14 +816,14 @@ export const AuthPage: React.FC = () => {
                           type="text"
                           value={forgotEmailOrPhone}
                           onChange={(e) => setForgotEmailOrPhone(e.target.value)}
-                          className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                          className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                           placeholder="e.g. name@company.com or 9999988888"
                           required
                         />
                       </div>
                       <button
                         type="submit"
-                        className="w-full bg-[#FFC107] text-[#0A0A0A] font-bold h-11 rounded-xl hover:bg-[#fabd00] transition-colors shadow"
+                        className="w-full bg-primary text-[#0A0A0A] font-bold h-11 rounded hover:bg-[#fabd00] transition-colors shadow"
                       >
                         Send Verification OTP
                       </button>
@@ -839,7 +839,7 @@ export const AuthPage: React.FC = () => {
                           type="text"
                           value={forgotOtp}
                           onChange={(e) => setForgotOtp(e.target.value.replace(/\D/g, '').substring(0, 6))}
-                          className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-center text-lg tracking-widest outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0 font-bold"
+                          className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-center text-lg tracking-widest outline-none focus:border-2 focus:border-primary focus:ring-0 font-bold"
                           placeholder="0 0 0 0 0 0"
                           required
                         />
@@ -847,7 +847,7 @@ export const AuthPage: React.FC = () => {
                       </div>
                       <button
                         type="submit"
-                        className="w-full bg-[#FFC107] text-[#0A0A0A] font-bold h-11 rounded-xl hover:bg-[#fabd00] transition-colors shadow"
+                        className="w-full bg-primary text-[#0A0A0A] font-bold h-11 rounded hover:bg-[#fabd00] transition-colors shadow"
                       >
                         Verify Code
                       </button>
@@ -863,7 +863,7 @@ export const AuthPage: React.FC = () => {
                           type="password"
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
-                          className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                          className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                           placeholder="Min 6 characters"
                           required
                         />
@@ -874,14 +874,14 @@ export const AuthPage: React.FC = () => {
                           type="password"
                           value={confirmNewPassword}
                           onChange={(e) => setConfirmNewPassword(e.target.value)}
-                          className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                          className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                           placeholder="Retype password"
                           required
                         />
                       </div>
                       <button
                         type="submit"
-                        className="w-full bg-[#FFC107] text-[#0A0A0A] font-bold h-11 rounded-xl hover:bg-[#fabd00] transition-colors shadow"
+                        className="w-full bg-primary text-[#0A0A0A] font-bold h-11 rounded hover:bg-[#fabd00] transition-colors shadow"
                       >
                         Reset Password
                       </button>
@@ -907,7 +907,7 @@ export const AuthPage: React.FC = () => {
                     >
                       Login
                       {activeTab === 'login' && (
-                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#FFC107] rounded-t-full" />
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full" />
                       )}
                     </button>
                     <button
@@ -925,7 +925,7 @@ export const AuthPage: React.FC = () => {
                     >
                       Register
                       {activeTab === 'register' && (
-                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#FFC107] rounded-t-full" />
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full" />
                       )}
                     </button>
                   </div>
@@ -951,7 +951,7 @@ export const AuthPage: React.FC = () => {
                           type="email"
                           value={loginEmail}
                           onChange={(e) => setLoginEmail(e.target.value)}
-                          className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                          className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                           placeholder="e.g. name@company.com"
                           required
                         />
@@ -973,7 +973,7 @@ export const AuthPage: React.FC = () => {
                           type={showLoginPassword ? 'text' : 'password'}
                           value={loginPassword}
                           onChange={(e) => setLoginPassword(e.target.value)}
-                          className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                          className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                           placeholder="Enter password"
                           required
                         />
@@ -986,7 +986,7 @@ export const AuthPage: React.FC = () => {
                             type="checkbox"
                             checked={rememberMe}
                             onChange={(e) => setRememberMe(e.target.checked)}
-                            className="rounded border-[#E9ECEF] text-[#FFC107] focus:ring-[#FFC107] focus:ring-offset-0"
+                            className="rounded border-[#E9ECEF] text-primary focus:ring-primary focus:ring-offset-0"
                           />
                           Remember Me
                         </label>
@@ -1002,7 +1002,7 @@ export const AuthPage: React.FC = () => {
                       <button
                         type="submit"
                         disabled={loginLoading}
-                        className="w-full bg-[#FFC107] hover:bg-[#fabd00] text-[#0A0A0A] font-bold h-[56px] rounded-xl transition-all shadow disabled:opacity-50 mt-sm flex items-center justify-center gap-xs"
+                        className="w-full bg-primary hover:bg-[#fabd00] text-[#0A0A0A] font-bold h-[56px] rounded transition-all shadow disabled:opacity-50 mt-sm flex items-center justify-center gap-xs"
                       >
                         {loginLoading ? 'Signing In...' : 'Login'}
                       </button>
@@ -1019,7 +1019,7 @@ export const AuthPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => alert('Simulator: OAuth integration triggers in production.')}
-                          className="flex items-center justify-center gap-sm h-11 border border-[#E9ECEF] rounded-xl hover:bg-[#F8F9FA] transition-colors text-xs font-semibold text-[#212529]"
+                          className="flex items-center justify-center gap-sm h-11 border border-[#E9ECEF] rounded hover:bg-[#F8F9FA] transition-colors text-xs font-semibold text-[#212529]"
                         >
                           <img src="https://lh3.googleusercontent.com/COxitfgSths3uwXA1Q0lhbhWSX1l526RGL0EGP5cITd45hH8J4O-CslmMN166w6v-Yg" className="w-4 h-4 object-contain" alt="Google" />
                           Google
@@ -1027,7 +1027,7 @@ export const AuthPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => alert('Simulator: OAuth integration triggers in production.')}
-                          className="flex items-center justify-center gap-sm h-11 border border-[#E9ECEF] rounded-xl hover:bg-[#F8F9FA] transition-colors text-xs font-semibold text-[#212529]"
+                          className="flex items-center justify-center gap-sm h-11 border border-[#E9ECEF] rounded hover:bg-[#F8F9FA] transition-colors text-xs font-semibold text-[#212529]"
                         >
                           <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" className="w-4 h-4 object-contain" alt="LinkedIn" />
                           LinkedIn
@@ -1066,12 +1066,12 @@ export const AuthPage: React.FC = () => {
                           }}
                           className={`h-[100px] rounded-[20px] border p-md flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 select-none ${
                             accountType === 'Individual'
-                              ? 'border-[#FFC107] bg-[#FFF8E1] shadow-sm'
-                              : 'border-[#E9ECEF] bg-white hover:border-[#FFC107] hover:bg-[#FFFDF5]'
+                              ? 'border-primary bg-[#FFF8E1] shadow-sm'
+                              : 'border-[#E9ECEF] bg-white hover:border-primary hover:bg-[#FFFDF5]'
                           }`}
                         >
                           <div className="space-y-xs flex flex-col items-center">
-                            <span className="material-symbols-outlined text-[28px] text-[#FFC107] block">home</span>
+                            <span className="material-symbols-outlined text-[28px] text-primary block">home</span>
                             <h4 className="font-bold text-sm md:text-base text-[#0A0A0A]">Retail</h4>
                           </div>
                         </div>
@@ -1084,12 +1084,12 @@ export const AuthPage: React.FC = () => {
                           }}
                           className={`h-[100px] rounded-[20px] border p-md flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 select-none ${
                             accountType === 'Business'
-                              ? 'border-[#FFC107] bg-[#FFF8E1] shadow-sm'
-                              : 'border-[#E9ECEF] bg-white hover:border-[#FFC107] hover:bg-[#FFFDF5]'
+                              ? 'border-primary bg-[#FFF8E1] shadow-sm'
+                              : 'border-[#E9ECEF] bg-white hover:border-primary hover:bg-[#FFFDF5]'
                           }`}
                         >
                           <div className="space-y-xs flex flex-col items-center">
-                            <span className="material-symbols-outlined text-[28px] text-[#FFC107] block">business</span>
+                            <span className="material-symbols-outlined text-[28px] text-primary block">business</span>
                             <h4 className="font-bold text-sm md:text-base text-[#0A0A0A]">Business (B2B)</h4>
                           </div>
                         </div>
@@ -1102,12 +1102,12 @@ export const AuthPage: React.FC = () => {
                           }}
                           className={`h-[100px] rounded-[20px] border p-md flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 select-none ${
                             accountType === 'Professional'
-                              ? 'border-[#FFC107] bg-[#FFF8E1] shadow-sm'
-                              : 'border-[#E9ECEF] bg-white hover:border-[#FFC107] hover:bg-[#FFFDF5]'
+                              ? 'border-primary bg-[#FFF8E1] shadow-sm'
+                              : 'border-[#E9ECEF] bg-white hover:border-primary hover:bg-[#FFFDF5]'
                           }`}
                         >
                           <div className="space-y-xs flex flex-col items-center">
-                            <span className="material-symbols-outlined text-[28px] text-[#FFC107] block">engineering</span>
+                            <span className="material-symbols-outlined text-[28px] text-primary block">engineering</span>
                             <h4 className="font-bold text-sm md:text-base text-[#0A0A0A]">Professional</h4>
                           </div>
                         </div>
@@ -1133,7 +1133,7 @@ export const AuthPage: React.FC = () => {
                                 type="text"
                                 value={indName}
                                 onChange={(e) => setIndName(e.target.value)}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                 placeholder="John Doe"
                                 required
                               />
@@ -1144,7 +1144,7 @@ export const AuthPage: React.FC = () => {
                                 type="tel"
                                 value={indPhone}
                                 onChange={(e) => setIndPhone(e.target.value)}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                 placeholder="9999988888"
                                 required
                               />
@@ -1157,7 +1157,7 @@ export const AuthPage: React.FC = () => {
                               type="email"
                               value={indEmail}
                               onChange={(e) => setIndEmail(e.target.value)}
-                              className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                              className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                               placeholder="name@gmail.com"
                               required
                             />
@@ -1170,7 +1170,7 @@ export const AuthPage: React.FC = () => {
                                 type="text"
                                 value={indCity}
                                 onChange={(e) => setIndCity(e.target.value)}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                 placeholder="Bangalore"
                                 required
                               />
@@ -1181,7 +1181,7 @@ export const AuthPage: React.FC = () => {
                                 type="text"
                                 value={indState}
                                 onChange={(e) => setIndState(e.target.value)}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                 placeholder="Karnataka"
                                 required
                               />
@@ -1195,7 +1195,7 @@ export const AuthPage: React.FC = () => {
                                 type="password"
                                 value={indPassword}
                                 onChange={(e) => setIndPassword(e.target.value)}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                 placeholder="Min 6 characters"
                                 minLength={6}
                                 required
@@ -1207,7 +1207,7 @@ export const AuthPage: React.FC = () => {
                                 type="password"
                                 value={indConfirmPassword}
                                 onChange={(e) => setIndConfirmPassword(e.target.value)}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                 placeholder="Retype password"
                                 required
                               />
@@ -1219,7 +1219,7 @@ export const AuthPage: React.FC = () => {
                               type="checkbox"
                               checked={indAgree}
                               onChange={(e) => setIndAgree(e.target.checked)}
-                              className="rounded border-[#E9ECEF] text-[#FFC107] focus:ring-[#FFC107] focus:ring-offset-0 mt-0.5"
+                              className="rounded border-[#E9ECEF] text-primary focus:ring-primary focus:ring-offset-0 mt-0.5"
                               required
                             />
                             <span>I Agree To Terms &amp; Conditions and privacy policy of ARCUS Groups.</span>
@@ -1228,7 +1228,7 @@ export const AuthPage: React.FC = () => {
                           <button
                             type="submit"
                             disabled={indLoading}
-                            className="w-full bg-[#FFC107] hover:bg-[#fabd00] text-[#0A0A0A] font-bold h-11 rounded-xl transition-all shadow disabled:opacity-50 mt-sm"
+                            className="w-full bg-primary hover:bg-[#fabd00] text-[#0A0A0A] font-bold h-11 rounded transition-all shadow disabled:opacity-50 mt-sm"
                           >
                             {indLoading ? 'Creating Account...' : 'Create Account'}
                           </button>
@@ -1239,7 +1239,7 @@ export const AuthPage: React.FC = () => {
                       {accountType === 'Business' && (
                         <form onSubmit={handleBusinessSubmit} className="space-y-md border-t border-[#E9ECEF] pt-lg">
                           <h3 className="font-bold text-[#0A0A0A] text-sm font-sans flex items-center gap-xs">
-                            <span className="material-symbols-outlined text-[#FFC107] text-md">business_center</span>
+                            <span className="material-symbols-outlined text-primary text-md">business_center</span>
                             Business Information
                           </h3>
 
@@ -1256,7 +1256,7 @@ export const AuthPage: React.FC = () => {
                                 type="text"
                                 value={busGst}
                                 onChange={(e) => setBusGst(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0 flex-1 uppercase"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0 flex-1 uppercase"
                                 placeholder="e.g. 29GGGGG1314R9Z6"
                                 required
                               />
@@ -1264,7 +1264,7 @@ export const AuthPage: React.FC = () => {
                                 type="button"
                                 onClick={handleVerifyGst}
                                 disabled={gstVerifying}
-                                className="bg-[#0A0A0A] text-white hover:bg-[#212529] font-bold px-lg rounded-xl h-11 text-xs transition-colors shadow disabled:opacity-50 whitespace-nowrap"
+                                className="bg-[#0A0A0A] text-white hover:bg-[#212529] font-bold px-lg rounded h-11 text-xs transition-colors shadow disabled:opacity-50 whitespace-nowrap"
                               >
                                 {gstVerifying ? 'Verifying...' : 'Verify GST'}
                               </button>
@@ -1273,7 +1273,7 @@ export const AuthPage: React.FC = () => {
                           </div>
 
                           {gstVerified && (
-                            <div className="bg-green-50 border border-green-600/10 rounded-xl p-md space-y-xs transition-all animate-[fadeIn_0.3s_ease-out]">
+                            <div className="bg-green-50 border border-green-600/10 rounded p-md space-y-xs transition-all animate-[fadeIn_0.3s_ease-out]">
                               <p className="text-xs text-green-700 font-bold flex items-center gap-xs">
                                 <span className="material-symbols-outlined text-sm">check_circle</span>
                                 GST Verified: {busName}
@@ -1300,7 +1300,7 @@ export const AuthPage: React.FC = () => {
                               type="text"
                               value={busName}
                               onChange={(e) => setBusName(e.target.value)}
-                              className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                              className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                               placeholder="Business Name"
                               required
                             />
@@ -1315,7 +1315,7 @@ export const AuthPage: React.FC = () => {
                                 type="text"
                                 value={busContactName}
                                 onChange={(e) => setBusContactName(e.target.value)}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                 placeholder="Contact Name"
                                 required
                               />
@@ -1326,7 +1326,7 @@ export const AuthPage: React.FC = () => {
                                 type="tel"
                                 value={busContactPhone}
                                 onChange={(e) => setBusContactPhone(e.target.value)}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                 placeholder="9999988888"
                                 required
                               />
@@ -1339,7 +1339,7 @@ export const AuthPage: React.FC = () => {
                               type="email"
                               value={busContactEmail}
                               onChange={(e) => setBusContactEmail(e.target.value)}
-                              className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                              className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                               placeholder="name@company.com"
                               required
                             />
@@ -1352,7 +1352,7 @@ export const AuthPage: React.FC = () => {
                                 type="password"
                                 value={busPassword}
                                 onChange={(e) => setBusPassword(e.target.value)}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                 placeholder="Min 6 characters"
                                 minLength={6}
                                 required
@@ -1364,7 +1364,7 @@ export const AuthPage: React.FC = () => {
                                 type="password"
                                 value={busConfirmPassword}
                                 onChange={(e) => setBusConfirmPassword(e.target.value)}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                 placeholder="Retype password"
                                 required
                               />
@@ -1372,20 +1372,20 @@ export const AuthPage: React.FC = () => {
                           </div>
 
                           {/* Business Benefits Summary Sidebar */}
-                          <div className="bg-[#FFF8E1]/40 border border-[#FFC107]/20 rounded-xl p-md space-y-2">
-                            <p className="text-xs font-bold text-[#FFC107] font-label-caps uppercase tracking-wide">Included Corporate Benefits</p>
+                          <div className="bg-[#FFF8E1]/40 border border-primary/20 rounded p-md space-y-2">
+                            <p className="text-xs font-bold text-primary font-label-caps uppercase tracking-wide">Included Corporate Benefits</p>
                             <div className="grid grid-cols-2 gap-xs text-[11px] text-secondary font-medium">
-                              <span className="flex items-center gap-xs"><span className="material-symbols-outlined text-[14px] text-[#FFC107]">receipt_long</span> GST Tax Invoicing</span>
-                              <span className="flex items-center gap-xs"><span className="material-symbols-outlined text-[14px] text-[#FFC107]">sell</span> Tiered Bulk Pricing</span>
-                              <span className="flex items-center gap-xs"><span className="material-symbols-outlined text-[14px] text-[#FFC107]">text_snippet</span> Digital RFQ Submissions</span>
-                              <span className="flex items-center gap-xs"><span className="material-symbols-outlined text-[14px] text-[#FFC107]">dashboard</span> Procurement Manager</span>
+                              <span className="flex items-center gap-xs"><span className="material-symbols-outlined text-[14px] text-primary">receipt_long</span> GST Tax Invoicing</span>
+                              <span className="flex items-center gap-xs"><span className="material-symbols-outlined text-[14px] text-primary">sell</span> Tiered Bulk Pricing</span>
+                              <span className="flex items-center gap-xs"><span className="material-symbols-outlined text-[14px] text-primary">text_snippet</span> Digital RFQ Submissions</span>
+                              <span className="flex items-center gap-xs"><span className="material-symbols-outlined text-[14px] text-primary">dashboard</span> Procurement Manager</span>
                             </div>
                           </div>
 
                           <button
                             type="submit"
                             disabled={busLoading}
-                            className="w-full bg-[#FFC107] hover:bg-[#fabd00] text-[#0A0A0A] font-bold h-11 rounded-xl transition-all shadow disabled:opacity-50 mt-sm"
+                            className="w-full bg-primary hover:bg-[#fabd00] text-[#0A0A0A] font-bold h-11 rounded transition-all shadow disabled:opacity-50 mt-sm"
                           >
                             {busLoading ? 'Creating Account...' : 'Create Business Account'}
                           </button>
@@ -1396,7 +1396,7 @@ export const AuthPage: React.FC = () => {
                       {accountType === 'Professional' && (
                         <form onSubmit={handleProfessionalSubmit} className="space-y-md border-t border-[#E9ECEF] pt-lg">
                           <h3 className="font-bold text-[#0A0A0A] text-sm font-sans flex items-center gap-xs">
-                            <span className="material-symbols-outlined text-[#FFC107] text-md">engineering</span>
+                            <span className="material-symbols-outlined text-primary text-md">engineering</span>
                             Professional Information
                           </h3>
 
@@ -1413,7 +1413,7 @@ export const AuthPage: React.FC = () => {
                                 type="text"
                                 value={proName}
                                 onChange={(e) => setProName(e.target.value)}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                 placeholder="Full Name"
                                 required
                               />
@@ -1424,7 +1424,7 @@ export const AuthPage: React.FC = () => {
                                 type="text"
                                 value={proBusinessName}
                                 onChange={(e) => setProBusinessName(e.target.value)}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                 placeholder="e.g. Apex Electricals"
                                 required
                               />
@@ -1438,7 +1438,7 @@ export const AuthPage: React.FC = () => {
                                 type="email"
                                 value={proEmail}
                                 onChange={(e) => setProEmail(e.target.value)}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                 placeholder="name@company.com"
                                 required
                               />
@@ -1449,7 +1449,7 @@ export const AuthPage: React.FC = () => {
                                 type="tel"
                                 value={proPhone}
                                 onChange={(e) => setProPhone(e.target.value)}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                 placeholder="9999988888"
                                 required
                               />
@@ -1462,7 +1462,7 @@ export const AuthPage: React.FC = () => {
                               <select
                                 value={proCategory}
                                 onChange={(e) => setProCategory(e.target.value)}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                               >
                                 <option value="Plumbing">Plumbing</option>
                                 <option value="Electrical">Electrical</option>
@@ -1480,7 +1480,7 @@ export const AuthPage: React.FC = () => {
                                 type="number"
                                 value={proExperience}
                                 onChange={(e) => setProExperience(e.target.value)}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                 placeholder="e.g. 5"
                                 required
                               />
@@ -1494,7 +1494,7 @@ export const AuthPage: React.FC = () => {
                                 type="text"
                                 value={proCity}
                                 onChange={(e) => setProCity(e.target.value)}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                 placeholder="Mumbai"
                                 required
                               />
@@ -1505,7 +1505,7 @@ export const AuthPage: React.FC = () => {
                                 type="text"
                                 value={proState}
                                 onChange={(e) => setProState(e.target.value)}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                 placeholder="Maharashtra"
                                 required
                               />
@@ -1519,7 +1519,7 @@ export const AuthPage: React.FC = () => {
                                 type="password"
                                 value={proPassword}
                                 onChange={(e) => setProPassword(e.target.value)}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                 placeholder="Min 6 characters"
                                 minLength={6}
                                 required
@@ -1531,7 +1531,7 @@ export const AuthPage: React.FC = () => {
                                 type="password"
                                 value={proConfirmPassword}
                                 onChange={(e) => setProConfirmPassword(e.target.value)}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                 placeholder="Retype password"
                                 required
                               />
@@ -1546,7 +1546,7 @@ export const AuthPage: React.FC = () => {
                                 type="text"
                                 value={proGst}
                                 onChange={(e) => setProGst(e.target.value.toUpperCase())}
-                                className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0 uppercase"
+                                className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0 uppercase"
                                 placeholder="GSTIN"
                               />
                             </div>
@@ -1557,7 +1557,7 @@ export const AuthPage: React.FC = () => {
                                   type="url"
                                   value={proWebsite}
                                   onChange={(e) => setProWebsite(e.target.value)}
-                                  className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                  className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                   placeholder="https://company.com"
                                 />
                               </div>
@@ -1567,7 +1567,7 @@ export const AuthPage: React.FC = () => {
                                   type="url"
                                   value={proPortfolio}
                                   onChange={(e) => setProPortfolio(e.target.value)}
-                                  className="bg-white border border-[#E9ECEF] rounded-xl h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                                  className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                                   placeholder="https://behance.net/portfolio"
                                 />
                               </div>
@@ -1577,7 +1577,7 @@ export const AuthPage: React.FC = () => {
                           <button
                             type="submit"
                             disabled={proLoading}
-                            className="w-full bg-[#FFC107] hover:bg-[#fabd00] text-[#0A0A0A] font-bold h-11 rounded-xl transition-all shadow disabled:opacity-50 mt-sm"
+                            className="w-full bg-primary hover:bg-[#fabd00] text-[#0A0A0A] font-bold h-11 rounded transition-all shadow disabled:opacity-50 mt-sm"
                           >
                             {proLoading ? 'Joining...' : 'Join As Professional'}
                           </button>

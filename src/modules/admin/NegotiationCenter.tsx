@@ -49,7 +49,7 @@ export const NegotiationCenter: React.FC<Props> = ({ rfq, quotations, onBack }) 
   const qB = quotations.find(q => q.id === vBId);
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6 text-xs text-slate-800 text-left">
+    <div className="bg-white border border-slate-200 rounded p-6 shadow-sm space-y-6 text-xs text-slate-800 text-left">
       {/* Header */}
       <div className="flex justify-between items-center border-b pb-3">
         <div>
@@ -147,7 +147,7 @@ export const NegotiationCenter: React.FC<Props> = ({ rfq, quotations, onBack }) 
         </div>
 
         {qA && qB && (
-          <div className="border border-slate-150 rounded-xl overflow-hidden shadow-sm">
+          <div className="border border-slate-150 rounded overflow-hidden shadow-sm">
             <table className="w-full text-xs text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[9px]">

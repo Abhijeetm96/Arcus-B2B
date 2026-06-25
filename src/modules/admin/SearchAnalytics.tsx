@@ -36,14 +36,14 @@ export const SearchAnalytics: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center py-xl">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#FFC107]"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   if (error || !analytics) {
     return (
-      <div className="bg-red-50 text-red-800 p-md rounded-2xl border border-red-200">
+      <div className="bg-red-50 text-red-800 p-md rounded border border-red-200">
         <p className="font-semibold">Error: {error || 'Could not load search insights.'}</p>
       </div>
     );
@@ -53,8 +53,8 @@ export const SearchAnalytics: React.FC = () => {
     <div className="space-y-lg text-left">
       {/* Telemetry Highlight Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
-        <div className="bg-white border border-slate-200 p-lg rounded-2xl shadow-sm flex items-center gap-md">
-          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center">
+        <div className="bg-white border border-slate-200 p-lg rounded shadow-sm flex items-center gap-md">
+          <div className="w-12 h-12 rounded bg-amber-50 text-amber-500 flex items-center justify-center">
             <span className="material-symbols-outlined text-[28px]">search</span>
           </div>
           <div>
@@ -63,8 +63,8 @@ export const SearchAnalytics: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 p-lg rounded-2xl shadow-sm flex items-center gap-md">
-          <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center">
+        <div className="bg-white border border-slate-200 p-lg rounded shadow-sm flex items-center gap-md">
+          <div className="w-12 h-12 rounded bg-blue-50 text-blue-500 flex items-center justify-center">
             <span className="material-symbols-outlined text-[28px]">manage_search</span>
           </div>
           <div>
@@ -73,8 +73,8 @@ export const SearchAnalytics: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 p-lg rounded-2xl shadow-sm flex items-center gap-md">
-          <div className="w-12 h-12 rounded-xl bg-green-50 text-green-500 flex items-center justify-center">
+        <div className="bg-white border border-slate-200 p-lg rounded shadow-sm flex items-center gap-md">
+          <div className="w-12 h-12 rounded bg-green-50 text-green-500 flex items-center justify-center">
             <span className="material-symbols-outlined text-[28px]">ads_click</span>
           </div>
           <div>
@@ -88,7 +88,7 @@ export const SearchAnalytics: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg">
         {/* Top Search Queries Table */}
-        <div className="border border-slate-200 rounded-2xl p-lg bg-white shadow-sm space-y-md">
+        <div className="border border-slate-200 rounded p-lg bg-white shadow-sm space-y-md">
           <div>
             <h4 className="font-extrabold text-slate-900 text-body-md">Top Catalogs Searched</h4>
             <p className="text-xs text-slate-400 font-semibold mt-0.5">Most common buyer search terms & intent</p>
@@ -111,7 +111,7 @@ export const SearchAnalytics: React.FC = () => {
                       <td className="px-md py-sm font-bold text-slate-900">"{q.query}"</td>
                       <td className="px-md py-sm text-slate-500 font-semibold">{q.count}</td>
                       <td className="px-md py-sm text-slate-500 font-semibold">{q.clickedCount || 0}</td>
-                      <td className="px-md py-sm text-right font-black text-[#FFC107]">{ctr}%</td>
+                      <td className="px-md py-sm text-right font-black text-primary">{ctr}%</td>
                     </tr>
                   );
                 })}
@@ -126,7 +126,7 @@ export const SearchAnalytics: React.FC = () => {
         </div>
 
         {/* Zero Results Queries Table */}
-        <div className="border border-slate-200 rounded-2xl p-lg bg-white shadow-sm space-y-md">
+        <div className="border border-slate-200 rounded p-lg bg-white shadow-sm space-y-md">
           <div>
             <h4 className="font-extrabold text-red-700 flex items-center gap-xs text-body-md">
               <span className="material-symbols-outlined text-[20px] text-red-500">warning</span>

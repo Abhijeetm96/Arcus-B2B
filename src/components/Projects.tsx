@@ -135,7 +135,7 @@ export default function Projects() {
       <section className="w-full bg-[#1a1c1c] text-white py-[80px] md:py-[112px] border-b border-surface-variant relative overflow-hidden">
         <div className="absolute right-0 top-0 h-full w-1/3 bg-primary/5 skew-x-12 translate-x-1/3 pointer-events-none"></div>
         <div className="max-w-[1440px] mx-auto px-lg text-left flex flex-col gap-md relative z-10">
-          <span className="bg-[#FFC107] text-[#0A0A0A] font-bold px-md py-1 rounded w-fit text-[11px] font-label-caps tracking-wider">
+          <span className="bg-primary text-[#0A0A0A] font-bold px-md py-1 rounded w-fit text-[11px] font-label-caps tracking-wider">
             PROJECT PORTFOLIO
           </span>
           <h1 className="font-sans font-extrabold text-[40px] md:text-[56px] leading-[1.1] max-w-2xl text-white">
@@ -156,8 +156,8 @@ export default function Projects() {
               onClick={() => setActiveFilter(filter)}
               className={`px-xl py-3 rounded-full text-xs font-bold font-label-caps transition-all select-none border ${
                 activeFilter === filter
-                  ? 'bg-[#FFC107] text-[#0A0A0A] border-[#FFC107] shadow-sm'
-                  : 'bg-white text-secondary border-surface-variant hover:border-[#FFC107]'
+                  ? 'bg-primary text-[#0A0A0A] border-primary shadow-sm'
+                  : 'bg-white text-secondary border-surface-variant hover:border-primary'
               }`}
             >
               {filter}
@@ -172,7 +172,7 @@ export default function Projects() {
           {filteredProjects.map((project) => (
             <div
               key={project.id}
-              className="bg-white border border-surface-variant rounded-3xl overflow-hidden shadow-sm flex flex-col hover:shadow-md hover:border-[#FFC107] transition-all duration-300 group"
+              className="bg-white border border-surface-variant rounded-3xl overflow-hidden shadow-sm flex flex-col hover:shadow-md hover:border-primary transition-all duration-300 group"
             >
               {/* Image Banner */}
               <div className="w-full h-[260px] bg-surface-container relative overflow-hidden">
@@ -201,13 +201,13 @@ export default function Projects() {
                     <h3 className="font-bold text-[22px] text-[#0A0A0A] leading-snug">{project.title}</h3>
                   </div>
                   
-                  <div className="text-xs space-y-1.5 text-secondary border-l-2 border-[#FFC107] pl-md">
+                  <div className="text-xs space-y-1.5 text-secondary border-l-2 border-primary pl-md">
                     <p><strong>Client:</strong> {project.client}</p>
                     <p className="leading-relaxed"><strong>Scope:</strong> {project.scope}</p>
                   </div>
 
                   {/* Materials Supplied Box */}
-                  <div className="bg-[#F8F9FA] border border-surface-variant p-md rounded-2xl space-y-sm">
+                  <div className="bg-[#F8F9FA] border border-surface-variant p-md rounded space-y-sm">
                     <p className="text-[10px] font-bold text-on-surface uppercase font-label-caps tracking-wider flex items-center gap-xs">
                       <span className="material-symbols-outlined text-[16px] text-primary">local_mall</span>
                       Materials Supplied
@@ -218,14 +218,14 @@ export default function Projects() {
                           <a
                             key={idx}
                             href={mat.link}
-                            className="bg-white border border-surface-variant hover:border-[#FFC107] px-sm py-1 rounded-lg text-xs font-medium text-primary hover:text-on-surface flex items-center gap-1 transition-all"
+                            className="bg-white border border-surface-variant hover:border-primary px-sm py-1 rounded text-xs font-medium text-primary hover:text-on-surface flex items-center gap-1 transition-all"
                           >
                             {mat.name} <span className="text-[10px] text-secondary font-bold">({mat.qty})</span>
                           </a>
                         ) : (
                           <span
                             key={idx}
-                            className="bg-white border border-surface-variant px-sm py-1 rounded-lg text-xs font-medium text-[#0A0A0A] flex items-center gap-1"
+                            className="bg-white border border-surface-variant px-sm py-1 rounded text-xs font-medium text-[#0A0A0A] flex items-center gap-1"
                           >
                             {mat.name} <span className="text-[10px] text-secondary font-bold">({mat.qty})</span>
                           </span>
@@ -237,7 +237,7 @@ export default function Projects() {
 
                 <button
                   onClick={() => handleInquireProject(project.title)}
-                  className="w-full h-11 border border-[#0A0A0A] text-[#0A0A0A] font-bold rounded-xl hover:bg-surface-container transition-colors flex items-center justify-center gap-xs font-label-caps text-xs"
+                  className="w-full h-11 border border-[#0A0A0A] text-[#0A0A0A] font-bold rounded hover:bg-surface-container transition-colors flex items-center justify-center gap-xs font-label-caps text-xs"
                 >
                   <span className="material-symbols-outlined text-[16px]">info</span>
                   Inquire for Similar Project
@@ -255,7 +255,7 @@ export default function Projects() {
           
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-xxl items-center">
             <div className="space-y-xl">
-              <span className="bg-[#FFC107] text-[#0A0A0A] font-bold px-md py-1 rounded w-fit text-[10px] font-label-caps tracking-wider">
+              <span className="bg-primary text-[#0A0A0A] font-bold px-md py-1 rounded w-fit text-[10px] font-label-caps tracking-wider">
                 PARTNER WITH ARCUS
               </span>
               <div className="space-y-sm">
@@ -283,7 +283,7 @@ export default function Projects() {
               </div>
             </div>
 
-            <div className="bg-white border border-surface-variant text-on-surface p-lg md:p-xl rounded-2xl shadow-lg">
+            <div className="bg-white border border-surface-variant text-on-surface p-lg md:p-xl rounded shadow-sm">
               {submitted ? (
                 <div className="flex flex-col items-center justify-center py-[64px] text-center gap-md">
                   <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center border border-green-200">
@@ -295,7 +295,7 @@ export default function Projects() {
                   </p>
                   <button
                     onClick={() => setSubmitted(false)}
-                    className="mt-lg px-xl h-11 bg-[#121212] text-white font-bold rounded-xl hover:bg-on-surface transition-all font-label-caps text-xs"
+                    className="mt-lg px-xl h-11 bg-[#121212] text-white font-bold rounded hover:bg-on-surface transition-all font-label-caps text-xs"
                   >
                     Submit Another Project
                   </button>
@@ -303,7 +303,7 @@ export default function Projects() {
               ) : (
                 <>
                   <h4 className="font-bold text-[20px] text-[#0A0A0A] border-b border-surface-variant pb-sm mb-md flex items-center gap-xs">
-                    <span className="material-symbols-outlined text-[#FFC107] text-[20px]">folder_shared</span>
+                    <span className="material-symbols-outlined text-primary text-[20px]">folder_shared</span>
                     Project Scope Details
                   </h4>
                   <form onSubmit={handleFormSubmit} className="space-y-md">
@@ -315,7 +315,7 @@ export default function Projects() {
                           required
                           value={formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                          className="w-full h-10 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white"
+                          className="w-full h-10 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white"
                         />
                       </div>
                       <div>
@@ -325,7 +325,7 @@ export default function Projects() {
                           required
                           value={formData.phone}
                           onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                          className="w-full h-10 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white"
+                          className="w-full h-10 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white"
                         />
                       </div>
                     </div>
@@ -336,7 +336,7 @@ export default function Projects() {
                           type="email"
                           value={formData.email}
                           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                          className="w-full h-10 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white"
+                          className="w-full h-10 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white"
                         />
                       </div>
                       <div>
@@ -345,7 +345,7 @@ export default function Projects() {
                           type="text"
                           value={formData.company}
                           onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                          className="w-full h-10 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white"
+                          className="w-full h-10 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white"
                         />
                       </div>
                     </div>
@@ -357,7 +357,7 @@ export default function Projects() {
                         placeholder="e.g. Prestige Green Meadows false ceiling"
                         value={formData.projectName}
                         onChange={(e) => setFormData({ ...formData, projectName: e.target.value })}
-                        className="w-full h-10 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white"
+                        className="w-full h-10 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white"
                       />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
@@ -366,7 +366,7 @@ export default function Projects() {
                         <select
                           value={formData.estimatedBudget}
                           onChange={(e) => setFormData({ ...formData, estimatedBudget: e.target.value })}
-                          className="w-full h-10 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white"
+                          className="w-full h-10 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white"
                         >
                           <option value="Under ₹10 Lakhs">Under ₹10 Lakhs</option>
                           <option value="₹10 Lakhs - ₹50 Lakhs">₹10 Lakhs - ₹50 Lakhs</option>
@@ -379,7 +379,7 @@ export default function Projects() {
                         <select
                           value={formData.timeline}
                           onChange={(e) => setFormData({ ...formData, timeline: e.target.value })}
-                          className="w-full h-10 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white"
+                          className="w-full h-10 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white"
                         >
                           <option value="Immediate">Immediate</option>
                           <option value="Within 3 Months">Within 3 Months</option>
@@ -396,12 +396,12 @@ export default function Projects() {
                         placeholder="Describe the materials and services needed..."
                         value={formData.projectScope}
                         onChange={(e) => setFormData({ ...formData, projectScope: e.target.value })}
-                        className="w-full p-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white resize-none"
+                        className="w-full p-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white resize-none"
                       />
                     </div>
                     <button
                       type="submit"
-                      className="w-full h-12 bg-[#FFC107] hover:bg-[#fabd00] text-[#0A0A0A] font-bold rounded-xl flex items-center justify-center gap-xs transition-all shadow font-label-caps text-xs"
+                      className="w-full h-12 bg-primary hover:bg-[#fabd00] text-[#0A0A0A] font-bold rounded flex items-center justify-center gap-xs transition-all shadow font-label-caps text-xs"
                     >
                       <span className="material-symbols-outlined text-[18px]">engineering</span>
                       Submit Project Inquiry

@@ -51,7 +51,7 @@ export const IndividualDashboard: React.FC = () => {
     return (
       <div className="space-y-6 text-left">
         {/* Banner */}
-        <div className="bg-slate-900 text-white p-6 rounded-2xl relative overflow-hidden flex flex-col justify-center min-h-[140px] shadow-sm">
+        <div className="bg-slate-900 text-white p-6 rounded relative overflow-hidden flex flex-col justify-center min-h-[140px] shadow-sm">
           <div className="absolute right-0 top-0 h-full w-1/3 bg-primary/10 skew-x-12 translate-x-1/3 pointer-events-none"></div>
           <div className="flex items-center gap-3">
             <Award className="text-primary h-10 w-10" />
@@ -63,7 +63,7 @@ export const IndividualDashboard: React.FC = () => {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <MetricCard
             title="BuildPoints Balance"
             value={totalPoints.toLocaleString()}
@@ -141,7 +141,7 @@ export const IndividualDashboard: React.FC = () => {
               <CardTitle className="text-sm uppercase tracking-wider">Rewards Challenges</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-surface-secondary/50 p-4 rounded-xl border border-border flex justify-between items-center text-xs">
+              <div className="bg-surface-secondary/50 p-4 rounded border border-border flex justify-between items-center text-xs">
                 <div>
                   <h4 className="font-bold text-text-primary">Complete Profile Details</h4>
                   <p className="text-text-secondary text-[10px] mt-1">Earn bonus points for setting up your account profile.</p>

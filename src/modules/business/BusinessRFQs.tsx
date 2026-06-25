@@ -275,7 +275,7 @@ export const BusinessRFQs: React.FC = () => {
       
       {/* ─── List / Detail Navigation Header ─── */}
       {!selectedRfq && (
-        <div className="flex justify-between items-center bg-white p-4 border border-slate-200 rounded-2xl shadow-sm">
+        <div className="flex justify-between items-center bg-white p-4 border border-slate-200 rounded shadow-sm">
           <div>
             <h3 className="font-bold text-slate-800 text-sm">Commercial RFQs &amp; Quotes</h3>
             <p className="text-gray-500 text-xs mt-0.5">Submit material requirement sheets, track revisions, and accept finalized pricing agreements.</p>
@@ -285,7 +285,7 @@ export const BusinessRFQs: React.FC = () => {
               setErrorMessage('');
               setShowNewRfq(!showNewRfq);
             }}
-            className="px-4 py-2 bg-[#FFC107] text-[#0A0A0A] hover:bg-[#fabd00] font-bold rounded-lg text-xs flex items-center gap-2 shadow-sm border-0"
+            className="px-4 py-2 bg-primary text-[#0A0A0A] hover:bg-[#fabd00] font-bold rounded text-xs flex items-center gap-2 shadow-sm border-0"
           >
             <span className="material-symbols-outlined text-[16px]">{showNewRfq ? 'close' : 'add'}</span>
             {showNewRfq ? 'Cancel' : 'New B2B RFQ'}
@@ -295,7 +295,7 @@ export const BusinessRFQs: React.FC = () => {
 
       {/* ─── Create New RFQ Form Block ─── */}
       {showNewRfq && !selectedRfq && (
-        <form onSubmit={handleSubmitRfq} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6 text-xs">
+        <form onSubmit={handleSubmitRfq} className="bg-white border border-slate-200 rounded p-6 shadow-sm space-y-6 text-xs">
           <div className="border-b border-slate-100 pb-3">
             <h4 className="font-bold text-slate-800 text-sm">New Procurement RFQ Submission</h4>
             <p className="text-gray-400 text-[10px] mt-0.5">Define your project requirements. GST number and verified business context are auto-included.</p>
@@ -316,7 +316,7 @@ export const BusinessRFQs: React.FC = () => {
                 value={form.title}
                 onChange={e => setForm({ ...form, title: e.target.value })}
                 required
-                className="h-11 px-3 border border-gray-300 rounded focus:border-[#FFC107] focus:ring-0 text-slate-800 font-semibold"
+                className="h-11 px-3 border border-gray-300 rounded focus:border-primary focus:ring-0 text-slate-800 font-semibold"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -326,7 +326,7 @@ export const BusinessRFQs: React.FC = () => {
                 placeholder="e.g. Whitefield Residential Project"
                 value={form.projectName}
                 onChange={e => setForm({ ...form, projectName: e.target.value })}
-                className="h-11 px-3 border border-gray-300 rounded focus:border-[#FFC107] focus:ring-0 text-slate-800 font-semibold"
+                className="h-11 px-3 border border-gray-300 rounded focus:border-primary focus:ring-0 text-slate-800 font-semibold"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -336,7 +336,7 @@ export const BusinessRFQs: React.FC = () => {
                 placeholder="e.g. 180000"
                 value={form.budget}
                 onChange={e => setForm({ ...form, budget: e.target.value })}
-                className="h-11 px-3 border border-gray-300 rounded focus:border-[#FFC107] focus:ring-0 text-slate-800 font-semibold"
+                className="h-11 px-3 border border-gray-300 rounded focus:border-primary focus:ring-0 text-slate-800 font-semibold"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -345,7 +345,7 @@ export const BusinessRFQs: React.FC = () => {
                 type="date"
                 value={form.deliveryDate}
                 onChange={e => setForm({ ...form, deliveryDate: e.target.value })}
-                className="h-11 px-3 border border-gray-300 rounded focus:border-[#FFC107] focus:ring-0 text-slate-800 font-semibold"
+                className="h-11 px-3 border border-gray-300 rounded focus:border-primary focus:ring-0 text-slate-800 font-semibold"
               />
             </div>
             <div className="flex flex-col gap-1 md:col-span-2">
@@ -356,7 +356,7 @@ export const BusinessRFQs: React.FC = () => {
                 placeholder="Full delivery location address"
                 value={form.deliveryAddress}
                 onChange={e => setForm({ ...form, deliveryAddress: e.target.value })}
-                className="h-11 px-3 border border-gray-300 rounded focus:border-[#FFC107] focus:ring-0 text-slate-800 font-semibold"
+                className="h-11 px-3 border border-gray-300 rounded focus:border-primary focus:ring-0 text-slate-800 font-semibold"
               />
             </div>
           </div>
@@ -455,13 +455,13 @@ export const BusinessRFQs: React.FC = () => {
               placeholder="e.g. Looking for credit terms. Repeat buyer."
               value={form.commercialNotes}
               onChange={e => setForm({ ...form, commercialNotes: e.target.value })}
-              className="p-3 border border-gray-300 rounded focus:border-[#FFC107] focus:ring-0 text-slate-800 font-semibold resize-none"
+              className="p-3 border border-gray-300 rounded focus:border-primary focus:ring-0 text-slate-800 font-semibold resize-none"
             />
           </div>
 
           <button
             type="submit"
-            className="px-6 py-3 bg-[#FFC107] hover:bg-[#fabd00] text-[#0A0A0A] font-bold rounded-lg text-xs font-label-caps uppercase tracking-wider border-0 shadow-sm"
+            className="px-6 py-3 bg-primary hover:bg-[#fabd00] text-[#0A0A0A] font-bold rounded text-xs font-label-caps uppercase tracking-wider border-0 shadow-sm"
           >
             Submit RFQ
           </button>
@@ -470,7 +470,7 @@ export const BusinessRFQs: React.FC = () => {
 
       {/* ─── RFQ List Block ─── */}
       {!showNewRfq && !selectedRfq && (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-white border border-slate-200 rounded shadow-sm overflow-hidden">
           {rfqs.length === 0 ? (
             <p className="p-12 text-center text-gray-500 text-xs">No RFQs submitted yet. Click 'New B2B RFQ' to start procuring.</p>
           ) : (
@@ -528,7 +528,7 @@ export const BusinessRFQs: React.FC = () => {
 
       {/* ─── RFQ Detail / Quotation Negotiation console ─── */}
       {selectedRfq && (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-6">
+        <div className="bg-white border border-slate-200 rounded shadow-sm p-6 space-y-6">
           {/* Header */}
           <div className="flex justify-between items-start border-b border-slate-100 pb-4">
             <div>
@@ -561,7 +561,7 @@ export const BusinessRFQs: React.FC = () => {
 
           {/* Success screen upon order conversion */}
           {successOrder && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center space-y-4">
+            <div className="bg-green-50 border border-green-200 rounded p-6 text-center space-y-4">
               <span className="material-symbols-outlined text-green-600 text-5xl">check_circle</span>
               <h4 className="text-lg font-bold text-green-900">Quotation Finalized &amp; Ordered!</h4>
               <p className="text-xs text-green-800 max-w-md mx-auto">
@@ -580,7 +580,7 @@ export const BusinessRFQs: React.FC = () => {
           )}
 
           {/* RFQ Specs Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs border border-slate-200 rounded-xl p-4 bg-slate-50/50">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs border border-slate-200 rounded p-4 bg-slate-50/50">
             <div>
               <span className="text-gray-400 font-bold uppercase tracking-wider text-[9px]">Buyer Details</span>
               <p className="font-semibold text-slate-800 mt-1">{selectedRfq.name}</p>
@@ -602,7 +602,7 @@ export const BusinessRFQs: React.FC = () => {
           {selectedRfq.items && selectedRfq.items.length > 0 && (
             <div className="space-y-2">
               <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider">Requested Material Specs</h4>
-              <div className="border border-slate-100 rounded-lg overflow-hidden">
+              <div className="border border-slate-100 rounded overflow-hidden">
                 <table className="w-full text-xs text-left border-collapse">
                   <thead>
                     <tr className="bg-slate-50 text-slate-500 font-bold uppercase text-[9px] border-b border-slate-150">
@@ -629,7 +629,7 @@ export const BusinessRFQs: React.FC = () => {
 
           {/* ─── Quotations Section ─── */}
           {quotations.length === 0 ? (
-            <div className="p-8 border border-dashed border-gray-200 rounded-lg text-center bg-gray-50/50">
+            <div className="p-8 border border-dashed border-gray-200 rounded text-center bg-gray-50/50">
               <span className="material-symbols-outlined text-gray-400 text-3xl">hourglass_empty</span>
               <h4 className="font-bold text-gray-700 text-xs mt-2">Quotation preparing</h4>
               <p className="text-gray-400 text-[10px] mt-1">An ARCUS procurement specialist is matching manufacturer catalogs to your sheet. You will receive an email/dashboard alert once V1 is issued.</p>
@@ -637,7 +637,7 @@ export const BusinessRFQs: React.FC = () => {
           ) : (
             <div className="space-y-4">
               {/* Version History Tab Selector */}
-              <div className="flex justify-between items-center bg-slate-900 text-white px-4 py-2.5 rounded-lg">
+              <div className="flex justify-between items-center bg-slate-900 text-white px-4 py-2.5 rounded">
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-amber-400 text-[18px]">gavel</span>
                   <span className="font-bold text-xs uppercase tracking-wider">ARCUS Custom Proposals</span>
@@ -663,7 +663,7 @@ export const BusinessRFQs: React.FC = () => {
 
               {/* Quotation Details display */}
               {selectedQuote && (
-                <div className="border border-slate-200 rounded-xl p-5 space-y-6 bg-white shadow-sm font-sans relative">
+                <div className="border border-slate-200 rounded p-5 space-y-6 bg-white shadow-sm font-sans relative">
                   
                   {/* Print Friendly Watermark/Badge */}
                   <div className="absolute top-4 right-4 print:hidden flex gap-2">
@@ -692,7 +692,7 @@ export const BusinessRFQs: React.FC = () => {
                   {/* Line Items Table */}
                   <div className="space-y-2">
                     <h5 className="font-bold text-slate-800 text-[10px] uppercase tracking-wider">Line Items Details</h5>
-                    <div className="border border-slate-150 rounded-lg overflow-hidden">
+                    <div className="border border-slate-150 rounded overflow-hidden">
                       <table className="w-full text-xs text-left border-collapse">
                         <thead>
                           <tr className="bg-slate-50 text-slate-600 font-bold uppercase text-[9px] border-b border-slate-200">
@@ -746,7 +746,7 @@ export const BusinessRFQs: React.FC = () => {
                     </div>
 
                     {/* Commercial Totals */}
-                    <div className="text-xs space-y-1.5 font-mono text-right bg-slate-50 p-4 rounded-xl">
+                    <div className="text-xs space-y-1.5 font-mono text-right bg-slate-50 p-4 rounded">
                       <div className="flex justify-between">
                         <span className="text-gray-500">Subtotal:</span>
                         <span className="font-semibold">₹{selectedQuote.subtotal.toLocaleString('en-IN')}</span>
@@ -792,20 +792,20 @@ export const BusinessRFQs: React.FC = () => {
                     <div className="flex flex-wrap gap-3 border-t border-slate-100 pt-5 justify-end">
                       <button
                         onClick={() => setShowDeclineModal(true)}
-                        className="px-5 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg font-bold text-xs uppercase tracking-wider border border-red-200 transition-colors"
+                        className="px-5 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 rounded font-bold text-xs uppercase tracking-wider border border-red-200 transition-colors"
                       >
                         Decline Quote
                       </button>
                       <button
                         onClick={() => setShowRenegotiateModal(true)}
-                        className="px-5 py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg font-bold text-xs uppercase tracking-wider border border-amber-200 transition-colors"
+                        className="px-5 py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded font-bold text-xs uppercase tracking-wider border border-amber-200 transition-colors"
                       >
                         Renegotiate Pricing
                       </button>
                       <button
                         onClick={handleAcceptQuotation}
                         disabled={actionLoading}
-                        className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold text-xs uppercase tracking-wider border-0 shadow-md flex items-center gap-1 transition-all"
+                        className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded font-bold text-xs uppercase tracking-wider border-0 shadow-md flex items-center gap-1 transition-all"
                       >
                         {actionLoading ? 'Processing...' : 'Accept & Order'}
                       </button>
@@ -821,7 +821,7 @@ export const BusinessRFQs: React.FC = () => {
       {/* ─── Modal Dialog: Decline Reason ─── */}
       {showDeclineModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <form onSubmit={handleRejectQuotation} className="bg-white rounded-xl p-5 max-w-sm w-full space-y-4 shadow-2xl text-xs">
+          <form onSubmit={handleRejectQuotation} className="bg-white rounded p-5 max-w-sm w-full space-y-4 shadow text-xs">
             <h4 className="text-sm font-bold text-slate-800 border-b pb-2">Decline Proposal</h4>
             <div className="flex flex-col gap-1">
               <label className="font-bold text-gray-500 uppercase tracking-wider text-[10px]">Reason for decline *</label>
@@ -862,7 +862,7 @@ export const BusinessRFQs: React.FC = () => {
       {/* ─── Modal Dialog: Renegotiate Comments ─── */}
       {showRenegotiateModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <form onSubmit={handleRenegotiateQuotation} className="bg-white rounded-xl p-5 max-w-sm w-full space-y-4 shadow-2xl text-xs">
+          <form onSubmit={handleRenegotiateQuotation} className="bg-white rounded p-5 max-w-sm w-full space-y-4 shadow text-xs">
             <h4 className="text-sm font-bold text-slate-800 border-b pb-2">Request Proposal Revision</h4>
             <p className="text-gray-400 text-[10px]">Provide target pricing expectations or commercial comments to help admins revise quotation totals.</p>
             <div className="flex flex-col gap-1">

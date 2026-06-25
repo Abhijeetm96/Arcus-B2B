@@ -196,13 +196,13 @@ export const ImportProducts: React.FC = () => {
     <div className="space-y-lg text-left">
       {/* Notifications */}
       {error && (
-        <div className="bg-red-50 text-red-800 p-md rounded-2xl border border-red-200 flex justify-between items-center animate-fade-in">
+        <div className="bg-red-50 text-red-800 p-md rounded border border-red-200 flex justify-between items-center animate-fade-in">
           <span>{error}</span>
           <button onClick={() => setError(null)} className="material-symbols-outlined text-[18px]">close</button>
         </div>
       )}
       {success && (
-        <div className="bg-green-50 text-green-800 p-md rounded-2xl border border-green-200 flex justify-between items-center animate-fade-in">
+        <div className="bg-green-50 text-green-800 p-md rounded border border-green-200 flex justify-between items-center animate-fade-in">
           <span>{success}</span>
           <button onClick={() => setSuccess(null)} className="material-symbols-outlined text-[18px]">close</button>
         </div>
@@ -213,7 +213,7 @@ export const ImportProducts: React.FC = () => {
         <button
           onClick={() => setActiveTab('import')}
           className={`flex items-center gap-xs px-lg py-md font-bold text-xs uppercase tracking-wider border-b-2 transition-all ${
-            activeTab === 'import' ? 'border-[#FFC107] text-[#FFC107]' : 'border-transparent text-slate-400 hover:text-slate-600'
+            activeTab === 'import' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-slate-600'
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">cloud_upload</span>
@@ -222,7 +222,7 @@ export const ImportProducts: React.FC = () => {
         <button
           onClick={() => setActiveTab('history')}
           className={`flex items-center gap-xs px-lg py-md font-bold text-xs uppercase tracking-wider border-b-2 transition-all ${
-            activeTab === 'history' ? 'border-[#FFC107] text-[#FFC107]' : 'border-transparent text-slate-400 hover:text-slate-600'
+            activeTab === 'history' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-slate-600'
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">history</span>
@@ -235,13 +235,13 @@ export const ImportProducts: React.FC = () => {
           {/* File Upload Panel */}
           <div className="lg:col-span-2 space-y-lg">
             {!previewData && !commitResult && (
-              <form onSubmit={handleUploadAndValidate} className="bg-white p-lg rounded-2xl border border-slate-200 shadow-sm space-y-md">
+              <form onSubmit={handleUploadAndValidate} className="bg-white p-lg rounded border border-slate-200 shadow-sm space-y-md">
                 <h3 className="font-extrabold text-slate-900 text-headline-h6">Upload Product Catalog</h3>
                 <p className="text-body-sm text-slate-400">Supported formats: Excel (.xlsx) and CSV. Maximum file size: 50MB.</p>
 
                 {/* Dropzone for catalog sheet */}
-                <div className="border-2 border-dashed border-slate-200 rounded-2xl p-xl flex flex-col items-center justify-center bg-slate-50/50 hover:bg-slate-50 transition-all cursor-pointer relative group">
-                  <span className="material-symbols-outlined text-slate-300 text-[56px] group-hover:text-[#FFC107] transition-all">upload_file</span>
+                <div className="border-2 border-dashed border-slate-200 rounded p-xl flex flex-col items-center justify-center bg-slate-50/50 hover:bg-slate-50 transition-all cursor-pointer relative group">
+                  <span className="material-symbols-outlined text-slate-300 text-[56px] group-hover:text-primary transition-all">upload_file</span>
                   <p className="text-body-sm text-slate-700 font-bold mt-sm">
                     {sheetFile ? sheetFile.name : 'Select or drag & drop catalog spreadsheet'}
                   </p>
@@ -256,9 +256,9 @@ export const ImportProducts: React.FC = () => {
                 </div>
 
                 {/* Dropzone for zipped images */}
-                <div className="border border-dashed border-slate-200 rounded-2xl p-md flex items-center justify-between bg-slate-50/30 hover:bg-slate-50 transition-all cursor-pointer relative group">
+                <div className="border border-dashed border-slate-200 rounded p-md flex items-center justify-between bg-slate-50/30 hover:bg-slate-50 transition-all cursor-pointer relative group">
                   <div className="flex items-center gap-md">
-                    <span className="material-symbols-outlined text-slate-400 group-hover:text-[#FFC107] transition-all text-[28px]">folder_zip</span>
+                    <span className="material-symbols-outlined text-slate-400 group-hover:text-primary transition-all text-[28px]">folder_zip</span>
                     <div className="text-left">
                       <p className="text-xs text-slate-700 font-bold">
                         {zipFile ? zipFile.name : 'Attach Image Archive ZIP (Optional)'}
@@ -288,7 +288,7 @@ export const ImportProducts: React.FC = () => {
                   <button
                     type="submit"
                     disabled={validating || !sheetFile}
-                    className="flex items-center gap-xs bg-primary-container text-on-primary-container hover:bg-[#fabd00] disabled:bg-slate-100 disabled:text-slate-400 px-xl h-12 rounded-xl font-extrabold text-sm transition-all shadow-sm"
+                    className="flex items-center gap-xs bg-primary-container text-on-primary-container hover:bg-[#fabd00] disabled:bg-slate-100 disabled:text-slate-400 px-xl h-12 rounded font-extrabold text-sm transition-all shadow-sm"
                   >
                     {validating ? (
                       <>
@@ -308,7 +308,7 @@ export const ImportProducts: React.FC = () => {
 
             {/* Validation Preview Screen */}
             {previewData && (
-              <div className="bg-white p-lg rounded-2xl border border-slate-200 shadow-sm space-y-lg animate-fade-in">
+              <div className="bg-white p-lg rounded border border-slate-200 shadow-sm space-y-lg animate-fade-in">
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-extrabold text-slate-900 text-headline-h6">Validation Summary</h3>
@@ -316,7 +316,7 @@ export const ImportProducts: React.FC = () => {
                   </div>
                   <button
                     onClick={() => setPreviewData(null)}
-                    className="px-md py-sm border border-slate-200 rounded-xl hover:bg-slate-50 text-xs font-bold text-slate-500"
+                    className="px-md py-sm border border-slate-200 rounded hover:bg-slate-50 text-xs font-bold text-slate-500"
                   >
                     Clear Preview
                   </button>
@@ -324,22 +324,22 @@ export const ImportProducts: React.FC = () => {
 
                 {/* Scorecards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-md">
-                  <div className="bg-slate-50 border border-slate-100 p-md rounded-2xl text-center">
+                  <div className="bg-slate-50 border border-slate-100 p-md rounded text-center">
                     <span className="material-symbols-outlined text-slate-400 text-[24px]">list_alt</span>
                     <p className="text-[10px] uppercase font-bold text-slate-400 mt-xs">Total Rows</p>
                     <p className="text-headline-h6 font-extrabold text-slate-900">{previewData.totalRows}</p>
                   </div>
-                  <div className="bg-green-50/50 border border-green-100 p-md rounded-2xl text-center">
+                  <div className="bg-green-50/50 border border-green-100 p-md rounded text-center">
                     <span className="material-symbols-outlined text-green-500 text-[24px]">check_circle</span>
                     <p className="text-[10px] uppercase font-bold text-green-600 mt-xs">Valid Rows</p>
                     <p className="text-headline-h6 font-extrabold text-green-700">{previewData.validCount}</p>
                   </div>
-                  <div className="bg-amber-50/50 border border-amber-100 p-md rounded-2xl text-center">
+                  <div className="bg-amber-50/50 border border-amber-100 p-md rounded text-center">
                     <span className="material-symbols-outlined text-amber-500 text-[24px]">warning</span>
                     <p className="text-[10px] uppercase font-bold text-amber-600 mt-xs">Warnings</p>
                     <p className="text-headline-h6 font-extrabold text-amber-700">{previewData.warningCount}</p>
                   </div>
-                  <div className="bg-red-50/50 border border-red-100 p-md rounded-2xl text-center">
+                  <div className="bg-red-50/50 border border-red-100 p-md rounded text-center">
                     <span className="material-symbols-outlined text-red-500 text-[24px]">error</span>
                     <p className="text-[10px] uppercase font-bold text-red-600 mt-xs">Errors</p>
                     <p className="text-headline-h6 font-extrabold text-red-700">{previewData.errorCount}</p>
@@ -348,7 +348,7 @@ export const ImportProducts: React.FC = () => {
 
                 {/* Images Attachment Report */}
                 {previewData.imagesReport && (
-                  <div className="bg-slate-50 p-md rounded-2xl border border-slate-200/60 space-y-sm text-xs">
+                  <div className="bg-slate-50 p-md rounded border border-slate-200/60 space-y-sm text-xs">
                     <div className="flex justify-between items-center border-b border-slate-200/60 pb-xs">
                       <span className="font-bold text-slate-950 flex items-center gap-xs">
                         <span className="material-symbols-outlined text-[16px] text-amber-500">photo_library</span>
@@ -382,13 +382,13 @@ export const ImportProducts: React.FC = () => {
                 )}
 
                 {/* Import Strategy Config Card */}
-                <div className="bg-[#FFC107]/5 border border-[#FFC107]/20 p-md rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-md items-center">
+                <div className="bg-primary/5 border border-primary/20 p-md rounded grid grid-cols-1 md:grid-cols-2 gap-md items-center">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-xs">Select Import Strategy *</label>
                     <select
                       value={importMode}
                       onChange={(e) => setImportMode(e.target.value as any)}
-                      className="w-full h-10 px-md border border-slate-200 rounded-xl bg-white focus:border-[#FFC107] focus:ring-0 text-xs font-bold text-slate-900"
+                      className="w-full h-10 px-md border border-slate-200 rounded bg-white focus:border-primary focus:ring-0 text-xs font-bold text-slate-900"
                     >
                       <option value="ADD_UPDATE">Add New + Update Existing (Recommended)</option>
                       <option value="ADD_NEW">Only Create New Products (Skip Existing)</option>
@@ -407,7 +407,7 @@ export const ImportProducts: React.FC = () => {
                         type="checkbox"
                         checked={autoCreateBrands}
                         onChange={(e) => setAutoCreateBrands(e.target.checked)}
-                        className="w-5 h-5 rounded border-slate-300 text-[#FFC107] focus:ring-[#FFC107]"
+                        className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary"
                       />
                       Create Brands Automatically
                     </label>
@@ -422,7 +422,7 @@ export const ImportProducts: React.FC = () => {
                       <span className="material-symbols-outlined text-[16px]">warning</span>
                       Smart Suggestions & Warnings ({previewData.warnings.length})
                     </h4>
-                    <div className="max-h-56 overflow-y-auto border border-amber-100 rounded-xl bg-amber-50/20 divide-y divide-amber-50">
+                    <div className="max-h-56 overflow-y-auto border border-amber-100 rounded bg-amber-50/20 divide-y divide-amber-50">
                       {previewData.warnings.slice(0, 100).map((w, idx) => (
                         <div key={idx} className="p-sm text-xs flex justify-between items-center">
                           <div>
@@ -451,13 +451,13 @@ export const ImportProducts: React.FC = () => {
                       </h4>
                       <button
                         onClick={() => handleDownloadErrorReport(previewData.importId)}
-                        className="flex items-center gap-xs border border-red-200 text-red-600 hover:bg-red-50 px-sm py-1 rounded-xl text-xs font-bold"
+                        className="flex items-center gap-xs border border-red-200 text-red-600 hover:bg-red-50 px-sm py-1 rounded text-xs font-bold"
                       >
                         <span className="material-symbols-outlined text-[14px]">download</span>
                         Download Error Sheet
                       </button>
                     </div>
-                    <div className="max-h-56 overflow-y-auto border border-red-100 rounded-xl bg-red-50/20 divide-y divide-red-50">
+                    <div className="max-h-56 overflow-y-auto border border-red-100 rounded bg-red-50/20 divide-y divide-red-50">
                       {previewData.errors.slice(0, 100).map((err, idx) => (
                         <div key={idx} className="p-sm text-xs">
                           <span className="font-bold text-red-500 mr-sm">Row {err.row}</span>
@@ -474,14 +474,14 @@ export const ImportProducts: React.FC = () => {
                 <div className="flex justify-end gap-sm pt-md border-t border-slate-100">
                   <button
                     onClick={() => setPreviewData(null)}
-                    className="px-lg h-12 rounded-xl border border-slate-200 hover:bg-slate-50 font-bold text-xs text-slate-500"
+                    className="px-lg h-12 rounded border border-slate-200 hover:bg-slate-50 font-bold text-xs text-slate-500"
                   >
                     Cancel Import
                   </button>
                   <button
                     onClick={handleConfirmImport}
                     disabled={committing || previewData.validCount === 0}
-                    className="flex items-center gap-xs bg-[#FFC107] text-slate-950 hover:bg-[#fabd00] disabled:bg-slate-100 disabled:text-slate-400 px-xl h-12 rounded-xl font-extrabold text-sm transition-all shadow-sm shadow-[#FFC107]/20"
+                    className="flex items-center gap-xs bg-primary text-slate-950 hover:bg-[#fabd00] disabled:bg-slate-100 disabled:text-slate-400 px-xl h-12 rounded font-extrabold text-sm transition-all shadow-sm shadow-[#FFC107]/20"
                   >
                     {committing ? (
                       <>
@@ -501,25 +501,25 @@ export const ImportProducts: React.FC = () => {
 
             {/* Post-Import Complete Screen */}
             {commitResult && (
-              <div className="bg-white p-lg rounded-2xl border border-slate-200 shadow-sm space-y-md text-center py-xl animate-fade-in">
+              <div className="bg-white p-lg rounded border border-slate-200 shadow-sm space-y-md text-center py-xl animate-fade-in">
                 <span className="material-symbols-outlined text-green-500 text-[64px] animate-bounce">task_alt</span>
                 <h3 className="font-extrabold text-slate-900 text-headline-h6">Catalog Synced Successfully!</h3>
                 <p className="text-body-sm text-slate-400 max-w-md mx-auto">{commitResult.auditMessage}</p>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-md max-w-lg mx-auto pt-md">
-                  <div className="bg-green-50/50 p-sm rounded-xl border border-green-100">
+                  <div className="bg-green-50/50 p-sm rounded border border-green-100">
                     <p className="text-[10px] text-green-600 font-bold">Added</p>
                     <p className="font-extrabold text-lg text-green-800">{commitResult.addedCount}</p>
                   </div>
-                  <div className="bg-blue-50/50 p-sm rounded-xl border border-blue-100">
+                  <div className="bg-blue-50/50 p-sm rounded border border-blue-100">
                     <p className="text-[10px] text-blue-600 font-bold">Updated</p>
                     <p className="font-extrabold text-lg text-blue-800">{commitResult.updatedCount}</p>
                   </div>
-                  <div className="bg-slate-50 p-sm rounded-xl border border-slate-100">
+                  <div className="bg-slate-50 p-sm rounded border border-slate-100">
                     <p className="text-[10px] text-slate-500 font-bold">Skipped</p>
                     <p className="font-extrabold text-lg text-slate-700">{commitResult.skippedCount}</p>
                   </div>
-                  <div className="bg-red-50/50 p-sm rounded-xl border border-red-100">
+                  <div className="bg-red-50/50 p-sm rounded border border-red-100">
                     <p className="text-[10px] text-red-650 font-bold">Failed</p>
                     <p className="font-extrabold text-lg text-red-800">{commitResult.failedCount}</p>
                   </div>
@@ -529,7 +529,7 @@ export const ImportProducts: React.FC = () => {
                   {commitResult.failedCount > 0 && (
                     <button
                       onClick={() => handleDownloadErrorReport(commitResult.importId)}
-                      className="flex items-center gap-xs border border-red-200 text-red-600 hover:bg-red-50 px-lg h-11 rounded-xl text-xs font-bold"
+                      className="flex items-center gap-xs border border-red-200 text-red-600 hover:bg-red-50 px-lg h-11 rounded text-xs font-bold"
                     >
                       <span className="material-symbols-outlined text-[16px]">download</span>
                       Download Failed Log
@@ -537,7 +537,7 @@ export const ImportProducts: React.FC = () => {
                   )}
                   <button
                     onClick={() => setCommitResult(null)}
-                    className="bg-[#FFC107] text-slate-950 px-lg h-11 rounded-xl font-bold text-xs hover:bg-[#fabd00]"
+                    className="bg-primary text-slate-950 px-lg h-11 rounded font-bold text-xs hover:bg-[#fabd00]"
                   >
                     Start New Import
                   </button>
@@ -549,15 +549,15 @@ export const ImportProducts: React.FC = () => {
           {/* Guidelines & Download Card */}
           <div className="space-y-lg">
             {/* Download Template Card */}
-            <div className="bg-slate-900 text-white p-lg rounded-2xl border border-slate-800 shadow-xl space-y-md">
-              <span className="material-symbols-outlined text-[#FFC107] text-[40px]">download_sheet</span>
+            <div className="bg-slate-900 text-white p-lg rounded border border-slate-800 shadow space-y-md">
+              <span className="material-symbols-outlined text-primary text-[40px]">download_sheet</span>
               <h3 className="font-extrabold text-md text-white">Import Templates</h3>
               <p className="text-xs text-slate-400">Download the pre-formatted Excel or CSV spreadsheet template to prepare your catalog data.</p>
               
               <div className="flex flex-col gap-sm pt-xs">
                 <button
                   onClick={() => handleTemplateDownload('xlsx')}
-                  className="flex items-center justify-between bg-slate-800 hover:bg-slate-700 p-sm rounded-xl text-xs font-bold transition-all border border-slate-700"
+                  className="flex items-center justify-between bg-slate-800 hover:bg-slate-700 p-sm rounded text-xs font-bold transition-all border border-slate-700"
                 >
                   <span className="flex items-center gap-xs">
                     <span className="material-symbols-outlined text-[18px] text-green-400">table_view</span>
@@ -567,7 +567,7 @@ export const ImportProducts: React.FC = () => {
                 </button>
                 <button
                   onClick={() => handleTemplateDownload('csv')}
-                  className="flex items-center justify-between bg-slate-800 hover:bg-slate-700 p-sm rounded-xl text-xs font-bold transition-all border border-slate-700"
+                  className="flex items-center justify-between bg-slate-800 hover:bg-slate-700 p-sm rounded text-xs font-bold transition-all border border-slate-700"
                 >
                   <span className="flex items-center gap-xs">
                     <span className="material-symbols-outlined text-[18px] text-slate-300">description</span>
@@ -579,8 +579,8 @@ export const ImportProducts: React.FC = () => {
             </div>
 
             {/* Business Rules Card */}
-            <div className="bg-white p-lg rounded-2xl border border-slate-200 shadow-sm space-y-md text-xs">
-              <h4 className="font-bold text-[#FFC107] uppercase tracking-wider text-[10px]">Business Rules & Formats</h4>
+            <div className="bg-white p-lg rounded border border-slate-200 shadow-sm space-y-md text-xs">
+              <h4 className="font-bold text-primary uppercase tracking-wider text-[10px]">Business Rules & Formats</h4>
               <ul className="space-y-sm text-slate-600 list-disc pl-md">
                 <li><strong className="text-slate-900">SKU Field</strong>: Must be unique. Duplicates are flagged.</li>
                 <li><strong className="text-slate-900">Auto-Mapping</strong>: The importer automatically maps headers like <span className="font-mono bg-slate-50 px-1">Name</span>, <span className="font-mono bg-slate-50 px-1">product_name</span>, etc.</li>
@@ -593,7 +593,7 @@ export const ImportProducts: React.FC = () => {
       )}
 
       {activeTab === 'history' && (
-        <div className="bg-white p-lg rounded-2xl border border-slate-200 shadow-sm space-y-md">
+        <div className="bg-white p-lg rounded border border-slate-200 shadow-sm space-y-md">
           <div className="flex justify-between items-center pb-md border-b border-slate-100">
             <div>
               <h3 className="font-extrabold text-slate-900 text-headline-h6">Import History History</h3>
@@ -610,7 +610,7 @@ export const ImportProducts: React.FC = () => {
 
           {historyLoading ? (
             <div className="flex justify-center py-xl">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#FFC107]"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -647,7 +647,7 @@ export const ImportProducts: React.FC = () => {
                         {h.productsFailed > 0 ? (
                           <button
                             onClick={() => handleDownloadErrorReport(h.id)}
-                            className="flex items-center gap-xs ml-auto border border-red-200 text-red-600 hover:bg-red-50 px-sm py-1 rounded-xl text-xs font-bold"
+                            className="flex items-center gap-xs ml-auto border border-red-200 text-red-600 hover:bg-red-50 px-sm py-1 rounded text-xs font-bold"
                           >
                             <span className="material-symbols-outlined text-[14px]">download</span>
                             Error Sheet

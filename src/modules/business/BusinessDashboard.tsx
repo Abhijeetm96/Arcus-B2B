@@ -30,7 +30,7 @@ export const BusinessDashboard: React.FC = () => {
     return (
       <div className="space-y-6 text-left">
         {/* Banner */}
-        <div className="bg-slate-900 text-white p-6 rounded-2xl relative overflow-hidden flex flex-col justify-center min-h-[140px] shadow-sm">
+        <div className="bg-slate-900 text-white p-6 rounded relative overflow-hidden flex flex-col justify-center min-h-[140px] shadow-sm">
           <div className="absolute right-0 top-0 h-full w-1/3 bg-primary/10 skew-x-12 translate-x-1/3 pointer-events-none"></div>
           <div className="flex items-center gap-3">
             <Building className="text-primary h-10 w-10" />
@@ -42,7 +42,7 @@ export const BusinessDashboard: React.FC = () => {
         </div>
 
         {/* Core Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <MetricCard
             title="GST Savings Input"
             value={formatCurrency(totalSpend * 0.18)}

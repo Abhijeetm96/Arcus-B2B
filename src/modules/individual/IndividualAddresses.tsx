@@ -53,7 +53,7 @@ export const IndividualAddresses: React.FC = () => {
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl p-lg shadow-sm space-y-md text-left">
+    <div className="bg-white border border-slate-200 rounded p-lg shadow-sm space-y-md text-left">
       <div className="flex justify-between items-center border-b border-slate-100 pb-sm">
         <div>
           <h3 className="font-bold text-md text-slate-800">Saved Delivery Addresses</h3>
@@ -61,7 +61,7 @@ export const IndividualAddresses: React.FC = () => {
         </div>
         <button
           onClick={handleAddAddress}
-          className="px-md py-1.5 bg-[#FFC107] text-[#0A0A0A] hover:bg-[#fabd00] font-bold rounded-lg text-xs transition-colors flex items-center gap-xs shadow-sm"
+          className="px-md py-1.5 bg-primary text-[#0A0A0A] hover:bg-[#fabd00] font-bold rounded text-xs transition-colors flex items-center gap-xs shadow-sm"
         >
           <span className="material-symbols-outlined text-[16px]">add</span>
           Add New Address
@@ -70,10 +70,10 @@ export const IndividualAddresses: React.FC = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-md pt-xs">
         {addresses.map((addr, idx) => (
-          <div key={idx} className="bg-slate-50 p-md rounded-2xl border border-slate-200 flex flex-col justify-between gap-md relative text-left text-slate-800 font-semibold">
+          <div key={idx} className="bg-slate-50 p-md rounded border border-slate-200 flex flex-col justify-between gap-md relative text-left text-slate-800 font-semibold">
             <div className="space-y-xs">
               <div className="flex items-center gap-sm">
-                <span className="material-symbols-outlined text-[#FFC107] text-[20px]">location_on</span>
+                <span className="material-symbols-outlined text-primary text-[20px]">location_on</span>
                 <span className="text-xs font-bold text-slate-800 font-label-caps uppercase tracking-wider">
                   {idx === 0 ? 'Default Delivery Address' : `Address #${idx + 1}`}
                 </span>
@@ -83,7 +83,7 @@ export const IndividualAddresses: React.FC = () => {
             <div className="flex gap-sm border-t border-slate-200 pt-sm">
               <button
                 onClick={() => handleEditAddress(idx, addr)}
-                className="text-[10px] font-bold text-secondary hover:text-[#FFC107] hover:underline uppercase tracking-wide"
+                className="text-[10px] font-bold text-secondary hover:text-primary hover:underline uppercase tracking-wide"
               >
                 Edit
               </button>

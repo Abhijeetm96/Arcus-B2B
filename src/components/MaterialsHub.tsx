@@ -665,7 +665,7 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
                   step="50" 
                   value={priceRange} 
                   onChange={(e) => setPriceRange(parseInt(e.target.value, 10))}
-                  className="w-full h-1.5 bg-[#E9ECEF] rounded-lg appearance-none cursor-pointer accent-primary"
+                  className="w-full h-1.5 bg-[#E9ECEF] rounded appearance-none cursor-pointer accent-primary"
                 />
                 <div className="flex justify-between text-xs text-[#6C757D] font-bold">
                   <span>₹0</span>
@@ -681,20 +681,20 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
                     <button
                       key={rating}
                       onClick={() => setMinRating(minRating === rating ? 0 : rating)}
-                      className={`flex items-center gap-xs text-body-sm w-full text-left py-xs px-sm rounded-lg transition-all ${
+                      className={`flex items-center gap-xs text-body-sm w-full text-left py-xs px-sm rounded transition-all ${
                         minRating === rating 
-                          ? 'bg-[#FFC107]/10 text-[#0A0A0A] font-bold border border-[#FFC107]/30' 
+                          ? 'bg-primary/10 text-[#0A0A0A] font-bold border border-primary/30' 
                           : 'hover:bg-[#E9ECEF]/50 text-[#495057] font-medium border border-transparent'
                       }`}
                     >
-                      <div className="flex items-center text-[#FFC107]">
+                      <div className="flex items-center text-primary">
                         {Array.from({ length: 5 }).map((_, i) => {
                           const isFilled = i < Math.floor(rating);
                           const isHalf = !isFilled && i < rating;
                           return (
                             <span
                               key={i}
-                              className="material-symbols-outlined text-[16px] text-[#FFC107]"
+                              className="material-symbols-outlined text-[16px] text-primary"
                               style={{ fontVariationSettings: isFilled ? "'FILL' 1" : "'FILL' 0" }}
                             >
                               {isHalf ? 'star_half' : 'star'}
@@ -755,7 +755,7 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
                   <select 
                     value={sortOption}
                     onChange={(e) => setSortOption(e.target.value)}
-                    className="border border-[#CED4DA] bg-white rounded-lg px-md h-9 text-body-sm font-bold text-[#0A0A0A] focus:border-primary outline-none cursor-pointer"
+                    className="border border-[#CED4DA] bg-white rounded px-md h-9 text-body-sm font-bold text-[#0A0A0A] focus:border-primary outline-none cursor-pointer"
                   >
                     <option value="Popularity">Popularity</option>
                     <option value="Price: Low to High">Price: Low to High</option>
@@ -768,7 +768,7 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
                   {[1, 2, 3].map(i => (
                     <div key={i} className="animate-pulse bg-white border border-[#E9ECEF] rounded-[24px] h-[360px] p-lg flex flex-col justify-between">
-                      <div className="w-full aspect-square bg-[#E9ECEF] rounded-lg"></div>
+                      <div className="w-full aspect-square bg-[#E9ECEF] rounded"></div>
                       <div className="h-4 bg-[#E9ECEF] rounded w-2/3 mt-md"></div>
                       <div className="h-6 bg-[#E9ECEF] rounded w-1/3 mt-sm"></div>
                     </div>
@@ -814,7 +814,7 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
                               {product.unit}
                             </span>
                           </span>
-                          <div className="bg-[#0A0A0A] text-white p-2 rounded-lg group-hover:bg-primary transition-colors flex items-center justify-center">
+                          <div className="bg-[#0A0A0A] text-white p-2 rounded group-hover:bg-primary transition-colors flex items-center justify-center">
                             <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
                           </div>
                         </div>
@@ -918,7 +918,7 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
           </nav>
 
           {/* Hero Banner */}
-          <div className="bg-[#1a1c1c] text-white rounded-[32px] p-xl md:p-xxl flex flex-col md:flex-row items-center justify-between gap-xl mb-4xl border border-white/5 relative overflow-hidden shadow-lg">
+          <div className="bg-[#1a1c1c] text-white rounded-[32px] p-xl md:p-xxl flex flex-col md:flex-row items-center justify-between gap-xl mb-4xl border border-white/5 relative overflow-hidden shadow-sm">
             <div className="absolute right-0 top-0 h-full w-1/3 bg-primary/10 skew-x-12 translate-x-1/2 pointer-events-none"></div>
             <div className="space-y-md relative z-10 max-w-3xl">
               <span className="material-symbols-outlined text-primary text-[48px] block">
@@ -939,7 +939,7 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
                   document.getElementById('rfq-form-section')?.scrollIntoView({ behavior: 'smooth' })
                 }, 100)
               }}
-              className="bg-primary text-[#0A0A0A] font-bold px-xxl py-lg rounded-xl hover:bg-[#fabd00] hover:scale-105 transition-all shrink-0 relative z-10 flex items-center justify-center"
+              className="bg-primary text-[#0A0A0A] font-bold px-xxl py-lg rounded hover:bg-[#fabd00] hover:scale-105 transition-all shrink-0 relative z-10 flex items-center justify-center"
             >
               Get Custom RFQ
             </a>
@@ -991,7 +991,7 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
             </h2>
             <div className="flex flex-wrap items-center justify-center gap-2xl pt-md">
               {activeCategory.featuredBrands.map(brand => (
-                <div key={brand} className="bg-white px-xl py-lg rounded-xl border border-[#E9ECEF] font-bold text-[#6C757D] shadow-sm select-none">
+                <div key={brand} className="bg-white px-xl py-lg rounded border border-[#E9ECEF] font-bold text-[#6C757D] shadow-sm select-none">
                   {brand}
                 </div>
               ))}
@@ -1037,7 +1037,7 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
                           {product.unit}
                         </span>
                       </span>
-                      <div className="bg-[#0A0A0A] text-white p-2 rounded-lg group-hover:bg-primary transition-colors flex items-center justify-center">
+                      <div className="bg-[#0A0A0A] text-white p-2 rounded group-hover:bg-primary transition-colors flex items-center justify-center">
                         <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
                       </div>
                     </div>
@@ -1105,7 +1105,7 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
                   e.preventDefault()
                   document.getElementById('categories-section')?.scrollIntoView({ behavior: 'smooth' })
                 }}
-                className="bg-[#0A0A0A] text-white font-bold px-xxl py-lg rounded-xl shadow-md hover:bg-primary hover:text-[#0A0A0A] transition-all duration-200 flex items-center justify-center"
+                className="bg-[#0A0A0A] text-white font-bold px-xxl py-lg rounded shadow-md hover:bg-primary hover:text-[#0A0A0A] transition-all duration-200 flex items-center justify-center"
               >
                 Explore Categories
               </a>
@@ -1117,7 +1117,7 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
                     document.getElementById('rfq-form-section')?.scrollIntoView({ behavior: 'smooth' })
                   }, 100)
                 }}
-                className="border-2 border-[#0A0A0A] text-[#0A0A0A] font-bold px-xxl py-lg rounded-xl hover:bg-[#0A0A0A] hover:text-white transition-all duration-200 flex items-center justify-center"
+                className="border-2 border-[#0A0A0A] text-[#0A0A0A] font-bold px-xxl py-lg rounded hover:bg-[#0A0A0A] hover:text-white transition-all duration-200 flex items-center justify-center"
               >
                 Raise RFQ
               </a>
@@ -1138,14 +1138,14 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
             </div>
           </div>
           <div className="flex-1 w-full h-[360px] md:h-[480px] relative">
-            <div className="w-full h-full bg-white rounded-[24px] shadow-lg overflow-hidden border border-[#E9ECEF]">
+            <div className="w-full h-full bg-white rounded-[24px] shadow-sm overflow-hidden border border-[#E9ECEF]">
               <img
                 alt="Industrial Construction Materials"
                 className="w-full h-full object-cover grayscale-[20%] hover:grayscale-0 transition-all duration-700"
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJgWxtoJFKHXgSoz2uW-UBKzL1M3tzfKl2nlRtOrzyFokvM6cd3l_EDLJlXpNYZBlqcVP5VGr3Gxl7fzbJW3cOH_swhAgx4OEYL8CTcQFKVjR3QSXYoquVTJLg-W0SpXi-olrEaFVTaAXKaWKjjuemKBeLubWH3PSWRLds3KZImw25MsOcByKLowaYe4q__Kl76d9GSV3kNS9GetPuWB1HoMBHTorRQPtoT-N6QIP1gXpV8Yba7AfciNKw66MFmiUMaMS1UnrzwPo"
               />
             </div>
-            <div className="absolute -bottom-6 -left-6 bg-[#1a1c1c] text-white p-lg rounded-2xl shadow-xl flex items-center gap-md border border-white/5">
+            <div className="absolute -bottom-6 -left-6 bg-[#1a1c1c] text-white p-lg rounded shadow flex items-center gap-md border border-white/5">
               <span className="material-symbols-outlined text-primary text-3xl font-bold">verified</span>
               <div className="text-left">
                 <p className="font-extrabold text-body-sm text-white">Verified Suppliers Only</p>
@@ -1176,7 +1176,7 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
               onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.click()}
               className="group h-[320px] bg-white rounded-[24px] border border-[#E9ECEF] p-xl flex flex-col justify-between hover:shadow-[0_12px_36px_rgba(0,0,0,0.06)] hover:-translate-y-2 hover:border-primary transition-all duration-300 overflow-hidden relative text-left cursor-pointer"
             >
-              <div className="absolute top-0 right-0 w-28 h-28 bg-[#FFC107]/5 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+              <div className="absolute top-0 right-0 w-28 h-28 bg-primary/5 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
               <div>
                 <span className="material-symbols-outlined text-primary text-[36px] mb-lg block">
                   {category.icon}
@@ -1229,7 +1229,7 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
                 document.getElementById('rfq-form-section')?.scrollIntoView({ behavior: 'smooth' })
               }, 100)
             }}
-            className="bg-primary text-[#0A0A0A] font-bold px-4xl py-lg rounded-xl shadow-lg hover:bg-[#fabd00] hover:scale-105 transition-all duration-200 shrink-0 flex items-center justify-center"
+            className="bg-primary text-[#0A0A0A] font-bold px-4xl py-lg rounded shadow-sm hover:bg-[#fabd00] hover:scale-105 transition-all duration-200 shrink-0 flex items-center justify-center"
           >
             Raise RFQ
           </a>
@@ -1251,7 +1251,7 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`whitespace-nowrap px-lg py-md rounded-xl font-bold text-body-sm transition-all duration-200 ${
+                className={`whitespace-nowrap px-lg py-md rounded font-bold text-body-sm transition-all duration-200 ${
                   activeTab === tab
                     ? 'bg-primary-container text-[#121212] shadow-sm border border-primary/20'
                     : 'bg-[#F8F9FA] hover:bg-[#E9ECEF] text-[#6C757D]'
@@ -1267,7 +1267,7 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
           <div className="grid grid-cols-1 md:grid-cols-3 gap-xl">
             {[1, 2, 3].map(i => (
               <div key={i} className="animate-pulse bg-white border border-[#E9ECEF] rounded-[24px] h-[360px] p-lg flex flex-col justify-between">
-                <div className="w-full aspect-square bg-[#E9ECEF] rounded-lg animate-pulse"></div>
+                <div className="w-full aspect-square bg-[#E9ECEF] rounded animate-pulse"></div>
                 <div className="h-4 bg-[#E9ECEF] rounded w-2/3 mt-md"></div>
                 <div className="h-6 bg-[#E9ECEF] rounded w-1/3 mt-sm"></div>
               </div>
@@ -1311,7 +1311,7 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
                         {product.unit}
                       </span>
                     </span>
-                    <div className="bg-[#0A0A0A] text-white px-md py-sm rounded-lg group-hover:bg-primary transition-colors flex items-center gap-xs text-xs font-bold font-label-caps">
+                    <div className="bg-[#0A0A0A] text-white px-md py-sm rounded group-hover:bg-primary transition-colors flex items-center gap-xs text-xs font-bold font-label-caps">
                       <span className="material-symbols-outlined text-[16px]">open_in_new</span>
                       View Details
                     </div>
@@ -1428,11 +1428,11 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
                   document.getElementById('rfq-form-section')?.scrollIntoView({ behavior: 'smooth' })
                 }, 100)
               }}
-              className="bg-primary text-[#0A0A0A] font-bold px-4xl py-lg rounded-xl hover:bg-[#fabd00] hover:scale-105 transition-all duration-200"
+              className="bg-primary text-[#0A0A0A] font-bold px-4xl py-lg rounded hover:bg-[#fabd00] hover:scale-105 transition-all duration-200"
             >
               Get Started Today
             </a>
-            <button className="border border-white/20 text-white px-4xl py-lg rounded-xl font-bold hover:bg-white hover:text-[#0A0A0A] transition-all duration-200">
+            <button className="border border-white/20 text-white px-4xl py-lg rounded font-bold hover:bg-white hover:text-[#0A0A0A] transition-all duration-200">
               Contact Support
             </button>
           </div>

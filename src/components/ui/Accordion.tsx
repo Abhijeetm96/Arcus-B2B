@@ -9,7 +9,7 @@ const Accordion = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AccordionPrimitive.Root
     ref={ref}
-    className={cn("divide-y divide-border border border-border rounded-lg bg-surface shadow-sm overflow-hidden", className)}
+    className={cn("divide-y divide-border border border-border rounded bg-surface shadow-sm overflow-hidden", className)}
     {...props}
   />
 ));

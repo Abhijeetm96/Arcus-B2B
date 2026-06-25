@@ -48,7 +48,7 @@ const DropdownMenuSubContent = React.forwardRef<
   <DropdownMenuBase.DropdownMenuSubContent
     ref={ref}
     className={cn(
-      'bg-surface border-border text-text-primary shadow-xl p-1',
+      'bg-surface border-border text-text-primary shadow p-1',
       className
     )}
     {...props}
@@ -63,7 +63,7 @@ const DropdownMenuContent = React.forwardRef<
   <DropdownMenuBase.DropdownMenuContent
     ref={ref}
     className={cn(
-      'bg-surface border-border text-text-primary shadow-xl p-1',
+      'bg-surface border-border text-text-primary shadow p-1',
       className
     )}
     {...props}

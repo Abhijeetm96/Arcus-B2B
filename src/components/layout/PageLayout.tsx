@@ -35,7 +35,7 @@ const PageLayout = React.forwardRef<HTMLDivElement, PageLayoutProps>(
           <div className="flex h-16 items-center border-b border-border bg-surface px-6 md:hidden flex-shrink-0">
             <button
               onClick={() => setIsMobileOpen(true)}
-              className="mr-3 rounded-lg border border-border p-2 text-text-secondary hover:text-text-primary hover:bg-surface-secondary"
+              className="mr-3 rounded border border-border p-2 text-text-secondary hover:text-text-primary hover:bg-surface-secondary"
             >
               <Menu className="h-5 w-5" />
             </button>
@@ -67,7 +67,7 @@ const PageLayout = React.forwardRef<HTMLDivElement, PageLayoutProps>(
 
             {/* 3. KPI Summaries Grid */}
             {kpis && (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {kpis}
               </div>
             )}

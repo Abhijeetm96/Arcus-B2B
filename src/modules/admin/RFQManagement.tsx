@@ -239,20 +239,20 @@ export const RFQManagement: React.FC = () => {
     <div className="space-y-md text-left">
       {/* Notifications */}
       {error && (
-        <div className="bg-red-50 text-red-800 p-md rounded-2xl border border-red-200 flex justify-between items-center">
+        <div className="bg-red-50 text-red-800 p-md rounded border border-red-200 flex justify-between items-center">
           <span>{error}</span>
           <button onClick={() => setError(null)} className="material-symbols-outlined text-[18px]">close</button>
         </div>
       )}
       {success && (
-        <div className="bg-green-50 text-green-800 p-md rounded-2xl border border-green-200 flex justify-between items-center">
+        <div className="bg-green-50 text-green-800 p-md rounded border border-green-200 flex justify-between items-center">
           <span>{success}</span>
           <button onClick={() => setSuccess(null)} className="material-symbols-outlined text-[18px]">close</button>
         </div>
       )}
 
       {/* Filter Toolbar */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-md bg-white p-md rounded-2xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-md bg-white p-md rounded border border-slate-200 shadow-sm">
         <div className="flex flex-wrap items-center gap-sm w-full md:w-auto">
           {/* Search Box */}
           <div className="relative flex-1 min-w-[200px] md:max-w-xs">
@@ -262,7 +262,7 @@ export const RFQManagement: React.FC = () => {
               placeholder="Search RFQs..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-11 pl-xxl pr-md border border-slate-200 rounded-xl text-body-sm focus:border-[#FFC107] focus:ring-0 bg-slate-50"
+              className="w-full h-11 pl-xxl pr-md border border-slate-200 rounded text-body-sm focus:border-primary focus:ring-0 bg-slate-50"
             />
           </div>
 
@@ -270,7 +270,7 @@ export const RFQManagement: React.FC = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-11 px-md border border-slate-200 rounded-xl text-body-sm bg-slate-50 focus:border-[#FFC107] focus:ring-0 font-bold"
+            className="h-11 px-md border border-slate-200 rounded text-body-sm bg-slate-50 focus:border-primary focus:ring-0 font-bold"
           >
             <option value="all">All RFQs</option>
             <option value="Submitted">Submitted</option>
@@ -282,7 +282,7 @@ export const RFQManagement: React.FC = () => {
           </select>
         </div>
 
-        <div className="text-xs bg-slate-100 text-slate-500 rounded-xl px-md py-sm font-extrabold font-label-caps uppercase tracking-wide">
+        <div className="text-xs bg-slate-100 text-slate-500 rounded px-md py-sm font-extrabold font-label-caps uppercase tracking-wide">
           {filteredRfqs.length} Requirements
         </div>
       </div>
@@ -290,10 +290,10 @@ export const RFQManagement: React.FC = () => {
       {/* RFQs Table */}
       {loading ? (
         <div className="flex justify-center py-xl">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#FFC107]"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-white border border-slate-200 rounded overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-body-sm text-left border-collapse">
               <thead>
@@ -347,7 +347,7 @@ export const RFQManagement: React.FC = () => {
                               paymentMethod: 'COD'
                             });
                           }}
-                          className="flex items-center gap-xs px-md h-8 border border-slate-200 hover:border-slate-800 text-slate-600 hover:text-slate-950 font-bold text-xs rounded-lg transition-all ml-auto"
+                          className="flex items-center gap-xs px-md h-8 border border-slate-200 hover:border-slate-800 text-slate-600 hover:text-slate-950 font-bold text-xs rounded transition-all ml-auto"
                         >
                           <span className="material-symbols-outlined text-[16px]">visibility</span>
                           Open Brief
@@ -372,7 +372,7 @@ export const RFQManagement: React.FC = () => {
       {/* RFQ Drawer Details */}
       {selectedRfq && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
-          <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col justify-between overflow-hidden">
+          <div className="w-full max-w-md bg-white h-full shadow flex flex-col justify-between overflow-hidden">
             {/* Header */}
             <div className="px-lg py-md border-b border-slate-200 bg-slate-50 flex justify-between items-center">
               <div>
@@ -400,7 +400,7 @@ export const RFQManagement: React.FC = () => {
                       placeholder="e.g. 45000"
                       value={quoteForm.price}
                       onChange={e => setQuoteForm({ ...quoteForm, price: e.target.value })}
-                      className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm font-bold text-slate-900"
+                      className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm font-bold text-slate-900"
                     />
                   </div>
 
@@ -410,7 +410,7 @@ export const RFQManagement: React.FC = () => {
                       type="number"
                       value={quoteForm.validityDays}
                       onChange={e => setQuoteForm({ ...quoteForm, validityDays: parseInt(e.target.value, 10) || 30 })}
-                      className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm text-slate-900"
+                      className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm text-slate-900"
                     />
                   </div>
 
@@ -421,7 +421,7 @@ export const RFQManagement: React.FC = () => {
                       value={quoteForm.message}
                       onChange={e => setQuoteForm({ ...quoteForm, message: e.target.value })}
                       rows={3}
-                      className="w-full p-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm text-slate-900"
+                      className="w-full p-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm text-slate-900"
                     />
                   </div>
 
@@ -429,13 +429,13 @@ export const RFQManagement: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setShowInlineQuote(false)}
-                      className="px-lg h-11 border border-slate-200 hover:border-slate-800 rounded-xl font-bold text-xs text-slate-500 transition-all bg-white"
+                      className="px-lg h-11 border border-slate-200 hover:border-slate-800 rounded font-bold text-xs text-slate-500 transition-all bg-white"
                     >
                       Back to Brief
                     </button>
                     <button
                       type="submit"
-                      className="bg-[#FFC107] text-slate-950 hover:bg-[#fabd00] px-xl h-11 rounded-xl font-bold text-xs transition-all shadow-sm font-extrabold"
+                      className="bg-primary text-slate-950 hover:bg-[#fabd00] px-xl h-11 rounded font-bold text-xs transition-all shadow-sm font-extrabold"
                     >
                       Generate & Send Quote
                     </button>
@@ -448,7 +448,7 @@ export const RFQManagement: React.FC = () => {
                     <button
                       type="button"
                       onClick={addConvertItem}
-                      className="text-xs text-[#FFC107] font-bold hover:underline flex items-center gap-xs"
+                      className="text-xs text-primary font-bold hover:underline flex items-center gap-xs"
                     >
                       <span className="material-symbols-outlined text-[14px]">add</span> Add Item
                     </button>
@@ -462,7 +462,7 @@ export const RFQManagement: React.FC = () => {
                         placeholder="Item name / SKU"
                         value={item.name}
                         onChange={e => updateConvertItem(idx, 'name', e.target.value)}
-                        className="flex-1 h-10 px-sm border border-slate-200 rounded-lg text-xs text-slate-900"
+                        className="flex-1 h-10 px-sm border border-slate-200 rounded text-xs text-slate-900"
                       />
                       <input
                         type="number"
@@ -471,7 +471,7 @@ export const RFQManagement: React.FC = () => {
                         placeholder="Qty"
                         value={item.quantity}
                         onChange={e => updateConvertItem(idx, 'quantity', parseInt(e.target.value, 10) || 1)}
-                        className="w-16 h-10 px-sm border border-slate-200 rounded-lg text-xs text-slate-900"
+                        className="w-16 h-10 px-sm border border-slate-200 rounded text-xs text-slate-900"
                       />
                       <input
                         type="number"
@@ -479,7 +479,7 @@ export const RFQManagement: React.FC = () => {
                         placeholder="Price"
                         value={item.price || ''}
                         onChange={e => updateConvertItem(idx, 'price', parseFloat(e.target.value) || 0)}
-                        className="w-24 h-10 px-sm border border-slate-200 rounded-lg text-xs font-bold text-slate-900"
+                        className="w-24 h-10 px-sm border border-slate-200 rounded text-xs font-bold text-slate-900"
                       />
                       {convertForm.items.length > 1 && (
                         <button
@@ -505,7 +505,7 @@ export const RFQManagement: React.FC = () => {
                       value={convertForm.shippingAddress}
                       onChange={e => setConvertForm({ ...convertForm, shippingAddress: e.target.value })}
                       rows={2}
-                      className="w-full p-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm text-slate-900"
+                      className="w-full p-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm text-slate-900"
                     />
                   </div>
 
@@ -516,7 +516,7 @@ export const RFQManagement: React.FC = () => {
                       value={convertForm.billingAddress}
                       onChange={e => setConvertForm({ ...convertForm, billingAddress: e.target.value })}
                       rows={2}
-                      className="w-full p-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm text-slate-900"
+                      className="w-full p-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm text-slate-900"
                     />
                   </div>
 
@@ -525,7 +525,7 @@ export const RFQManagement: React.FC = () => {
                     <select
                       value={convertForm.paymentMethod}
                       onChange={e => setConvertForm({ ...convertForm, paymentMethod: e.target.value })}
-                      className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm text-slate-900 font-bold"
+                      className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm text-slate-900 font-bold"
                     >
                       <option value="COD">Cash on Delivery (COD)</option>
                       <option value="Bank Transfer">Bank Transfer (NEFT/RTGS)</option>
@@ -538,13 +538,13 @@ export const RFQManagement: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setShowInlineConvert(false)}
-                      className="px-lg h-11 border border-slate-200 hover:border-slate-800 rounded-xl font-bold text-xs text-slate-500 transition-all bg-white"
+                      className="px-lg h-11 border border-slate-200 hover:border-slate-800 rounded font-bold text-xs text-slate-500 transition-all bg-white"
                     >
                       Back to Brief
                     </button>
                     <button
                       type="submit"
-                      className="bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-xl h-11 rounded-xl font-bold text-xs transition-all shadow-sm font-extrabold"
+                      className="bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-xl h-11 rounded font-bold text-xs transition-all shadow-sm font-extrabold"
                     >
                       Convert to Confirmed Order
                     </button>
@@ -553,7 +553,7 @@ export const RFQManagement: React.FC = () => {
               ) : (
                 <>
                   {/* status dropdown */}
-                  <div className="bg-slate-50 p-md rounded-2xl border border-slate-100 space-y-sm">
+                  <div className="bg-slate-50 p-md rounded border border-slate-100 space-y-sm">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Status Transitions</p>
                     <div className="flex flex-wrap gap-xs">
                       {['Submitted', 'Under Review', 'Quoted', 'Approved', 'Rejected', 'Closed'].map(st => (
@@ -561,9 +561,9 @@ export const RFQManagement: React.FC = () => {
                           key={st}
                           type="button"
                           onClick={() => handleStatusChange(selectedRfq.id!, st)}
-                          className={`px-md py-sm rounded-lg border font-bold text-[10px] transition-all ${
+                          className={`px-md py-sm rounded border font-bold text-[10px] transition-all ${
                             selectedRfq.status === st 
-                              ? 'bg-[#FFC107] text-slate-950 border-[#FFC107]' 
+                              ? 'bg-primary text-slate-950 border-primary' 
                               : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
                           }`}
                         >
@@ -576,7 +576,7 @@ export const RFQManagement: React.FC = () => {
                   {/* RFQ details */}
                   <div className="space-y-sm">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Procurement Briefs</p>
-                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-md space-y-md text-slate-800">
+                    <div className="bg-slate-50 border border-slate-100 rounded p-md space-y-md text-slate-800">
                       <div>
                         <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold mb-xs">Title / Subject</span>
                         <span className="font-extrabold text-slate-950 text-body-sm">{selectedRfq.title || `${selectedRfq.category} procurement request`}</span>
@@ -604,7 +604,7 @@ export const RFQManagement: React.FC = () => {
                       {selectedRfq.items && selectedRfq.items.length > 0 && (
                         <div className="mt-md">
                           <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold mb-xs">Materials Sheet Table</span>
-                          <div className="border border-slate-200 rounded-lg overflow-hidden bg-white">
+                          <div className="border border-slate-200 rounded overflow-hidden bg-white">
                             <table className="w-full text-left border-collapse text-[10px]">
                               <thead>
                                 <tr className="bg-slate-50 text-slate-500 font-bold uppercase border-b border-slate-200">
@@ -640,7 +640,7 @@ export const RFQManagement: React.FC = () => {
                             href={url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="bg-slate-50 hover:bg-slate-100 border border-slate-200 p-sm rounded-lg flex items-center justify-between font-bold text-xs text-[#FFC107] transition-all shadow-sm"
+                            className="bg-slate-50 hover:bg-slate-100 border border-slate-200 p-sm rounded flex items-center justify-between font-bold text-xs text-primary transition-all shadow-sm"
                           >
                             Brief #{i + 1}
                             <span className="material-symbols-outlined text-[16px]">open_in_new</span>
@@ -655,7 +655,7 @@ export const RFQManagement: React.FC = () => {
                   {/* Contact info */}
                   <div className="space-y-sm">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Buyer Contact Information</p>
-                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-md space-y-sm">
+                    <div className="bg-slate-50 border border-slate-100 rounded p-md space-y-sm">
                       <div className="flex justify-between">
                         <span className="text-slate-400">FullName:</span>
                         <span className="text-slate-800 font-bold">{selectedRfq.name}</span>
@@ -678,7 +678,7 @@ export const RFQManagement: React.FC = () => {
                   onClick={() => {
                     setViewMode('builder');
                   }}
-                  className="flex-1 flex items-center justify-center gap-xs bg-slate-900 hover:bg-slate-800 text-white px-md h-11 rounded-xl font-bold text-xs transition-all shadow-sm border-0"
+                  className="flex-1 flex items-center justify-center gap-xs bg-slate-900 hover:bg-slate-800 text-white px-md h-11 rounded font-bold text-xs transition-all shadow-sm border-0"
                 >
                   <span className="material-symbols-outlined text-[16px]">edit_document</span>
                   {existingQuotations.length > 0 ? 'Revise Proposal' : 'Prepare Proposal'}
@@ -690,7 +690,7 @@ export const RFQManagement: React.FC = () => {
                     onClick={() => {
                       setViewMode('history');
                     }}
-                    className="flex-1 flex items-center justify-center gap-xs bg-amber-500 text-gray-950 hover:bg-amber-600 px-md h-11 rounded-xl font-bold text-xs transition-all shadow-sm border-0"
+                    className="flex-1 flex items-center justify-center gap-xs bg-amber-500 text-gray-950 hover:bg-amber-600 px-md h-11 rounded font-bold text-xs transition-all shadow-sm border-0"
                   >
                     <span className="material-symbols-outlined text-[16px]">history</span>
                     Negotiation Center ({existingQuotations.length})

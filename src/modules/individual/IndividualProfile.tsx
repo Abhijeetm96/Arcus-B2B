@@ -73,13 +73,13 @@ export const IndividualProfile: React.FC = () => {
   return (
     <div className="space-y-md text-left">
       {settingsToast && (
-        <div className="bg-green-50 border border-green-200 text-green-800 text-xs p-sm rounded-xl font-bold flex items-center gap-xs shadow-sm">
+        <div className="bg-green-50 border border-green-200 text-green-800 text-xs p-sm rounded font-bold flex items-center gap-xs shadow-sm">
           <span className="material-symbols-outlined text-[18px]">check_circle</span>
           {settingsToast}
         </div>
       )}
 
-      <form onSubmit={handleSaveProfile} className="bg-white border border-slate-200 rounded-2xl p-lg shadow-sm space-y-md">
+      <form onSubmit={handleSaveProfile} className="bg-white border border-slate-200 rounded p-lg shadow-sm space-y-md">
         <h3 className="font-bold text-md text-slate-800 border-b border-slate-100 pb-xs">Account Settings</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-md text-xs">
           <div className="flex flex-col gap-xs">
@@ -88,7 +88,7 @@ export const IndividualProfile: React.FC = () => {
               type="text"
               value={settingsForm.name}
               onChange={(e) => setSettingsForm({ ...settingsForm, name: e.target.value })}
-              className="h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-slate-800 font-semibold"
+              className="h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-slate-800 font-semibold"
             />
           </div>
           <div className="flex flex-col gap-xs">
@@ -98,9 +98,9 @@ export const IndividualProfile: React.FC = () => {
                 type="text"
                 disabled
                 value={settingsForm.email}
-                className="flex-1 h-11 px-md border border-slate-200 bg-slate-50 rounded-xl text-slate-400 font-semibold"
+                className="flex-1 h-11 px-md border border-slate-200 bg-slate-50 rounded text-slate-400 font-semibold"
               />
-              <span className={`h-11 px-md flex items-center rounded-xl font-bold border text-[10px] ${
+              <span className={`h-11 px-md flex items-center rounded font-bold border text-[10px] ${
                 emailVerified ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'
               }`}>
                 {emailVerified ? 'VERIFIED' : 'UNVERIFIED'}
@@ -111,7 +111,7 @@ export const IndividualProfile: React.FC = () => {
 
         <button
           type="submit"
-          className="px-xl py-3 bg-[#FFC107] hover:bg-[#fabd00] text-[#0A0A0A] font-bold rounded-xl text-xs font-label-caps uppercase tracking-wider shadow-sm"
+          className="px-xl py-3 bg-primary hover:bg-[#fabd00] text-[#0A0A0A] font-bold rounded text-xs font-label-caps uppercase tracking-wider shadow-sm"
         >
           Save Profile
         </button>

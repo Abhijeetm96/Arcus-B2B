@@ -107,7 +107,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({ isOpen, onClose, initial
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[99] flex items-center justify-center p-md md:p-lg">
-      <div className="bg-white rounded-[24px] border border-[#E9ECEF] w-full max-w-lg p-lg md:p-xl space-y-lg text-left shadow-2xl relative overflow-hidden transition-all duration-300 transform scale-100 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-[24px] border border-[#E9ECEF] w-full max-w-lg p-lg md:p-xl space-y-lg text-left shadow relative overflow-hidden transition-all duration-300 transform scale-100 max-h-[90vh] overflow-y-auto">
         
         {/* Close Button */}
         <button
@@ -141,7 +141,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({ isOpen, onClose, initial
               >
                 Sign In
                 {activeTab === 'login' && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#FFC107] rounded-t-full" />
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full" />
                 )}
               </button>
               <button
@@ -158,7 +158,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({ isOpen, onClose, initial
               >
                 Register
                 {activeTab === 'register' && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#FFC107] rounded-t-full" />
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full" />
                 )}
               </button>
             </div>
@@ -183,7 +183,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({ isOpen, onClose, initial
                     type="email"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
-                    className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                    className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                     placeholder="name@company.com"
                     required
                   />
@@ -195,7 +195,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({ isOpen, onClose, initial
                     type="password"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
-                    className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                    className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                     placeholder="Enter password"
                     required
                   />
@@ -204,7 +204,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({ isOpen, onClose, initial
                 <button
                   type="submit"
                   disabled={loginLoading}
-                  className="w-full bg-[#FFC107] hover:bg-[#fabd00] text-[#0A0A0A] font-bold h-11 rounded-[12px] transition-colors shadow disabled:opacity-50 mt-sm flex items-center justify-center gap-xs"
+                  className="w-full bg-primary hover:bg-[#fabd00] text-[#0A0A0A] font-bold h-11 rounded-[12px] transition-colors shadow disabled:opacity-50 mt-sm flex items-center justify-center gap-xs"
                 >
                   {loginLoading ? 'Signing In...' : 'Sign In'}
                   <span className="material-symbols-outlined text-sm">login</span>
@@ -226,7 +226,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({ isOpen, onClose, initial
                 {/* Role selection tab button group */}
                 <div className="flex flex-col gap-xs">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-[#6C757D] font-label-caps">B2B Account Type</label>
-                  <div className="grid grid-cols-3 gap-xs bg-[#F8F9FA] p-xs rounded-lg">
+                  <div className="grid grid-cols-3 gap-xs bg-[#F8F9FA] p-xs rounded">
                     {(['Buyer', 'Contractor', 'Supplier'] as const).map((r) => (
                       <button
                         key={r}
@@ -254,7 +254,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({ isOpen, onClose, initial
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                       placeholder="e.g. John Doe"
                       required
                     />
@@ -265,7 +265,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({ isOpen, onClose, initial
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                       placeholder="e.g. 9999988888"
                       required
                     />
@@ -279,7 +279,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({ isOpen, onClose, initial
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                       placeholder="name@company.com"
                       required
                     />
@@ -292,7 +292,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({ isOpen, onClose, initial
                       type="text"
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                       placeholder="e.g. Acme Infra"
                       required={role !== 'Buyer'}
                     />
@@ -306,7 +306,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({ isOpen, onClose, initial
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                       placeholder="Min 6 characters"
                       minLength={6}
                       required
@@ -318,7 +318,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({ isOpen, onClose, initial
                       type="password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                       placeholder="Retype password"
                       required
                     />
@@ -328,7 +328,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({ isOpen, onClose, initial
                 <button
                   type="submit"
                   disabled={registerLoading}
-                  className="w-full bg-[#FFC107] hover:bg-[#fabd00] text-[#0A0A0A] font-bold h-11 rounded-[12px] transition-colors shadow disabled:opacity-50 mt-sm flex items-center justify-center gap-xs"
+                  className="w-full bg-primary hover:bg-[#fabd00] text-[#0A0A0A] font-bold h-11 rounded-[12px] transition-colors shadow disabled:opacity-50 mt-sm flex items-center justify-center gap-xs"
                 >
                   {registerLoading ? 'Creating Account...' : 'Register Company'}
                   <span className="material-symbols-outlined text-sm">badge</span>

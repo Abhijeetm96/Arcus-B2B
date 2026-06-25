@@ -12,7 +12,7 @@ export const ProfessionalDashboard: React.FC = () => {
     return (
       <div className="space-y-6 text-left">
         {/* Banner */}
-        <div className="bg-slate-900 text-white p-6 rounded-2xl relative overflow-hidden flex flex-col justify-center min-h-[140px] shadow-sm">
+        <div className="bg-slate-900 text-white p-6 rounded relative overflow-hidden flex flex-col justify-center min-h-[140px] shadow-sm">
           <div className="absolute right-0 top-0 h-full w-1/3 bg-primary/10 skew-x-12 translate-x-1/3 pointer-events-none"></div>
           <div className="flex items-center gap-3">
             <Wrench className="text-primary h-10 w-10" />
@@ -24,7 +24,7 @@ export const ProfessionalDashboard: React.FC = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <MetricCard
             title="Client Rating"
             value="4.9 / 5.0"
@@ -101,7 +101,7 @@ export const ProfessionalDashboard: React.FC = () => {
               <CardTitle className="text-sm uppercase tracking-wider">Verification Badge</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="p-4 bg-success/10 text-success rounded-xl border border-success/20 flex items-center gap-3">
+              <div className="p-4 bg-success/10 text-success rounded border border-success/20 flex items-center gap-3">
                 <ShieldCheck className="h-10 w-10 text-success flex-shrink-0" />
                 <div>
                   <p className="font-bold text-sm">Verified Service Partner</p>
@@ -136,7 +136,7 @@ export const ProfessionalDashboard: React.FC = () => {
               <CardTitle className="text-sm uppercase tracking-wider">Past Completed Works</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="p-4 bg-surface-secondary/50 rounded-xl border border-border space-y-1">
+              <div className="p-4 bg-surface-secondary/50 rounded border border-border space-y-1">
                 <h4 className="font-bold text-text-primary text-xs">Whitefield Villa Plumbing System</h4>
                 <p className="text-text-secondary text-[10px]">Completed on April 2026 • Rating: 5.0 ★</p>
               </div>
@@ -150,7 +150,7 @@ export const ProfessionalDashboard: React.FC = () => {
               <CardTitle className="text-sm uppercase tracking-wider">Client Reviews</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="p-4 bg-surface-secondary/50 rounded-xl border border-border space-y-2">
+              <div className="p-4 bg-surface-secondary/50 rounded border border-border space-y-2">
                 <div className="flex justify-between items-center text-xs">
                   <span className="font-bold text-text-primary">Rahul Sen (Homeowner)</span>
                   <span className="text-primary font-bold flex items-center gap-0.5">5.0 <Star className="h-3 w-3 fill-current" /></span>

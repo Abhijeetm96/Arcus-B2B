@@ -39,7 +39,7 @@ export const IndividualLayout: React.FC<IndividualLayoutProps> = ({
       <div className="h-16 flex items-center px-6 border-b border-slate-800">
         <div className="flex items-center gap-2">
           <span className="font-extrabold text-lg tracking-wider text-white">
-            ARCUS <span className="text-[#FFC107] text-xs font-semibold px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">INDIVIDUAL</span>
+            ARCUS <span className="text-primary text-xs font-semibold px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">INDIVIDUAL</span>
           </span>
         </div>
       </div>
@@ -50,9 +50,9 @@ export const IndividualLayout: React.FC<IndividualLayoutProps> = ({
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded text-sm font-semibold transition-all ${
                 activeTab === item.id
-                  ? 'bg-[#FFC107] text-slate-950 shadow-sm font-bold'
+                  ? 'bg-primary text-slate-950 shadow-sm font-bold'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
               }`}
             >
@@ -64,7 +64,7 @@ export const IndividualLayout: React.FC<IndividualLayoutProps> = ({
       </nav>
       <div className="p-4 border-t border-slate-800 bg-slate-950/40">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-[#FFC107] font-bold text-sm">
+          <div className="w-9 h-9 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-primary font-bold text-sm">
             {user?.name?.slice(0, 2).toUpperCase() || 'US'}
           </div>
           <div className="flex-1 min-w-0">

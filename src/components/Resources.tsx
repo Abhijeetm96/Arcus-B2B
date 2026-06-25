@@ -164,7 +164,7 @@ export default function Resources() {
     <div className="bg-background min-h-screen text-on-surface select-none">
       {/* Toast Alert */}
       {cementAddedToast && (
-        <div className="fixed bottom-6 right-6 z-[100] bg-green-600 text-white px-xl py-lg rounded-2xl shadow-xl flex items-center gap-md border border-green-500 animate-slide-in-right">
+        <div className="fixed bottom-6 right-6 z-[100] bg-green-600 text-white px-xl py-lg rounded shadow flex items-center gap-md border border-green-500 animate-slide-in-right">
           <span className="material-symbols-outlined text-[24px]">check_circle</span>
           <span className="font-bold text-body-sm">{cementAddedToast}</span>
         </div>
@@ -174,7 +174,7 @@ export default function Resources() {
       <section className="w-full bg-[#1a1c1c] text-white py-[80px] md:py-[112px] border-b border-surface-variant relative overflow-hidden">
         <div className="absolute right-0 top-0 h-full w-1/3 bg-primary/5 skew-x-12 translate-x-1/3 pointer-events-none"></div>
         <div className="max-w-[1440px] mx-auto px-lg text-left flex flex-col gap-md relative z-10">
-          <span className="bg-[#FFC107] text-[#0A0A0A] font-bold px-md py-1 rounded w-fit text-[11px] font-label-caps tracking-wider">
+          <span className="bg-primary text-[#0A0A0A] font-bold px-md py-1 rounded w-fit text-[11px] font-label-caps tracking-wider">
             TECHNICAL CENTER
           </span>
           <h1 className="font-sans font-extrabold text-[40px] md:text-[56px] leading-[1.1] max-w-2xl text-white">
@@ -198,7 +198,7 @@ export default function Resources() {
           <div className="bg-white border border-surface-variant rounded-3xl p-lg shadow-sm flex flex-col justify-between space-y-lg">
             <div className="space-y-md">
               <div className="flex items-center gap-sm">
-                <span className="material-symbols-outlined text-[#FFC107] text-[28px]">architecture</span>
+                <span className="material-symbols-outlined text-primary text-[28px]">architecture</span>
                 <h3 className="font-bold text-body-lg text-[#0A0A0A]">Concrete & Cement</h3>
               </div>
               <p className="text-secondary text-xs leading-relaxed">
@@ -212,7 +212,7 @@ export default function Resources() {
                     type="number"
                     value={concreteLength}
                     onChange={(e) => setConcreteLength(e.target.value)}
-                    className="w-full h-10 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white"
+                    className="w-full h-10 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white"
                   />
                 </div>
                 <div className="flex flex-col gap-xs">
@@ -221,7 +221,7 @@ export default function Resources() {
                     type="number"
                     value={concreteWidth}
                     onChange={(e) => setConcreteWidth(e.target.value)}
-                    className="w-full h-10 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white"
+                    className="w-full h-10 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white"
                   />
                 </div>
                 <div className="flex flex-col gap-xs">
@@ -230,13 +230,13 @@ export default function Resources() {
                     type="number"
                     value={concreteThickness}
                     onChange={(e) => setConcreteThickness(e.target.value)}
-                    className="w-full h-10 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white"
+                    className="w-full h-10 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white"
                   />
                 </div>
               </div>
 
               {/* Outputs Box */}
-              <div className="bg-[#FFFDF5] border border-[#FFE082]/70 p-md rounded-2xl space-y-sm text-xs mt-md">
+              <div className="bg-[#FFFDF5] border border-[#FFE082]/70 p-md rounded space-y-sm text-xs mt-md">
                 <div className="flex justify-between">
                   <span className="text-secondary">Concrete Volume:</span>
                   <span className="font-bold text-[#0A0A0A]">{concreteVolume} m³</span>
@@ -255,7 +255,7 @@ export default function Resources() {
             <button
               onClick={handleAddCementToCart}
               disabled={cementBagsRequired <= 0}
-              className="w-full h-12 bg-[#FFC107] text-[#0A0A0A] font-bold rounded-xl hover:bg-[#fabd00] transition-colors flex items-center justify-center gap-xs font-label-caps text-xs disabled:opacity-50"
+              className="w-full h-12 bg-primary text-[#0A0A0A] font-bold rounded hover:bg-[#fabd00] transition-colors flex items-center justify-center gap-xs font-label-caps text-xs disabled:opacity-50"
             >
               <span className="material-symbols-outlined text-[18px]">shopping_cart</span>
               Add Cement to Cart
@@ -266,7 +266,7 @@ export default function Resources() {
           <div className="bg-white border border-surface-variant rounded-3xl p-lg shadow-sm flex flex-col justify-between space-y-lg">
             <div className="space-y-md">
               <div className="flex items-center gap-sm">
-                <span className="material-symbols-outlined text-[#FFC107] text-[28px]">water_damage</span>
+                <span className="material-symbols-outlined text-primary text-[28px]">water_damage</span>
                 <h3 className="font-bold text-body-lg text-[#0A0A0A]">Piping Loop Sizer</h3>
               </div>
               <p className="text-secondary text-xs leading-relaxed">
@@ -280,7 +280,7 @@ export default function Resources() {
                     type="number"
                     value={flowRate}
                     onChange={(e) => setFlowRate(e.target.value)}
-                    className="w-full h-10 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white"
+                    className="w-full h-10 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white"
                   />
                 </div>
                 <div className="flex flex-col gap-xs">
@@ -290,13 +290,13 @@ export default function Resources() {
                     step="0.1"
                     value={velocity}
                     onChange={(e) => setVelocity(e.target.value)}
-                    className="w-full h-10 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white"
+                    className="w-full h-10 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white"
                   />
                 </div>
               </div>
 
               {/* Outputs Box */}
-              <div className="bg-[#F8F9FA] border border-surface-variant p-md rounded-2xl space-y-sm text-xs mt-md">
+              <div className="bg-[#F8F9FA] border border-surface-variant p-md rounded space-y-sm text-xs mt-md">
                 <div className="flex justify-between">
                   <span className="text-secondary">Req. Internal Area:</span>
                   <span className="font-bold text-[#0A0A0A]">{(area * 1000000).toFixed(1)} mm²</span>
@@ -314,7 +314,7 @@ export default function Resources() {
 
             <a
               href="#/materials/plumbing"
-              className="w-full h-12 border border-[#0A0A0A] text-[#0A0A0A] font-bold rounded-xl hover:bg-surface-container transition-colors flex items-center justify-center gap-xs font-label-caps text-xs text-center"
+              className="w-full h-12 border border-[#0A0A0A] text-[#0A0A0A] font-bold rounded hover:bg-surface-container transition-colors flex items-center justify-center gap-xs font-label-caps text-xs text-center"
             >
               <span className="material-symbols-outlined text-[18px]">search</span>
               Shop Piping Catalog
@@ -325,7 +325,7 @@ export default function Resources() {
           <div className="bg-white border border-surface-variant rounded-3xl p-lg shadow-sm flex flex-col justify-between space-y-lg">
             <div className="space-y-md">
               <div className="flex items-center gap-sm">
-                <span className="material-symbols-outlined text-[#FFC107] text-[28px]">foundation</span>
+                <span className="material-symbols-outlined text-primary text-[28px]">foundation</span>
                 <h3 className="font-bold text-body-lg text-[#0A0A0A]">Masonry & Brickwork</h3>
               </div>
               <p className="text-secondary text-xs leading-relaxed">
@@ -339,7 +339,7 @@ export default function Resources() {
                     type="number"
                     value={wallLength}
                     onChange={(e) => setWallLength(e.target.value)}
-                    className="w-full h-10 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white"
+                    className="w-full h-10 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white"
                   />
                 </div>
                 <div className="flex flex-col gap-xs">
@@ -348,7 +348,7 @@ export default function Resources() {
                     type="number"
                     value={wallHeight}
                     onChange={(e) => setWallHeight(e.target.value)}
-                    className="w-full h-10 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white"
+                    className="w-full h-10 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white"
                   />
                 </div>
                 <div className="flex flex-col gap-xs">
@@ -356,7 +356,7 @@ export default function Resources() {
                   <select
                     value={wallThickness}
                     onChange={(e) => setWallThickness(e.target.value)}
-                    className="w-full h-10 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white"
+                    className="w-full h-10 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white"
                   >
                     <option value="4.5">4.5 Inches (Single layer partition)</option>
                     <option value="9">9 Inches (Standard double layer)</option>
@@ -365,7 +365,7 @@ export default function Resources() {
               </div>
 
               {/* Outputs Box */}
-              <div className="bg-[#F8F9FA] border border-surface-variant p-md rounded-2xl space-y-sm text-xs mt-md">
+              <div className="bg-[#F8F9FA] border border-surface-variant p-md rounded space-y-sm text-xs mt-md">
                 <div className="flex justify-between">
                   <span className="text-secondary">Wall Volume:</span>
                   <span className="font-bold text-[#0A0A0A]">{wallVol.toFixed(2)} m³</span>
@@ -404,7 +404,7 @@ export default function Resources() {
                 }
               }}
               disabled={brickCementBags <= 0}
-              className="w-full h-12 bg-primary-container text-on-primary-container font-bold rounded-xl hover:bg-[#fabd00] transition-colors flex items-center justify-center gap-xs font-label-caps text-xs disabled:opacity-50"
+              className="w-full h-12 bg-primary-container text-on-primary-container font-bold rounded hover:bg-[#fabd00] transition-colors flex items-center justify-center gap-xs font-label-caps text-xs disabled:opacity-50"
             >
               <span className="material-symbols-outlined text-[18px]">shopping_cart</span>
               Add Mortar Cement
@@ -449,9 +449,9 @@ export default function Resources() {
               file: 'B2B_GST_Input_Tax_Credit_Guide.txt'
             }
           ].map((item, idx) => (
-            <div key={idx} className="bg-white border border-surface-variant rounded-2xl p-lg shadow-sm flex flex-col justify-between hover:border-[#FFC107] transition-all">
+            <div key={idx} className="bg-white border border-surface-variant rounded p-lg shadow-sm flex flex-col justify-between hover:border-primary transition-all">
               <div className="space-y-sm">
-                <div className="w-10 h-10 bg-error-container/20 text-[#C62828] rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-error-container/20 text-[#C62828] rounded flex items-center justify-center">
                   <span className="material-symbols-outlined text-[24px]">description</span>
                 </div>
                 <div className="space-y-1">
@@ -463,7 +463,7 @@ export default function Resources() {
 
               <button
                 onClick={() => handleDownloadSpecs(item.type as any)}
-                className="w-full h-10 border border-surface-variant hover:border-[#0A0A0A] hover:bg-surface-container text-secondary hover:text-[#0A0A0A] font-bold rounded-xl mt-lg flex items-center justify-center gap-xs font-label-caps text-xs transition-all"
+                className="w-full h-10 border border-surface-variant hover:border-[#0A0A0A] hover:bg-surface-container text-secondary hover:text-[#0A0A0A] font-bold rounded mt-lg flex items-center justify-center gap-xs font-label-caps text-xs transition-all"
               >
                 <span className="material-symbols-outlined text-[16px]">download</span>
                 Download Specs

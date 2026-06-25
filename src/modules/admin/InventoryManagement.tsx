@@ -165,13 +165,13 @@ export const InventoryManagement: React.FC = () => {
     <div className="space-y-lg text-left">
       {/* Notifications */}
       {error && (
-        <div className="bg-red-50 text-red-800 p-md rounded-2xl border border-red-200 flex justify-between items-center">
+        <div className="bg-red-50 text-red-800 p-md rounded border border-red-200 flex justify-between items-center">
           <span>{error}</span>
           <button onClick={() => setError(null)} className="material-symbols-outlined text-[18px]">close</button>
         </div>
       )}
       {success && (
-        <div className="bg-green-50 text-green-800 p-md rounded-2xl border border-green-200 flex justify-between items-center">
+        <div className="bg-green-50 text-green-800 p-md rounded border border-green-200 flex justify-between items-center">
           <span>{success}</span>
           <button onClick={() => setSuccess(null)} className="material-symbols-outlined text-[18px]">close</button>
         </div>
@@ -179,10 +179,10 @@ export const InventoryManagement: React.FC = () => {
 
       {/* Alert Banner for Low Stock */}
       {lowStockProducts.length > 0 && (
-        <div className="bg-red-50/60 backdrop-blur-xs border border-red-200/80 text-red-950 p-lg rounded-2xl space-y-md shadow-sm">
+        <div className="bg-red-50/60 backdrop-blur-xs border border-red-200/80 text-red-950 p-lg rounded space-y-md shadow-sm">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-sm">
             <div className="flex items-center gap-sm font-extrabold text-body-md text-red-900">
-              <span className="material-symbols-outlined text-red-600 animate-pulse bg-red-100 p-1.5 rounded-xl border border-red-200">warning</span>
+              <span className="material-symbols-outlined text-red-600 animate-pulse bg-red-100 p-1.5 rounded border border-red-200">warning</span>
               <div>
                 <p className="font-extrabold text-slate-900">Low Stock Threshold Breached</p>
                 <p className="text-xs text-slate-500 font-medium mt-0.5">{lowStockProducts.length} items have fallen below safety limits. Action required.</p>
@@ -190,7 +190,7 @@ export const InventoryManagement: React.FC = () => {
             </div>
             <button
               onClick={() => setIsLowStockExpanded(!isLowStockExpanded)}
-              className="flex items-center gap-xs px-md h-9 border border-red-200 hover:border-red-400 bg-white hover:bg-red-50 text-red-700 font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer select-none"
+              className="flex items-center gap-xs px-md h-9 border border-red-200 hover:border-red-400 bg-white hover:bg-red-50 text-red-700 font-bold text-xs rounded shadow-xs transition-all cursor-pointer select-none"
             >
               <span className="material-symbols-outlined text-[18px]">
                 {isLowStockExpanded ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
@@ -200,7 +200,7 @@ export const InventoryManagement: React.FC = () => {
           </div>
 
           {isLowStockExpanded && (
-            <div className="bg-white border border-red-100/60 rounded-xl overflow-hidden shadow-xs divide-y divide-slate-100">
+            <div className="bg-white border border-red-100/60 rounded overflow-hidden shadow-xs divide-y divide-slate-100">
               {lowStockProducts.map(p => {
                 const avail = p.inventory?.available ?? p.stock ?? 0;
                 const limit = p.inventory?.reorderLevel ?? 10;
@@ -213,7 +213,7 @@ export const InventoryManagement: React.FC = () => {
                     
                     <div className="flex items-center gap-lg w-full sm:w-auto justify-between sm:justify-end">
                       <div className="flex items-center gap-md text-xs font-semibold">
-                        <span className="bg-red-50 text-red-700 px-md py-1 rounded-lg border border-red-100 font-bold text-center min-w-[70px]">
+                        <span className="bg-red-50 text-red-700 px-md py-1 rounded border border-red-100 font-bold text-center min-w-[70px]">
                           {avail} left
                         </span>
                         <span className="text-slate-400 font-medium">
@@ -224,7 +224,7 @@ export const InventoryManagement: React.FC = () => {
                       <button
                         onClick={() => handleCreateReorderTask(p)}
                         disabled={reorderLoading[p.id]}
-                        className="h-8 px-md bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white font-bold text-xs rounded-lg shadow-sm flex items-center justify-center gap-xs transition-all cursor-pointer whitespace-nowrap"
+                        className="h-8 px-md bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white font-bold text-xs rounded shadow-sm flex items-center justify-center gap-xs transition-all cursor-pointer whitespace-nowrap"
                       >
                         <span className="material-symbols-outlined text-[16px]">add_task</span>
                         {reorderLoading[p.id] ? 'Creating...' : 'Reorder'}
@@ -242,7 +242,7 @@ export const InventoryManagement: React.FC = () => {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-lg">
         {/* Left Column: Product Stock List */}
         <div className="xl:col-span-2 space-y-md">
-          <div className="flex justify-between items-center bg-white p-md rounded-2xl border border-slate-200 shadow-sm">
+          <div className="flex justify-between items-center bg-white p-md rounded border border-slate-200 shadow-sm">
             <div className="relative w-full max-w-xs">
               <span className="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
               <input
@@ -250,18 +250,18 @@ export const InventoryManagement: React.FC = () => {
                 placeholder="Search stock catalog..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full h-11 pl-xxl pr-md border border-slate-200 rounded-xl text-body-sm focus:border-[#FFC107] focus:ring-0 bg-slate-50"
+                className="w-full h-11 pl-xxl pr-md border border-slate-200 rounded text-body-sm focus:border-primary focus:ring-0 bg-slate-50"
               />
             </div>
-            <div className="text-xs bg-slate-100 text-slate-500 rounded-xl px-md py-sm font-extrabold font-label-caps uppercase tracking-wide">
+            <div className="text-xs bg-slate-100 text-slate-500 rounded px-md py-sm font-extrabold font-label-caps uppercase tracking-wide">
               {filteredProducts.length} Items Listed
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-white border border-slate-200 rounded overflow-hidden shadow-sm">
             {loading ? (
               <div className="flex justify-center py-xl">
-                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#FFC107]"></div>
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -290,7 +290,7 @@ export const InventoryManagement: React.FC = () => {
                           </td>
                           <td className="px-lg py-md text-slate-500 font-mono text-xs">{p.sku}</td>
                           <td className="px-lg py-md">
-                            <span className={`font-bold px-md py-sm rounded-lg border text-xs flex items-center gap-xs w-max ${
+                            <span className={`font-bold px-md py-sm rounded border text-xs flex items-center gap-xs w-max ${
                               isLow ? 'bg-red-50 text-red-700 border-red-100 animate-pulse' : 'bg-slate-50 text-slate-900 border-slate-200'
                             }`}>
                               {avail} {p.unitOfMeasure}
@@ -302,7 +302,7 @@ export const InventoryManagement: React.FC = () => {
                           <td className="px-lg py-md text-right">
                             <button
                               onClick={() => openAdjustModal(p)}
-                              className="flex items-center gap-xs px-md h-8 border border-slate-200 hover:border-[#FFC107] hover:bg-[#FFFDF5] text-slate-600 hover:text-slate-950 font-bold text-xs rounded-lg transition-all ml-auto"
+                              className="flex items-center gap-xs px-md h-8 border border-slate-200 hover:border-primary hover:bg-[#FFFDF5] text-slate-600 hover:text-slate-950 font-bold text-xs rounded transition-all ml-auto"
                             >
                               <span className="material-symbols-outlined text-[16px]">add_circle</span>
                               Adjust
@@ -321,18 +321,18 @@ export const InventoryManagement: React.FC = () => {
 
         {/* Right Column: Adjustment Logs History */}
         <div className="space-y-md">
-          <div className="bg-slate-900 text-slate-200 p-lg rounded-2xl shadow-md flex justify-between items-center">
+          <div className="bg-slate-900 text-slate-200 p-lg rounded shadow-md flex justify-between items-center">
             <div>
               <h4 className="font-extrabold text-white text-body-md">Stock Adjustment Logs</h4>
               <p className="text-xs text-slate-500 mt-0.5 font-medium">History of manual & automated adjustments</p>
             </div>
-            <span className="material-symbols-outlined text-[#FFC107] text-[24px]">history</span>
+            <span className="material-symbols-outlined text-primary text-[24px]">history</span>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col max-h-[600px]">
+          <div className="bg-white border border-slate-200 rounded shadow-sm overflow-hidden flex flex-col max-h-[600px]">
             {historyLoading ? (
               <div className="flex justify-center py-xl flex-1 items-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#FFC107]"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
               </div>
             ) : (
               <div className="divide-y divide-slate-100 overflow-y-auto flex-1">
@@ -353,7 +353,7 @@ export const InventoryManagement: React.FC = () => {
 
                       <p className="font-extrabold text-slate-900 text-body-xs">{getProductName(a.productId)}</p>
                       
-                      <div className="grid grid-cols-3 gap-xs bg-slate-50 p-sm rounded-lg border border-slate-100 text-center font-bold font-mono text-[10px]">
+                      <div className="grid grid-cols-3 gap-xs bg-slate-50 p-sm rounded border border-slate-100 text-center font-bold font-mono text-[10px]">
                         <div>
                           <p className="text-slate-400 font-medium">Previous</p>
                           <p className="text-slate-600">{a.previousStock}</p>
@@ -394,7 +394,7 @@ export const InventoryManagement: React.FC = () => {
       {/* Adjustment Dialog Modal */}
       {isAdjustModalOpen && selectedProduct && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-md">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
+          <div className="w-full max-w-md bg-white rounded shadow overflow-hidden">
             <div className="px-lg py-md border-b border-slate-200 bg-slate-50 flex justify-between items-center">
               <div>
                 <h3 className="font-extrabold text-slate-900 text-body-md">
@@ -413,7 +413,7 @@ export const InventoryManagement: React.FC = () => {
             <form onSubmit={handleAdjustStock} className="p-lg space-y-md">
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-sm">Current Stock Status</label>
-                <div className="grid grid-cols-2 gap-sm bg-amber-50/40 border border-amber-100 p-md rounded-xl text-center">
+                <div className="grid grid-cols-2 gap-sm bg-amber-50/40 border border-amber-100 p-md rounded text-center">
                   <div>
                     <p className="text-slate-400 text-xs font-medium">Available</p>
                     <p className="font-black text-slate-900 text-body-md">{selectedProduct.inventory?.available ?? selectedProduct.stock ?? 0}</p>
@@ -430,7 +430,7 @@ export const InventoryManagement: React.FC = () => {
                 <select
                   value={adjustmentForm.adjustmentType}
                   onChange={e => setAdjustmentForm({ ...adjustmentForm, adjustmentType: e.target.value })}
-                  className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm font-bold"
+                  className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm font-bold"
                 >
                   <option value="INCOMING">Restock / Incoming (+)</option>
                   <option value="SHIPPED">Ship / Outgoing (-)</option>
@@ -447,7 +447,7 @@ export const InventoryManagement: React.FC = () => {
                   min="0"
                   value={adjustmentForm.quantity}
                   onChange={e => setAdjustmentForm({ ...adjustmentForm, quantity: parseInt(e.target.value, 10) || 0 })}
-                  className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm font-bold"
+                  className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm font-bold"
                 />
               </div>
 
@@ -459,7 +459,7 @@ export const InventoryManagement: React.FC = () => {
                   placeholder="e.g. Received shipment, audit discrepancy, damaged stock"
                   value={adjustmentForm.reason}
                   onChange={e => setAdjustmentForm({ ...adjustmentForm, reason: e.target.value })}
-                  className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm"
+                  className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm"
                 />
               </div>
 
@@ -467,13 +467,13 @@ export const InventoryManagement: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAdjustModalOpen(false)}
-                  className="px-lg h-11 border border-slate-200 hover:border-slate-800 rounded-xl font-bold text-xs text-slate-600 hover:text-slate-800 transition-all"
+                  className="px-lg h-11 border border-slate-200 hover:border-slate-800 rounded font-bold text-xs text-slate-600 hover:text-slate-800 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-xl h-11 rounded-xl font-bold text-xs transition-all shadow-sm"
+                  className="bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-xl h-11 rounded font-bold text-xs transition-all shadow-sm"
                 >
                   Confirm Adjustment
                 </button>

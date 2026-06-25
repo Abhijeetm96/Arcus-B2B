@@ -28,7 +28,7 @@ const PopoverContent = React.forwardRef<
   <PopoverBase.PopoverContent
     ref={ref}
     className={cn(
-      'bg-surface border-border text-text-primary shadow-xl p-4 focus-visible:ring-primary',
+      'bg-surface border-border text-text-primary shadow p-4 focus-visible:ring-primary',
       className
     )}
     {...props}

@@ -266,7 +266,7 @@ export default function Products() {
       </div>
       {toastMessage && (
         <div 
-          className="fixed bottom-8 right-8 z-50 bg-[#121212] text-white px-md py-sm rounded-md shadow-lg flex items-center gap-sm border border-surface-variant font-semibold animate-fade-in"
+          className="fixed bottom-8 right-8 z-50 bg-[#121212] text-white px-md py-sm rounded-md shadow-sm flex items-center gap-sm border border-surface-variant font-semibold animate-fade-in"
           style={{
             boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3)'
           }}

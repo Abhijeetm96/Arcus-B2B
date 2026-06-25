@@ -136,7 +136,7 @@ function ProductSearchSelect({ value, onChange, products }: ProductSearchSelectP
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full h-11 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white text-left flex items-center justify-between shadow-sm hover:border-gray-400 transition-colors"
+        className="w-full h-11 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white text-left flex items-center justify-between shadow-sm hover:border-gray-400 transition-colors"
       >
         <span className={selectedProduct ? "text-on-surface font-semibold truncate" : "text-secondary truncate"}>
           {selectedProduct ? `${selectedProduct.name} [${selectedProduct.categoryTitle}]` : '-- Choose Product --'}
@@ -148,7 +148,7 @@ function ProductSearchSelect({ value, onChange, products }: ProductSearchSelectP
 
       {/* Popover Dropdown Panel */}
       {isOpen && (
-        <div className="absolute left-0 mt-xs w-full min-w-[320px] max-w-[480px] bg-white border border-surface-variant rounded-2xl shadow-xl z-[100] p-md space-y-md">
+        <div className="absolute left-0 mt-xs w-full min-w-[320px] max-w-[480px] bg-white border border-surface-variant rounded shadow z-[100] p-md space-y-md">
           {/* Search Input */}
           <div className="relative">
             <span className="absolute left-3 top-2.5 material-symbols-outlined text-secondary text-[20px]">search</span>
@@ -157,7 +157,7 @@ function ProductSearchSelect({ value, onChange, products }: ProductSearchSelectP
               placeholder="Search product..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-10 pl-[38px] pr-md border border-surface-variant rounded-xl focus:border-primary focus:ring-0 text-body-sm bg-background"
+              className="w-full h-10 pl-[38px] pr-md border border-surface-variant rounded focus:border-primary focus:ring-0 text-body-sm bg-background"
               autoFocus
             />
           </div>
@@ -169,7 +169,7 @@ function ProductSearchSelect({ value, onChange, products }: ProductSearchSelectP
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="h-9 px-sm border border-surface-variant rounded-lg text-xs bg-white focus:border-primary focus:ring-0"
+                className="h-9 px-sm border border-surface-variant rounded text-xs bg-white focus:border-primary focus:ring-0"
               >
                 <option value="">All Categories</option>
                 {categories.map(cat => (
@@ -182,7 +182,7 @@ function ProductSearchSelect({ value, onChange, products }: ProductSearchSelectP
               <select
                 value={selectedSubcategory}
                 onChange={(e) => setSelectedSubcategory(e.target.value)}
-                className="h-9 px-sm border border-surface-variant rounded-lg text-xs bg-white focus:border-primary focus:ring-0 disabled:opacity-50"
+                className="h-9 px-sm border border-surface-variant rounded text-xs bg-white focus:border-primary focus:ring-0 disabled:opacity-50"
               >
                 <option value="">All Subcategories</option>
                 {filteredSubcategorySlugs.map(slug => (
@@ -203,7 +203,7 @@ function ProductSearchSelect({ value, onChange, products }: ProductSearchSelectP
                     onChange(p.id);
                     setIsOpen(false);
                   }}
-                  className={`w-full text-left px-md py-sm rounded-xl text-body-sm transition-all flex items-center justify-between ${
+                  className={`w-full text-left px-md py-sm rounded text-body-sm transition-all flex items-center justify-between ${
                     value === p.id 
                       ? 'bg-primary/10 text-primary font-bold' 
                       : 'hover:bg-background text-on-surface'
@@ -672,7 +672,7 @@ export default function BulkOrders() {
     <div className="bg-background min-h-screen text-on-surface select-none">
       {/* Toast Alert */}
       {bulkToast && (
-        <div className="fixed bottom-6 right-6 z-[100] bg-green-600 text-white px-xl py-lg rounded-2xl shadow-xl flex items-center gap-md border border-green-500 animate-slide-in-right">
+        <div className="fixed bottom-6 right-6 z-[100] bg-green-600 text-white px-xl py-lg rounded shadow flex items-center gap-md border border-green-500 animate-slide-in-right">
           <span className="material-symbols-outlined text-[24px]">check_circle</span>
           <span className="font-bold text-body-sm">{bulkToast}</span>
         </div>
@@ -682,7 +682,7 @@ export default function BulkOrders() {
       <section className="w-full bg-[#1a1c1c] text-white py-[80px] md:py-[112px] border-b border-surface-variant relative overflow-hidden">
         <div className="absolute right-0 top-0 h-full w-1/3 bg-primary/5 skew-x-12 translate-x-1/3 pointer-events-none"></div>
         <div className="max-w-[1440px] mx-auto px-lg text-left flex flex-col gap-md relative z-10">
-          <span className="bg-[#FFC107] text-[#0A0A0A] font-bold px-md py-1 rounded w-fit text-[11px] font-label-caps tracking-wider">
+          <span className="bg-primary text-[#0A0A0A] font-bold px-md py-1 rounded w-fit text-[11px] font-label-caps tracking-wider">
             ENTERPRISE SERVICES
           </span>
           <h1 className="font-sans font-extrabold text-[40px] md:text-[56px] leading-[1.1] max-w-2xl text-white">
@@ -708,7 +708,7 @@ export default function BulkOrders() {
                 </div>
                 <button
                   onClick={addRow}
-                  className="w-fit flex items-center gap-xs text-xs font-bold text-[#FFC107] hover:underline"
+                  className="w-fit flex items-center gap-xs text-xs font-bold text-primary hover:underline"
                 >
                   <span className="material-symbols-outlined text-[18px]">add_circle</span> Add Row
                 </button>
@@ -722,10 +722,10 @@ export default function BulkOrders() {
                   const rowSubtotal = tierPrice * row.qty;
 
                   return (
-                    <div key={idx} className="grid grid-cols-1 md:grid-cols-12 gap-md items-end p-md bg-[#F8F9FA] rounded-2xl border border-surface-variant relative">
+                    <div key={idx} className="grid grid-cols-1 md:grid-cols-12 gap-md items-end p-md bg-[#F8F9FA] rounded border border-surface-variant relative">
                       <button
                         onClick={() => removeRow(idx)}
-                        className="absolute right-4 top-4 md:static md:col-span-1 md:h-11 flex items-center justify-center text-[#C62828] hover:bg-error-container/20 rounded-lg p-1.5 transition-colors self-end justify-self-center"
+                        className="absolute right-4 top-4 md:static md:col-span-1 md:h-11 flex items-center justify-center text-[#C62828] hover:bg-error-container/20 rounded p-1.5 transition-colors self-end justify-self-center"
                         title="Remove Row"
                       >
                         <span className="material-symbols-outlined text-[20px]">delete</span>
@@ -750,7 +750,7 @@ export default function BulkOrders() {
                             min="1"
                             value={row.qty}
                             onChange={(e) => handleRowChange(idx, 'qty', Math.max(1, parseInt(e.target.value) || 0))}
-                            className="w-full h-11 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-center font-bold text-body-sm bg-white"
+                            className="w-full h-11 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-center font-bold text-body-sm bg-white"
                           />
                         </div>
                       </div>
@@ -808,7 +808,7 @@ export default function BulkOrders() {
                       }, 100);
                     }}
                     type="button"
-                    className="w-full sm:w-fit px-xl h-14 bg-[#121212] text-white font-bold rounded-xl hover:bg-[#2a2a2a] transition-all flex items-center justify-center gap-sm font-label-caps text-[14px] shadow-sm"
+                    className="w-full sm:w-fit px-xl h-14 bg-[#121212] text-white font-bold rounded hover:bg-[#2a2a2a] transition-all flex items-center justify-center gap-sm font-label-caps text-[14px] shadow-sm"
                   >
                     <span className="material-symbols-outlined text-[20px]">description</span>
                     Request RFQ
@@ -817,7 +817,7 @@ export default function BulkOrders() {
                     onClick={handleAddAllToCart}
                     disabled={addingToCart}
                     type="button"
-                    className="w-full sm:w-fit px-xl h-14 bg-[#FFC107] text-[#0A0A0A] font-bold rounded-xl hover:bg-[#fabd00] transition-all flex items-center justify-center gap-sm font-label-caps text-[14px] shadow-sm disabled:opacity-50"
+                    className="w-full sm:w-fit px-xl h-14 bg-primary text-[#0A0A0A] font-bold rounded hover:bg-[#fabd00] transition-all flex items-center justify-center gap-sm font-label-caps text-[14px] shadow-sm disabled:opacity-50"
                   >
                     <span className="material-symbols-outlined text-[20px]">shopping_cart_checkout</span>
                     Add All to Cart
@@ -832,7 +832,7 @@ export default function BulkOrders() {
                 <div className="border-b border-surface-variant pb-sm flex justify-between items-center">
                   <div>
                     <h3 className="font-bold text-headline-h3 text-[22px] text-[#0A0A0A] flex items-center gap-xs">
-                      <span className="material-symbols-outlined text-[#FFC107] text-[24px]">description</span>
+                      <span className="material-symbols-outlined text-primary text-[24px]">description</span>
                       Quick Pad RFQ Requirements
                     </h3>
                     <p className="text-secondary text-xs mt-1">Submit your selected order pad items to our estimating desk.</p>
@@ -849,7 +849,7 @@ export default function BulkOrders() {
 
                 <form onSubmit={handleQuickRfqSubmit} className="space-y-md">
                   {/* GST Field & Verification */}
-                  <div className="bg-[#F8F9FA] p-md rounded-2xl border border-surface-variant space-y-sm">
+                  <div className="bg-[#F8F9FA] p-md rounded border border-surface-variant space-y-sm">
                     <div className="flex flex-col gap-xs">
                       <label className="text-secondary text-label-caps text-[10px] font-bold uppercase tracking-wider font-label-caps">GST Number *</label>
                       <div className="flex gap-sm">
@@ -865,13 +865,13 @@ export default function BulkOrders() {
                             setGstVerified(false);
                             setGstError('');
                           }}
-                          className="flex-1 h-11 px-md border border-surface-variant rounded-xl focus:border-primary focus:ring-0 text-body-sm bg-white font-mono"
+                          className="flex-1 h-11 px-md border border-surface-variant rounded focus:border-primary focus:ring-0 text-body-sm bg-white font-mono"
                         />
                         <button
                           type="button"
                           onClick={handleVerifyGst}
                           disabled={gstVerifying}
-                          className="px-lg h-11 bg-[#121212] text-white hover:bg-[#2a2a2a] disabled:opacity-50 transition-colors font-bold rounded-xl font-label-caps text-xs shadow-sm"
+                          className="px-lg h-11 bg-[#121212] text-white hover:bg-[#2a2a2a] disabled:opacity-50 transition-colors font-bold rounded font-label-caps text-xs shadow-sm"
                         >
                           {gstVerifying ? 'Verifying...' : 'Verify GST'}
                         </button>
@@ -902,7 +902,7 @@ export default function BulkOrders() {
                         required
                         value={quickRfqForm.company}
                         onChange={(e) => setQuickRfqForm({ ...quickRfqForm, company: e.target.value })}
-                        className="w-full h-11 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white"
+                        className="w-full h-11 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white"
                       />
                     </div>
 
@@ -914,7 +914,7 @@ export default function BulkOrders() {
                         placeholder="e.g. Whitefield, Bengaluru"
                         value={quickRfqForm.address}
                         onChange={(e) => setQuickRfqForm({ ...quickRfqForm, address: e.target.value })}
-                        className="w-full h-11 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white"
+                        className="w-full h-11 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white"
                       />
                     </div>
                   </div>
@@ -927,7 +927,7 @@ export default function BulkOrders() {
                         required
                         value={quickRfqForm.name}
                         onChange={(e) => setQuickRfqForm({ ...quickRfqForm, name: e.target.value })}
-                        className="w-full h-11 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white"
+                        className="w-full h-11 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white"
                       />
                     </div>
 
@@ -942,7 +942,7 @@ export default function BulkOrders() {
                           if (phoneError) setPhoneError('');
                         }}
                         onBlur={(e) => validatePhone(e.target.value)}
-                        className={`w-full h-11 px-md border ${phoneError ? 'border-red-500 focus:border-red-500' : 'border-surface-variant focus:border-primary'} rounded-xl focus:ring-0 text-body-sm bg-white`}
+                        className={`w-full h-11 px-md border ${phoneError ? 'border-red-500 focus:border-red-500' : 'border-surface-variant focus:border-primary'} rounded focus:ring-0 text-body-sm bg-white`}
                       />
                       {phoneError && (
                         <p className="text-[10px] text-red-600 font-semibold flex items-center gap-xs mt-0.5 animate-fade-in">
@@ -963,7 +963,7 @@ export default function BulkOrders() {
                           if (emailError) setEmailError('');
                         }}
                         onBlur={(e) => validateEmail(e.target.value)}
-                        className={`w-full h-11 px-md border ${emailError ? 'border-red-500 focus:border-red-500' : 'border-surface-variant focus:border-primary'} rounded-xl focus:ring-0 text-body-sm bg-white`}
+                        className={`w-full h-11 px-md border ${emailError ? 'border-red-500 focus:border-red-500' : 'border-surface-variant focus:border-primary'} rounded focus:ring-0 text-body-sm bg-white`}
                       />
                       {emailError && (
                         <p className="text-[10px] text-red-600 font-semibold flex items-center gap-xs mt-0.5 animate-fade-in">
@@ -980,7 +980,7 @@ export default function BulkOrders() {
                       <select
                         value={quickRfqForm.timeline}
                         onChange={(e) => setQuickRfqForm({ ...quickRfqForm, timeline: e.target.value })}
-                        className="w-full h-11 px-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white font-semibold"
+                        className="w-full h-11 px-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white font-semibold"
                       >
                         <option value="Immediate (1-3 Days)">Immediate (1-3 Days)</option>
                         <option value="1 Week">1 Week</option>
@@ -996,13 +996,13 @@ export default function BulkOrders() {
                         placeholder="e.g. customized pipe bends, test certificates needed..."
                         value={quickRfqForm.details}
                         onChange={(e) => setQuickRfqForm({ ...quickRfqForm, details: e.target.value })}
-                        className="w-full p-md border border-surface-variant rounded-xl focus:border-primary-container focus:ring-0 text-body-sm bg-white resize-none"
+                        className="w-full p-md border border-surface-variant rounded focus:border-primary-container focus:ring-0 text-body-sm bg-white resize-none"
                       />
                     </div>
                   </div>
 
                   {/* Items Summary list */}
-                  <div className="bg-[#F8F9FA] border border-surface-variant p-md rounded-2xl max-h-[140px] overflow-y-auto space-y-xs">
+                  <div className="bg-[#F8F9FA] border border-surface-variant p-md rounded max-h-[140px] overflow-y-auto space-y-xs">
                     <span className="text-[10px] font-bold text-secondary uppercase tracking-wider font-label-caps">Items to Enquire ({totalItemCount})</span>
                     {rows.filter(r => r.productId && r.qty > 0).map((row, idx) => {
                       const prod = getProductDetails(row.productId);
@@ -1019,14 +1019,14 @@ export default function BulkOrders() {
                     <button
                       type="button"
                       onClick={() => setIsRfqFormOpen(false)}
-                      className="flex-1 h-12 border border-surface-variant text-secondary hover:bg-background transition-colors font-bold rounded-xl font-label-caps text-xs"
+                      className="flex-1 h-12 border border-surface-variant text-secondary hover:bg-background transition-colors font-bold rounded font-label-caps text-xs"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={submittingRfq}
-                      className="flex-1 h-12 bg-[#FFC107] text-[#0A0A0A] hover:bg-[#fabd00] transition-all font-bold rounded-xl flex items-center justify-center gap-xs font-label-caps text-xs disabled:opacity-50"
+                      className="flex-1 h-12 bg-primary text-[#0A0A0A] hover:bg-[#fabd00] transition-all font-bold rounded flex items-center justify-center gap-xs font-label-caps text-xs disabled:opacity-50"
                     >
                       {submittingRfq ? 'Submitting...' : 'Submit RFQ'}
                     </button>
@@ -1038,7 +1038,7 @@ export default function BulkOrders() {
             {/* B2B Logistics Benefits */}
             <div className="space-y-lg text-left">
               <h3 className="font-bold text-body-lg text-[#0A0A0A] flex items-center gap-xs pl-2">
-                <span className="material-symbols-outlined text-[#FFC107] text-[22px]">local_shipping</span>
+                <span className="material-symbols-outlined text-primary text-[22px]">local_shipping</span>
                 Enterprise Shipping & Logistics Benefits
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
@@ -1048,8 +1048,8 @@ export default function BulkOrders() {
                   { icon: 'support_agent', title: 'Assigned Procurement Officer', desc: 'Get a single designated account representative to coordinate factory dispatch and route management.' },
                   { icon: 'verified', title: 'Manufacturer Test Certificates', desc: 'Receive official Mill Test Reports (MTC) and quality compliance audits directly from the factory.' }
                 ].map((benefit, idx) => (
-                  <div key={idx} className="bg-white border border-surface-variant rounded-2xl p-lg space-y-sm shadow-sm hover:border-[#FFC107] transition-all">
-                    <span className="material-symbols-outlined text-[#FFC107] text-[32px]">{benefit.icon}</span>
+                  <div key={idx} className="bg-white border border-surface-variant rounded p-lg space-y-sm shadow-sm hover:border-primary transition-all">
+                    <span className="material-symbols-outlined text-primary text-[32px]">{benefit.icon}</span>
                     <h5 className="font-bold text-body-sm text-[#0A0A0A]">{benefit.title}</h5>
                     <p className="text-secondary text-xs leading-relaxed">{benefit.desc}</p>
                   </div>

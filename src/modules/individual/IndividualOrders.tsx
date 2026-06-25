@@ -122,7 +122,7 @@ export const IndividualOrders: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center py-xl">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#FFC107]"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -130,11 +130,11 @@ export const IndividualOrders: React.FC = () => {
   return (
     <div className="space-y-lg text-left">
       {selectedOrder ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-lg shadow-sm space-y-md">
+        <div className="bg-white border border-slate-200 rounded p-lg shadow-sm space-y-md">
           <div className="flex justify-between items-center border-b border-slate-100 pb-sm">
             <button
               onClick={() => setSelectedOrder(null)}
-              className="flex items-center gap-xs text-xs font-bold text-[#FFC107] hover:underline"
+              className="flex items-center gap-xs text-xs font-bold text-primary hover:underline"
             >
               <span className="material-symbols-outlined text-[16px]">arrow_back</span>
               Back to Orders
@@ -142,7 +142,7 @@ export const IndividualOrders: React.FC = () => {
             <div className="flex gap-sm">
               <button
                 onClick={() => downloadInvoice(selectedOrder)}
-                className="px-md py-1.5 border border-[#FFC107] text-[#FFC107] font-bold rounded-lg text-xs hover:bg-[#FFFDF5] flex items-center gap-xs"
+                className="px-md py-1.5 border border-primary text-primary font-bold rounded text-xs hover:bg-[#FFFDF5] flex items-center gap-xs"
               >
                 <span className="material-symbols-outlined text-[16px]">description</span>
                 Print Invoice
@@ -154,7 +154,7 @@ export const IndividualOrders: React.FC = () => {
                       if (success) setSelectedOrder({ ...selectedOrder, status: 'Cancelled' });
                     });
                   }}
-                  className="px-md py-1.5 border border-red-200 text-red-600 font-bold rounded-lg text-xs hover:bg-red-50 flex items-center gap-xs"
+                  className="px-md py-1.5 border border-red-200 text-red-600 font-bold rounded text-xs hover:bg-red-50 flex items-center gap-xs"
                 >
                   <span className="material-symbols-outlined text-[16px]">cancel</span>
                   Cancel Order
@@ -174,7 +174,7 @@ export const IndividualOrders: React.FC = () => {
             </div>
           </div>
 
-          <div className="border border-slate-200 rounded-xl overflow-hidden mt-md">
+          <div className="border border-slate-200 rounded overflow-hidden mt-md">
             <table className="w-full text-xs text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase">
@@ -203,7 +203,7 @@ export const IndividualOrders: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-white border border-slate-200 rounded shadow-sm overflow-hidden">
           {orders.length === 0 ? (
             <div className="p-xl text-center text-slate-500">
               <span className="material-symbols-outlined text-[48px] text-slate-300">shopping_cart_checkout</span>
@@ -225,7 +225,7 @@ export const IndividualOrders: React.FC = () => {
                 <tbody className="divide-y divide-slate-100">
                   {orders.map((o: any) => (
                     <tr key={o.id} className="hover:bg-slate-50/50">
-                      <td className="p-md font-bold text-[#FFC107] font-mono">{o.id}</td>
+                      <td className="p-md font-bold text-primary font-mono">{o.id}</td>
                       <td className="p-md text-slate-600">{formatDate(o.timestamp || o.date)}</td>
                       <td className="p-md text-slate-700 font-semibold max-w-[200px] truncate">{o.products || o.items?.map((i: any) => i.name).join(', ')}</td>
                       <td className="p-md font-bold text-slate-900">{formatCurrency(o.amount)}</td>
@@ -241,7 +241,7 @@ export const IndividualOrders: React.FC = () => {
                       <td className="p-md text-right">
                         <button
                           onClick={() => setSelectedOrder(o)}
-                          className="px-md py-1 border border-slate-200 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded-lg text-[10px]"
+                          className="px-md py-1 border border-slate-200 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-[10px]"
                         >
                           View Details
                         </button>

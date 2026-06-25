@@ -105,7 +105,7 @@ export const BulkUpdates: React.FC = () => {
   return (
     <div className="space-y-lg text-left">
       {/* Top Banner */}
-      <div className="bg-white p-lg rounded-2xl border border-slate-200 shadow-sm">
+      <div className="bg-white p-lg rounded border border-slate-200 shadow-sm">
         <h3 className="font-extrabold text-slate-900 text-headline-h6">Bulk Update Center</h3>
         <p className="text-body-sm text-slate-400">Perform massive product metadata, price, or inventory corrections without exporting the entire catalog.</p>
       </div>
@@ -117,13 +117,13 @@ export const BulkUpdates: React.FC = () => {
             <button
               key={s.id}
               onClick={() => handleSectionChange(s.id)}
-              className={`w-full flex items-center gap-md px-md py-sm rounded-xl font-bold text-xs uppercase tracking-wider transition-all border text-left ${
+              className={`w-full flex items-center gap-md px-md py-sm rounded font-bold text-xs uppercase tracking-wider transition-all border text-left ${
                 activeSection === s.id
                   ? 'bg-slate-900 text-white border-slate-900 shadow-md'
                   : 'bg-white text-slate-650 hover:bg-slate-50 border-slate-200 shadow-xs'
               }`}
             >
-              <span className={`material-symbols-outlined text-[20px] ${activeSection === s.id ? 'text-[#FFC107]' : 'text-slate-400'}`}>{s.icon}</span>
+              <span className={`material-symbols-outlined text-[20px] ${activeSection === s.id ? 'text-primary' : 'text-slate-400'}`}>{s.icon}</span>
               {s.title}
             </button>
           ))}
@@ -133,13 +133,13 @@ export const BulkUpdates: React.FC = () => {
         <div className="lg:col-span-3 space-y-lg">
           {/* Notifications */}
           {error && (
-            <div className="bg-red-50 text-red-800 p-md rounded-2xl border border-red-200 flex justify-between items-center animate-fade-in">
+            <div className="bg-red-50 text-red-800 p-md rounded border border-red-200 flex justify-between items-center animate-fade-in">
               <span>{error}</span>
               <button onClick={() => setError(null)} className="material-symbols-outlined text-[18px]">close</button>
             </div>
           )}
           {success && (
-            <div className="bg-green-50 text-green-800 p-md rounded-2xl border border-green-200 flex justify-between items-center animate-fade-in">
+            <div className="bg-green-50 text-green-800 p-md rounded border border-green-200 flex justify-between items-center animate-fade-in">
               <span>{success}</span>
               <button onClick={() => setSuccess(null)} className="material-symbols-outlined text-[18px]">close</button>
             </div>
@@ -147,17 +147,17 @@ export const BulkUpdates: React.FC = () => {
 
           {/* Form */}
           {!result && (
-            <form onSubmit={handleSubmit} className="bg-white p-lg rounded-2xl border border-slate-200 shadow-sm space-y-md">
+            <form onSubmit={handleSubmit} className="bg-white p-lg rounded border border-slate-200 shadow-sm space-y-md">
               <div className="border-b border-slate-100 pb-sm">
                 <h4 className="font-extrabold text-slate-900 text-md flex items-center gap-xs">
-                  <span className="material-symbols-outlined text-[#FFC107]">{currentSec.icon}</span>
+                  <span className="material-symbols-outlined text-primary">{currentSec.icon}</span>
                   {currentSec.title}
                 </h4>
                 <p className="text-xs text-slate-400 font-medium mt-1">{currentSec.desc}</p>
               </div>
 
               {/* Template Columns Info */}
-              <div className="bg-slate-50 p-md rounded-xl border border-slate-200/50 space-y-xs text-xs">
+              <div className="bg-slate-50 p-md rounded border border-slate-200/50 space-y-xs text-xs">
                 <span className="font-bold text-slate-700">Required Column Headers:</span>
                 <div className="flex flex-wrap gap-xs pt-xs font-mono text-[10px]">
                   {currentSec.columns.map(col => (
@@ -168,8 +168,8 @@ export const BulkUpdates: React.FC = () => {
               </div>
 
               {/* Dropzone */}
-              <div className="border-2 border-dashed border-slate-200 rounded-2xl p-xl flex flex-col items-center justify-center bg-slate-50/50 hover:bg-slate-50 transition-all cursor-pointer relative group">
-                <span className="material-symbols-outlined text-slate-300 text-[56px] group-hover:text-[#FFC107] transition-all">upload_file</span>
+              <div className="border-2 border-dashed border-slate-200 rounded p-xl flex flex-col items-center justify-center bg-slate-50/50 hover:bg-slate-50 transition-all cursor-pointer relative group">
+                <span className="material-symbols-outlined text-slate-300 text-[56px] group-hover:text-primary transition-all">upload_file</span>
                 <p className="text-body-sm text-slate-700 font-bold mt-sm">
                   {file ? file.name : 'Select or drag & drop update spreadsheet'}
                 </p>
@@ -186,7 +186,7 @@ export const BulkUpdates: React.FC = () => {
                 <button
                   type="submit"
                   disabled={processing || !file}
-                  className="flex items-center gap-xs bg-primary-container text-on-primary-container hover:bg-[#fabd00] disabled:bg-slate-100 disabled:text-slate-400 px-xl h-12 rounded-xl font-extrabold text-sm transition-all shadow-sm"
+                  className="flex items-center gap-xs bg-primary-container text-on-primary-container hover:bg-[#fabd00] disabled:bg-slate-100 disabled:text-slate-400 px-xl h-12 rounded font-extrabold text-sm transition-all shadow-sm"
                 >
                   {processing ? (
                     <>
@@ -206,7 +206,7 @@ export const BulkUpdates: React.FC = () => {
 
           {/* Results Screen */}
           {result && (
-            <div className="bg-white p-lg rounded-2xl border border-slate-200 shadow-sm space-y-md animate-fade-in">
+            <div className="bg-white p-lg rounded border border-slate-200 shadow-sm space-y-md animate-fade-in">
               <div className="text-center py-md space-y-xs">
                 <span className="material-symbols-outlined text-green-500 text-[48px]">check_circle</span>
                 <h4 className="font-extrabold text-slate-900 text-headline-h6">Bulk Updates Applied!</h4>
@@ -214,11 +214,11 @@ export const BulkUpdates: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-md max-w-sm mx-auto">
-                <div className="bg-green-50 text-green-800 p-md rounded-2xl text-center border border-green-200">
+                <div className="bg-green-50 text-green-800 p-md rounded text-center border border-green-200">
                   <p className="text-[10px] uppercase font-bold">Successfully Updated</p>
                   <p className="text-headline-h6 font-extrabold">{result.updatedCount}</p>
                 </div>
-                <div className="bg-red-50 text-red-800 p-md rounded-2xl text-center border border-red-200">
+                <div className="bg-red-50 text-red-800 p-md rounded text-center border border-red-200">
                   <p className="text-[10px] uppercase font-bold">Failed / Not Found</p>
                   <p className="text-headline-h6 font-extrabold">{result.failedCount}</p>
                 </div>
@@ -230,7 +230,7 @@ export const BulkUpdates: React.FC = () => {
                     <span className="material-symbols-outlined text-[16px]">error</span>
                     Failed / Skipped Rows ({result.errors.length})
                   </h5>
-                  <div className="max-h-56 overflow-y-auto border border-red-100 rounded-xl bg-red-50/20 divide-y divide-red-50">
+                  <div className="max-h-56 overflow-y-auto border border-red-100 rounded bg-red-50/20 divide-y divide-red-50">
                     {result.errors.map((err, idx) => (
                       <div key={idx} className="p-sm text-xs">
                         <span className="font-bold text-slate-700 mr-sm">SKU: {err.sku}</span>
@@ -244,7 +244,7 @@ export const BulkUpdates: React.FC = () => {
               <div className="pt-md border-t border-slate-100 flex justify-end">
                 <button
                   onClick={() => setResult(null)}
-                  className="bg-[#FFC107] text-slate-950 px-lg h-11 rounded-xl font-bold text-xs hover:bg-[#fabd00]"
+                  className="bg-primary text-slate-950 px-lg h-11 rounded font-bold text-xs hover:bg-[#fabd00]"
                 >
                   Load Another Sheet
                 </button>

@@ -376,20 +376,20 @@ export const ProductManagement: React.FC = () => {
     <div className="space-y-md text-left">
       {/* Notifications */}
       {error && (
-        <div className="bg-red-50 text-red-800 p-md rounded-2xl border border-red-200 flex justify-between items-center">
+        <div className="bg-red-50 text-red-800 p-md rounded border border-red-200 flex justify-between items-center">
           <span>{error}</span>
           <button onClick={() => setError(null)} className="material-symbols-outlined text-[18px]">close</button>
         </div>
       )}
       {success && (
-        <div className="bg-green-50 text-green-800 p-md rounded-2xl border border-green-200 flex justify-between items-center">
+        <div className="bg-green-50 text-green-800 p-md rounded border border-green-200 flex justify-between items-center">
           <span>{success}</span>
           <button onClick={() => setSuccess(null)} className="material-symbols-outlined text-[18px]">close</button>
         </div>
       )}
 
       {/* Filters Toolbar */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-md bg-white p-md rounded-2xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-md bg-white p-md rounded border border-slate-200 shadow-sm">
         <div className="flex flex-wrap items-center gap-sm w-full md:w-auto">
           {/* Search Box */}
           <div className="relative flex-1 min-w-[200px] md:max-w-xs">
@@ -399,7 +399,7 @@ export const ProductManagement: React.FC = () => {
               placeholder="Search product name, SKU, brand..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-11 pl-xxl pr-md border border-slate-200 rounded-xl text-body-sm focus:border-[#FFC107] focus:ring-0 bg-slate-50"
+              className="w-full h-11 pl-xxl pr-md border border-slate-200 rounded text-body-sm focus:border-primary focus:ring-0 bg-slate-50"
             />
           </div>
 
@@ -407,7 +407,7 @@ export const ProductManagement: React.FC = () => {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="h-11 px-md border border-slate-200 rounded-xl text-body-sm bg-slate-50 focus:border-[#FFC107] focus:ring-0 font-bold"
+            className="h-11 px-md border border-slate-200 rounded text-body-sm bg-slate-50 focus:border-primary focus:ring-0 font-bold"
           >
             <option value="all">All Categories</option>
             {categories.map(c => (
@@ -419,7 +419,7 @@ export const ProductManagement: React.FC = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-11 px-md border border-slate-200 rounded-xl text-body-sm bg-slate-50 focus:border-[#FFC107] focus:ring-0 font-bold"
+            className="h-11 px-md border border-slate-200 rounded text-body-sm bg-slate-50 focus:border-primary focus:ring-0 font-bold"
           >
             <option value="all">All Statuses</option>
             <option value="ACTIVE">Active</option>
@@ -433,7 +433,7 @@ export const ProductManagement: React.FC = () => {
         {/* Add Product Button */}
         <button
           onClick={openAddEditor}
-          className="flex items-center gap-xs bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-lg h-11 rounded-xl font-bold text-xs transition-all shadow-sm w-full md:w-auto justify-center"
+          className="flex items-center gap-xs bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-lg h-11 rounded font-bold text-xs transition-all shadow-sm w-full md:w-auto justify-center"
         >
           <span className="material-symbols-outlined text-[16px]">add</span>
           Add New Product
@@ -443,10 +443,10 @@ export const ProductManagement: React.FC = () => {
       {/* Catalog Table */}
       {loading ? (
         <div className="flex justify-center py-xl">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#FFC107]"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-white border border-slate-200 rounded overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-body-sm text-left border-collapse">
               <thead>
@@ -456,7 +456,7 @@ export const ProductManagement: React.FC = () => {
                       type="checkbox"
                       checked={filteredProducts.length > 0 && selectedProductIds.size === filteredProducts.length}
                       onChange={toggleSelectAll}
-                      className="w-4 h-4 rounded border-slate-300 text-[#FFC107] focus:ring-[#FFC107]"
+                      className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary"
                     />
                   </th>
                   <th className="px-lg py-md">Product details</th>
@@ -476,7 +476,7 @@ export const ProductManagement: React.FC = () => {
                         type="checkbox"
                         checked={selectedProductIds.has(p.id)}
                         onChange={() => toggleSelectProduct(p.id)}
-                        className="w-4 h-4 rounded border-slate-300 text-[#FFC107] focus:ring-[#FFC107]"
+                        className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary"
                       />
                     </td>
                     <td className="px-lg py-md">
@@ -484,7 +484,7 @@ export const ProductManagement: React.FC = () => {
                         <img
                           src={p.images?.[0] || '/pdp_cpvc_pipe_main.png'}
                           alt={p.name}
-                          className="w-12 h-12 object-contain border border-slate-100 rounded-lg p-0.5 bg-white"
+                          className="w-12 h-12 object-contain border border-slate-100 rounded p-0.5 bg-white"
                         />
                         <div>
                           <div className="font-bold text-slate-900 text-body-sm">{p.name}</div>
@@ -513,7 +513,7 @@ export const ProductManagement: React.FC = () => {
                       <div className="flex gap-sm justify-end">
                         <button
                           onClick={() => openEditEditor(p)}
-                          className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center hover:bg-slate-100 text-slate-600 hover:text-slate-900"
+                          className="w-8 h-8 rounded border border-slate-200 flex items-center justify-center hover:bg-slate-100 text-slate-600 hover:text-slate-900"
                           title="Edit"
                         >
                           <span className="material-symbols-outlined text-[16px]">edit</span>
@@ -521,7 +521,7 @@ export const ProductManagement: React.FC = () => {
                         {p.status !== 'ARCHIVED' && (
                           <button
                             onClick={() => handleArchiveProduct(p.id, p.name)}
-                            className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center hover:bg-red-50 text-slate-600 hover:text-red-600"
+                            className="w-8 h-8 rounded border border-slate-200 flex items-center justify-center hover:bg-red-50 text-slate-600 hover:text-red-600"
                             title="Archive Product"
                           >
                             <span className="material-symbols-outlined text-[16px]">archive</span>
@@ -546,9 +546,9 @@ export const ProductManagement: React.FC = () => {
 
       {/* Floating Bulk Operations Bar */}
       {selectedProductIds.size > 0 && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-lg py-md rounded-2xl shadow-2xl flex flex-wrap items-center gap-md z-40 border border-slate-800 animate-slide-up">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-lg py-md rounded shadow flex flex-wrap items-center gap-md z-40 border border-slate-800 animate-slide-up">
           <div className="flex items-center gap-xs border-r border-slate-800 pr-md">
-            <span className="material-symbols-outlined text-[#FFC107]">check_box</span>
+            <span className="material-symbols-outlined text-primary">check_box</span>
             <span className="font-extrabold text-sm">{selectedProductIds.size} Products Selected</span>
           </div>
 
@@ -563,7 +563,7 @@ export const ProductManagement: React.FC = () => {
                   if (e.target.value) handleBulkAction('status', e.target.value);
                 }}
                 disabled={isBulkUpdating}
-                className="bg-slate-800 border border-slate-700 text-white rounded-xl text-xs h-9 px-sm focus:ring-[#FFC107] focus:border-[#FFC107] font-bold"
+                className="bg-slate-800 border border-slate-700 text-white rounded text-xs h-9 px-sm focus:ring-primary focus:border-primary font-bold"
               >
                 <option value="">Choose...</option>
                 <option value="ACTIVE">Active</option>
@@ -583,14 +583,14 @@ export const ProductManagement: React.FC = () => {
                 value={bulkMoq}
                 onChange={e => setBulkMoq(e.target.value)}
                 disabled={isBulkUpdating}
-                className="w-16 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs h-9 px-sm focus:ring-[#FFC107] focus:border-[#FFC107] font-bold"
+                className="w-16 bg-slate-800 border border-slate-700 text-white rounded text-xs h-9 px-sm focus:ring-primary focus:border-primary font-bold"
               />
               <button
                 onClick={() => {
                   if (bulkMoq) handleBulkAction('moq', bulkMoq);
                 }}
                 disabled={isBulkUpdating || !bulkMoq}
-                className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-sm h-9 rounded-xl text-xs font-bold"
+                className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-sm h-9 rounded text-xs font-bold"
               >
                 Apply
               </button>
@@ -600,7 +600,7 @@ export const ProductManagement: React.FC = () => {
             <button
               onClick={() => handleBulkAction('export')}
               disabled={isBulkUpdating}
-              className="flex items-center gap-xs bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 px-md h-9 rounded-xl text-xs font-bold"
+              className="flex items-center gap-xs bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 px-md h-9 rounded text-xs font-bold"
             >
               <span className="material-symbols-outlined text-[14px]">download</span>
               Export
@@ -621,7 +621,7 @@ export const ProductManagement: React.FC = () => {
       {/* Editor Sidebar Drawer Modal */}
       {isEditorOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
-          <div className="w-full max-w-2xl bg-white h-full shadow-2xl flex flex-col justify-between overflow-hidden">
+          <div className="w-full max-w-2xl bg-white h-full shadow flex flex-col justify-between overflow-hidden">
             {/* Header */}
             <div className="px-lg py-md border-b border-slate-200 bg-slate-50 flex justify-between items-center">
               <div>
@@ -647,7 +647,7 @@ export const ProductManagement: React.FC = () => {
                   onClick={() => setActiveEditorTab(tab)}
                   className={`px-md py-sm font-bold text-xs uppercase tracking-wider border-b-2 transition-all capitalize ${
                     activeEditorTab === tab 
-                      ? 'border-[#FFC107] text-[#FFC107]' 
+                      ? 'border-primary text-primary' 
                       : 'border-transparent text-slate-400 hover:text-slate-600'
                   }`}
                 >
@@ -711,7 +711,7 @@ export const ProductManagement: React.FC = () => {
                         }
                         setProductForm(prev => ({ ...prev, ...updates }));
                       }}
-                      className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm"
+                      className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm"
                     />
                   </div>
 
@@ -731,7 +731,7 @@ export const ProductManagement: React.FC = () => {
                         }
                         setProductForm(prev => ({ ...prev, ...updates }));
                       }}
-                      className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm"
+                      className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm"
                     />
                   </div>
 
@@ -742,7 +742,7 @@ export const ProductManagement: React.FC = () => {
                       required
                       value={productForm.model || ''}
                       onChange={e => setProductForm({ ...productForm, model: e.target.value })}
-                      className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm"
+                      className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm"
                     />
                   </div>
 
@@ -753,7 +753,7 @@ export const ProductManagement: React.FC = () => {
                       required
                       value={productForm.sku || ''}
                       onChange={e => setProductForm({ ...productForm, sku: e.target.value })}
-                      className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm font-semibold"
+                      className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm font-semibold"
                     />
                   </div>
 
@@ -764,7 +764,7 @@ export const ProductManagement: React.FC = () => {
                       required
                       value={productForm.productId || ''}
                       onChange={e => setProductForm({ ...productForm, productId: e.target.value, id: e.target.value })}
-                      className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm font-mono text-xs"
+                      className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm font-mono text-xs"
                     />
                   </div>
 
@@ -796,7 +796,7 @@ export const ProductManagement: React.FC = () => {
                         }
                         setProductForm(prev => ({ ...prev, ...updates }));
                       }}
-                      className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm"
+                      className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm"
                     >
                       {categories.map(c => (
                         <option key={c.id} value={c.id}>{c.name}</option>
@@ -810,7 +810,7 @@ export const ProductManagement: React.FC = () => {
                       type="text"
                       value={productForm.hsnCode || ''}
                       onChange={e => setProductForm({ ...productForm, hsnCode: e.target.value })}
-                      className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm"
+                      className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm"
                     />
                   </div>
 
@@ -820,7 +820,7 @@ export const ProductManagement: React.FC = () => {
                       type="number"
                       value={productForm.gstRate || 18}
                       onChange={e => setProductForm({ ...productForm, gstRate: Number(e.target.value) })}
-                      className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm"
+                      className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm"
                     />
                   </div>
 
@@ -830,7 +830,7 @@ export const ProductManagement: React.FC = () => {
                       value={productForm.description || ''}
                       onChange={e => setProductForm({ ...productForm, description: e.target.value })}
                       rows={3}
-                      className="w-full p-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm"
+                      className="w-full p-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm"
                     />
                   </div>
 
@@ -850,7 +850,7 @@ export const ProductManagement: React.FC = () => {
                             }
                           })}
                           placeholder="100"
-                          className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm"
+                          className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm"
                         />
                       </div>
                       <div>
@@ -866,7 +866,7 @@ export const ProductManagement: React.FC = () => {
                             }
                           })}
                           placeholder="10"
-                          className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm"
+                          className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm"
                         />
                       </div>
                     </>
@@ -877,7 +877,7 @@ export const ProductManagement: React.FC = () => {
                     <select
                       value={productForm.status || 'ACTIVE'}
                       onChange={e => setProductForm({ ...productForm, status: e.target.value as any })}
-                      className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm"
+                      className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm"
                     >
                       <option value="ACTIVE">Active</option>
                       <option value="OUT_OF_STOCK">Out of Stock</option>
@@ -894,7 +894,7 @@ export const ProductManagement: React.FC = () => {
                         type="checkbox"
                         checked={productForm.allowB2B !== false}
                         onChange={e => setProductForm({ ...productForm, allowB2B: e.target.checked })}
-                        className="w-5 h-5 rounded border-slate-300 text-[#FFC107] focus:ring-[#FFC107]"
+                        className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary"
                       />
                       Allow B2B
                     </label>
@@ -903,7 +903,7 @@ export const ProductManagement: React.FC = () => {
                         type="checkbox"
                         checked={productForm.allowB2C !== false}
                         onChange={e => setProductForm({ ...productForm, allowB2C: e.target.checked })}
-                        className="w-5 h-5 rounded border-slate-300 text-[#FFC107] focus:ring-[#FFC107]"
+                        className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary"
                       />
                       Allow B2C
                     </label>
@@ -921,7 +921,7 @@ export const ProductManagement: React.FC = () => {
                         required
                         value={productForm.price || ''}
                         onChange={e => setProductForm({ ...productForm, price: Number(e.target.value) })}
-                        className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm font-bold"
+                        className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm font-bold"
                       />
                     </div>
 
@@ -933,7 +933,7 @@ export const ProductManagement: React.FC = () => {
                         placeholder="Piece, Meter, Box, Bag..."
                         value={productForm.unitOfMeasure || ''}
                         onChange={e => setProductForm({ ...productForm, unitOfMeasure: e.target.value })}
-                        className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm"
+                        className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm"
                       />
                     </div>
 
@@ -943,7 +943,7 @@ export const ProductManagement: React.FC = () => {
                         type="number"
                         value={productForm.minimumOrderQuantity || 1}
                         onChange={e => setProductForm({ ...productForm, minimumOrderQuantity: Number(e.target.value) })}
-                        className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm"
+                        className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm"
                       />
                     </div>
 
@@ -953,7 +953,7 @@ export const ProductManagement: React.FC = () => {
                         type="number"
                         value={productForm.orderMultiple || 1}
                         onChange={e => setProductForm({ ...productForm, orderMultiple: Number(e.target.value) })}
-                        className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm"
+                        className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm"
                       />
                     </div>
 
@@ -963,7 +963,7 @@ export const ProductManagement: React.FC = () => {
                         type="number"
                         value={productForm.procurementPrice || 0}
                         onChange={e => setProductForm({ ...productForm, procurementPrice: Number(e.target.value) })}
-                        className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm font-semibold"
+                        className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm font-semibold"
                       />
                     </div>
 
@@ -973,7 +973,7 @@ export const ProductManagement: React.FC = () => {
                         type="text"
                         value={productForm.vendorName || ''}
                         onChange={e => setProductForm({ ...productForm, vendorName: e.target.value })}
-                        className="w-full h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm"
+                        className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm"
                       />
                     </div>
                   </div>
@@ -987,26 +987,26 @@ export const ProductManagement: React.FC = () => {
                         placeholder="Min Qty"
                         value={newTierMin}
                         onChange={e => setNewTierMin(e.target.value)}
-                        className="h-10 px-sm border border-slate-200 rounded-lg text-xs"
+                        className="h-10 px-sm border border-slate-200 rounded text-xs"
                       />
                       <input
                         type="number"
                         placeholder="Max Qty"
                         value={newTierMax}
                         onChange={e => setNewTierMax(e.target.value)}
-                        className="h-10 px-sm border border-slate-200 rounded-lg text-xs"
+                        className="h-10 px-sm border border-slate-200 rounded text-xs"
                       />
                       <input
                         type="number"
                         placeholder="Unit Price"
                         value={newTierPrice}
                         onChange={e => setNewTierPrice(e.target.value)}
-                        className="h-10 px-sm border border-slate-200 rounded-lg text-xs"
+                        className="h-10 px-sm border border-slate-200 rounded text-xs"
                       />
                       <button
                         type="button"
                         onClick={addPriceTier}
-                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 h-10 rounded-lg font-bold text-xs"
+                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 h-10 rounded font-bold text-xs"
                       >
                         Add Tier
                       </button>
@@ -1015,9 +1015,9 @@ export const ProductManagement: React.FC = () => {
                     {/* Price Tiers List */}
                     <div className="space-y-xs pt-xs">
                       {priceTiers.map((t, idx) => (
-                        <div key={idx} className="flex justify-between items-center bg-slate-50 p-sm rounded-lg border border-slate-100 text-xs font-semibold">
+                        <div key={idx} className="flex justify-between items-center bg-slate-50 p-sm rounded border border-slate-100 text-xs font-semibold">
                           <div>
-                            Qty {t.min} - {t.max === 999999 ? '∞' : t.max} • <span className="text-[#FFC107] font-bold">₹{t.price}</span> (Save {t.save}%)
+                            Qty {t.min} - {t.max === 999999 ? '∞' : t.max} • <span className="text-primary font-bold">₹{t.price}</span> (Save {t.save}%)
                           </div>
                           <button
                             type="button"
@@ -1042,19 +1042,19 @@ export const ProductManagement: React.FC = () => {
                       placeholder="Spec Key (e.g., Material)"
                       value={newSpecKey}
                       onChange={e => setNewSpecKey(e.target.value)}
-                      className="flex-1 h-10 px-sm border border-slate-200 rounded-lg text-xs"
+                      className="flex-1 h-10 px-sm border border-slate-200 rounded text-xs"
                     />
                     <input
                       type="text"
                       placeholder="Value (e.g., CPVC)"
                       value={newSpecVal}
                       onChange={e => setNewSpecVal(e.target.value)}
-                      className="flex-1 h-10 px-sm border border-slate-200 rounded-lg text-xs"
+                      className="flex-1 h-10 px-sm border border-slate-200 rounded text-xs"
                     />
                     <button
                       type="button"
                       onClick={addSpec}
-                      className="bg-slate-100 hover:bg-slate-200 text-slate-700 h-10 px-md rounded-lg font-bold text-xs"
+                      className="bg-slate-100 hover:bg-slate-200 text-slate-700 h-10 px-md rounded font-bold text-xs"
                     >
                       Add Spec
                     </button>
@@ -1062,7 +1062,7 @@ export const ProductManagement: React.FC = () => {
 
                   <div className="space-y-xs pt-xs">
                     {specifications.map((s, idx) => (
-                      <div key={idx} className="flex justify-between items-center bg-slate-50 p-sm rounded-lg border border-slate-100 text-xs">
+                      <div key={idx} className="flex justify-between items-center bg-slate-50 p-sm rounded border border-slate-100 text-xs">
                         <div>
                           <span className="font-bold text-slate-500">{s.key}:</span> <span className="font-semibold text-slate-800">{s.value}</span>
                         </div>
@@ -1088,12 +1088,12 @@ export const ProductManagement: React.FC = () => {
                       placeholder="Accessory Product ID (e.g., cpvc-solvent-cement)"
                       value={newAccessoryId}
                       onChange={e => setNewAccessoryId(e.target.value)}
-                      className="flex-1 h-10 px-sm border border-slate-200 rounded-lg text-xs"
+                      className="flex-1 h-10 px-sm border border-slate-200 rounded text-xs"
                     />
                     <button
                       type="button"
                       onClick={addAccessory}
-                      className="bg-slate-100 hover:bg-slate-200 text-slate-700 h-10 px-md rounded-lg font-bold text-xs"
+                      className="bg-slate-100 hover:bg-slate-200 text-slate-700 h-10 px-md rounded font-bold text-xs"
                     >
                       Add ID
                     </button>
@@ -1101,7 +1101,7 @@ export const ProductManagement: React.FC = () => {
 
                   <div className="space-y-xs pt-xs">
                     {recommendedAccessories.map((aId, idx) => (
-                      <div key={idx} className="flex justify-between items-center bg-slate-50 p-sm rounded-lg border border-slate-100 text-xs font-mono">
+                      <div key={idx} className="flex justify-between items-center bg-slate-50 p-sm rounded border border-slate-100 text-xs font-mono">
                         <span>{aId}</span>
                         <button
                           type="button"
@@ -1122,14 +1122,14 @@ export const ProductManagement: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsEditorOpen(false)}
-                className="px-lg h-11 border border-slate-200 hover:border-slate-800 rounded-xl font-bold text-xs text-slate-600 hover:text-slate-800 transition-all"
+                className="px-lg h-11 border border-slate-200 hover:border-slate-800 rounded font-bold text-xs text-slate-600 hover:text-slate-800 transition-all"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleSaveProduct}
-                className="bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-xl h-11 rounded-xl font-bold text-xs transition-all shadow-sm"
+                className="bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-xl h-11 rounded font-bold text-xs transition-all shadow-sm"
               >
                 Save Product
               </button>

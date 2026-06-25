@@ -1112,7 +1112,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
             <span className="material-symbols-outlined text-[64px] text-red-500 block mb-md">person_off</span>
             <h1 className="font-headline-h1 text-[36px] font-extrabold text-[#0A0A0A] mb-md">Professional Not Found</h1>
             <p className="text-[#6C757D] text-body-md max-w-md mx-auto mb-xl">The contractor profile you are looking for does not exist or has been deactivated.</p>
-            <a href="#/services" className="bg-[#0A0A0A] text-white font-bold px-xxl py-lg rounded-xl shadow-md hover:bg-primary hover:text-[#0A0A0A] transition-all">
+            <a href="#/services" className="bg-[#0A0A0A] text-white font-bold px-xxl py-lg rounded shadow-md hover:bg-primary hover:text-[#0A0A0A] transition-all">
               Back to Services Hub
             </a>
           </div>
@@ -1143,7 +1143,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
             {/* Owner/Company main info row */}
             <div className="px-lg md:px-2xl pb-xl pt-4 relative flex flex-col md:flex-row md:items-end justify-between gap-xl">
               {/* Profile image container overlapping the cover */}
-              <div className="absolute top-0 left-6 md:left-12 -translate-y-1/2 w-32 h-32 rounded-full border-4 border-white overflow-hidden bg-white shadow-lg">
+              <div className="absolute top-0 left-6 md:left-12 -translate-y-1/2 w-32 h-32 rounded-full border-4 border-white overflow-hidden bg-white shadow-sm">
                 <img src={pro.avatar} className="w-full h-full object-cover" alt="Avatar" />
               </div>
 
@@ -1170,7 +1170,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                 <p className="text-body-md text-[#6C757D] font-semibold">Lead Partner: {pro.name} • Based in {pro.location}</p>
                 <div className="flex items-center gap-md pt-xs">
                   <div className="flex items-center gap-xs text-body-sm font-bold text-[#0A0A0A]">
-                    <span className="material-symbols-outlined text-[#FFC107] text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                    <span className="material-symbols-outlined text-primary text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                     {pro.rating} <span className="text-[#6C757D] font-normal">({pro.reviewCount} Reviews)</span>
                   </div>
                   <div className="h-4 w-px bg-[#CED4DA]"></div>
@@ -1187,7 +1187,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                     setSelectedService({ name: `${pro.company} Consultation`, price: pro.startingPrice })
                     setShowBookModal(true)
                   }}
-                  className="border border-[#0A0A0A] text-[#0A0A0A] px-xl py-md rounded-xl font-bold hover:bg-[#F8F9FA] transition-all flex items-center gap-xs text-body-sm"
+                  className="border border-[#0A0A0A] text-[#0A0A0A] px-xl py-md rounded font-bold hover:bg-[#F8F9FA] transition-all flex items-center gap-xs text-body-sm"
                 >
                   <span className="material-symbols-outlined text-[20px]">calendar_today</span>
                   Book a Visit
@@ -1197,7 +1197,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                     setSelectedPro(pro)
                     setShowDirectQuoteModal(true)
                   }}
-                  className="bg-[#FFC107] text-[#0A0A0A] px-xl py-md rounded-xl font-bold hover:bg-[#fabd00] hover:scale-105 active:scale-95 transition-all shadow-md text-body-sm"
+                  className="bg-primary text-[#0A0A0A] px-xl py-md rounded font-bold hover:bg-[#fabd00] hover:scale-105 active:scale-95 transition-all shadow-md text-body-sm"
                 >
                   Request Quote
                 </button>
@@ -1225,7 +1225,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                 <h2 className="font-headline-h2 text-[22px] font-extrabold text-[#0A0A0A]">Specialization Area</h2>
                 <div className="flex flex-wrap gap-md">
                   {pro.specializations.map((spec, i) => (
-                    <span key={i} className="bg-[#F8F9FA] border border-[#E9ECEF] text-[#495057] font-bold px-lg py-md rounded-xl text-body-sm uppercase tracking-wide">
+                    <span key={i} className="bg-[#F8F9FA] border border-[#E9ECEF] text-[#495057] font-bold px-lg py-md rounded text-body-sm uppercase tracking-wide">
                       {spec}
                     </span>
                   ))}
@@ -1329,7 +1329,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
         {/* POPULAR SERVICE BOOKING MODAL */}
         {showBookModal && selectedService && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[99] flex items-center justify-center p-lg">
-            <div className="bg-white rounded-[24px] border border-[#E9ECEF] w-full max-w-md p-lg md:p-xl space-y-lg text-left shadow-2xl relative">
+            <div className="bg-white rounded-[24px] border border-[#E9ECEF] w-full max-w-md p-lg md:p-xl space-y-lg text-left shadow relative">
               <button
                 onClick={() => setShowBookModal(false)}
                 className="absolute top-4 right-4 p-sm hover:bg-[#F8F9FA] rounded-full text-[#6C757D]"
@@ -1357,7 +1357,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       type="text"
                       value={bookForm.name}
                       onChange={(e) => setBookForm({ ...bookForm, name: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                       placeholder="Enter your full name"
                       required
                     />
@@ -1368,7 +1368,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       type="tel"
                       value={bookForm.phone}
                       onChange={(e) => setBookForm({ ...bookForm, phone: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                       placeholder="e.g. +91 99999 88888"
                       required
                     />
@@ -1380,7 +1380,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                         type="date"
                         value={bookForm.date}
                         onChange={(e) => setBookForm({ ...bookForm, date: e.target.value })}
-                        className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                        className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                         required
                       />
                     </div>
@@ -1390,7 +1390,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                         type="time"
                         value={bookForm.time}
                         onChange={(e) => setBookForm({ ...bookForm, time: e.target.value })}
-                        className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                        className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                         required
                       />
                     </div>
@@ -1401,7 +1401,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       type="text"
                       value={bookForm.address}
                       onChange={(e) => setBookForm({ ...bookForm, address: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                       placeholder="Building, Street, Area, City"
                       required
                     />
@@ -1411,13 +1411,13 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                     <textarea
                       value={bookForm.notes}
                       onChange={(e) => setBookForm({ ...bookForm, notes: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg p-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0 h-16 resize-none"
+                      className="bg-white border border-[#E9ECEF] rounded p-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0 h-16 resize-none"
                       placeholder="Provide any location instructions or layout details..."
                     />
                   </div>
                   <button
                     type="submit"
-                    className="w-full bg-[#FFC107] text-[#0A0A0A] font-bold h-11 rounded-[12px] hover:bg-[#fabd00] transition-colors shadow"
+                    className="w-full bg-primary text-[#0A0A0A] font-bold h-11 rounded-[12px] hover:bg-[#fabd00] transition-colors shadow"
                   >
                     Confirm Slot Booking
                   </button>
@@ -1430,7 +1430,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
         {/* DIRECT PRO QUOTE REQUEST MODAL */}
         {showDirectQuoteModal && selectedPro && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[99] flex items-center justify-center p-lg">
-            <div className="bg-white rounded-[24px] border border-[#E9ECEF] w-full max-w-md p-lg md:p-xl space-y-lg text-left shadow-2xl relative">
+            <div className="bg-white rounded-[24px] border border-[#E9ECEF] w-full max-w-md p-lg md:p-xl space-y-lg text-left shadow relative">
               <button
                 onClick={() => setShowDirectQuoteModal(false)}
                 className="absolute top-4 right-4 p-sm hover:bg-[#F8F9FA] rounded-full text-[#6C757D]"
@@ -1458,7 +1458,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       type="text"
                       value={directQuoteForm.name}
                       onChange={(e) => setDirectQuoteForm({ ...directQuoteForm, name: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                       placeholder="Enter your full name"
                       required
                     />
@@ -1469,7 +1469,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       type="tel"
                       value={directQuoteForm.phone}
                       onChange={(e) => setDirectQuoteForm({ ...directQuoteForm, phone: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                       placeholder="+91 XXXXX XXXXX"
                       required
                     />
@@ -1481,7 +1481,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                         type="text"
                         value={directQuoteForm.budget}
                         onChange={(e) => setDirectQuoteForm({ ...directQuoteForm, budget: e.target.value })}
-                        className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                        className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                         placeholder="e.g. ₹50,000"
                         required
                       />
@@ -1492,7 +1492,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                         type="text"
                         value={directQuoteForm.timeline}
                         onChange={(e) => setDirectQuoteForm({ ...directQuoteForm, timeline: e.target.value })}
-                        className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                        className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                         placeholder="e.g. 2 Weeks"
                         required
                       />
@@ -1504,7 +1504,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       type="text"
                       value={directQuoteForm.address}
                       onChange={(e) => setDirectQuoteForm({ ...directQuoteForm, address: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                       placeholder="Building, Street, Area, City"
                       required
                     />
@@ -1514,14 +1514,14 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                     <textarea
                       value={directQuoteForm.desc}
                       onChange={(e) => setDirectQuoteForm({ ...directQuoteForm, desc: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg p-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0 h-20 resize-none"
+                      className="bg-white border border-[#E9ECEF] rounded p-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0 h-20 resize-none"
                       placeholder="Describe specific work items, dimensions or material requirements..."
                       required
                     />
                   </div>
                   <button
                     type="submit"
-                    className="w-full bg-[#FFC107] text-[#0A0A0A] font-bold h-11 rounded-[12px] hover:bg-[#fabd00] transition-colors shadow"
+                    className="w-full bg-primary text-[#0A0A0A] font-bold h-11 rounded-[12px] hover:bg-[#fabd00] transition-colors shadow"
                   >
                     Send Quote Request
                   </button>
@@ -1554,7 +1554,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
           </nav>
 
           {/* Listing Hero Banner */}
-          <div className="bg-[#1a1c1c] text-white rounded-[32px] p-xl md:p-xxl flex flex-col md:flex-row items-center justify-between gap-xl mb-4xl border border-white/5 relative overflow-hidden shadow-lg">
+          <div className="bg-[#1a1c1c] text-white rounded-[32px] p-xl md:p-xxl flex flex-col md:flex-row items-center justify-between gap-xl mb-4xl border border-white/5 relative overflow-hidden shadow-sm">
             <div className="absolute right-0 top-0 h-full w-1/3 bg-primary/10 skew-x-12 translate-x-1/2 pointer-events-none"></div>
             <div className="space-y-md relative z-10 max-w-3xl">
               <span className="material-symbols-outlined text-primary text-[48px] block">
@@ -1574,7 +1574,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                   document.getElementById('request-quotes')?.scrollIntoView({ behavior: 'smooth' })
                 }, 100)
               }}
-              className="bg-primary text-[#0A0A0A] font-bold px-xxl py-lg rounded-xl hover:bg-[#fabd00] hover:scale-105 transition-all shrink-0 relative z-10 flex items-center justify-center font-label-caps"
+              className="bg-primary text-[#0A0A0A] font-bold px-xxl py-lg rounded hover:bg-[#fabd00] hover:scale-105 transition-all shrink-0 relative z-10 flex items-center justify-center font-label-caps"
             >
               Get Custom Estimates
             </button>
@@ -1627,7 +1627,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       </h3>
                       <p className="text-[#6C757D] text-xs">Partner: {pro.name} • {pro.location}</p>
                       <div className="flex items-center gap-xs text-[13px] text-[#0A0A0A] font-bold">
-                        <span className="material-symbols-outlined text-[#FFC107] text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                        <span className="material-symbols-outlined text-primary text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                         {pro.rating} <span className="text-[#6C757D] font-normal">({pro.reviewCount} reviews)</span>
                       </div>
                     </div>
@@ -1676,7 +1676,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                           setSelectedPro(pro)
                           setShowDirectQuoteModal(true)
                         }}
-                        className="bg-[#FFC107] text-[#0A0A0A] rounded-[12px] h-9 text-xs font-bold hover:bg-[#fabd00] transition-colors"
+                        className="bg-primary text-[#0A0A0A] rounded-[12px] h-9 text-xs font-bold hover:bg-[#fabd00] transition-colors"
                       >
                         Request Quote
                       </button>
@@ -1691,7 +1691,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
         {/* POPULAR SERVICE BOOKING MODAL */}
         {showBookModal && selectedService && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[99] flex items-center justify-center p-lg">
-            <div className="bg-white rounded-[24px] border border-[#E9ECEF] w-full max-w-md p-lg md:p-xl space-y-lg text-left shadow-2xl relative">
+            <div className="bg-white rounded-[24px] border border-[#E9ECEF] w-full max-w-md p-lg md:p-xl space-y-lg text-left shadow relative">
               <button
                 onClick={() => setShowBookModal(false)}
                 className="absolute top-4 right-4 p-sm hover:bg-[#F8F9FA] rounded-full text-[#6C757D]"
@@ -1719,7 +1719,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       type="text"
                       value={bookForm.name}
                       onChange={(e) => setBookForm({ ...bookForm, name: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                       placeholder="Enter your full name"
                       required
                     />
@@ -1730,7 +1730,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       type="tel"
                       value={bookForm.phone}
                       onChange={(e) => setBookForm({ ...bookForm, phone: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                       placeholder="e.g. +91 99999 88888"
                       required
                     />
@@ -1741,7 +1741,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       type="date"
                       value={bookForm.date}
                       onChange={(e) => setBookForm({ ...bookForm, date: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                       required
                     />
                   </div>
@@ -1750,13 +1750,13 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                     <textarea
                       value={bookForm.notes}
                       onChange={(e) => setBookForm({ ...bookForm, notes: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg p-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0 h-16 resize-none"
+                      className="bg-white border border-[#E9ECEF] rounded p-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0 h-16 resize-none"
                       placeholder="Provide any location instructions or layout details..."
                     />
                   </div>
                   <button
                     type="submit"
-                    className="w-full bg-[#FFC107] text-[#0A0A0A] font-bold h-11 rounded-[12px] hover:bg-[#fabd00] transition-colors shadow"
+                    className="w-full bg-primary text-[#0A0A0A] font-bold h-11 rounded-[12px] hover:bg-[#fabd00] transition-colors shadow"
                   >
                     Confirm Slot Booking
                   </button>
@@ -1769,7 +1769,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
         {/* DIRECT PRO QUOTE REQUEST MODAL */}
         {showDirectQuoteModal && selectedPro && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[99] flex items-center justify-center p-lg">
-            <div className="bg-white rounded-[24px] border border-[#E9ECEF] w-full max-w-md p-lg md:p-xl space-y-lg text-left shadow-2xl relative">
+            <div className="bg-white rounded-[24px] border border-[#E9ECEF] w-full max-w-md p-lg md:p-xl space-y-lg text-left shadow relative">
               <button
                 onClick={() => setShowDirectQuoteModal(false)}
                 className="absolute top-4 right-4 p-sm hover:bg-[#F8F9FA] rounded-full text-[#6C757D]"
@@ -1797,7 +1797,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       type="text"
                       value={directQuoteForm.name}
                       onChange={(e) => setDirectQuoteForm({ ...directQuoteForm, name: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                       placeholder="Enter your full name"
                       required
                     />
@@ -1808,7 +1808,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       type="tel"
                       value={directQuoteForm.phone}
                       onChange={(e) => setDirectQuoteForm({ ...directQuoteForm, phone: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                       placeholder="+91 XXXXX XXXXX"
                       required
                     />
@@ -1820,7 +1820,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                         type="text"
                         value={directQuoteForm.budget}
                         onChange={(e) => setDirectQuoteForm({ ...directQuoteForm, budget: e.target.value })}
-                        className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                        className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                         placeholder="e.g. ₹50,000"
                         required
                       />
@@ -1831,7 +1831,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                         type="text"
                         value={directQuoteForm.timeline}
                         onChange={(e) => setDirectQuoteForm({ ...directQuoteForm, timeline: e.target.value })}
-                        className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                        className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                         placeholder="e.g. 2 Weeks"
                         required
                       />
@@ -1842,14 +1842,14 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                     <textarea
                       value={directQuoteForm.desc}
                       onChange={(e) => setDirectQuoteForm({ ...directQuoteForm, desc: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg p-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0 h-20 resize-none"
+                      className="bg-white border border-[#E9ECEF] rounded p-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0 h-20 resize-none"
                       placeholder="Describe specific work items, dimensions or material requirements..."
                       required
                     />
                   </div>
                   <button
                     type="submit"
-                    className="w-full bg-[#FFC107] text-[#0A0A0A] font-bold h-11 rounded-[12px] hover:bg-[#fabd00] transition-colors shadow"
+                    className="w-full bg-primary text-[#0A0A0A] font-bold h-11 rounded-[12px] hover:bg-[#fabd00] transition-colors shadow"
                   >
                     Send Quote Request
                   </button>
@@ -1889,7 +1889,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
           </nav>
 
           {/* Hero Banner */}
-          <div className="bg-[#1a1c1c] text-white rounded-[32px] p-xl md:p-xxl flex flex-col md:flex-row items-center justify-between gap-xl mb-4xl border border-white/5 relative overflow-hidden shadow-lg">
+          <div className="bg-[#1a1c1c] text-white rounded-[32px] p-xl md:p-xxl flex flex-col md:flex-row items-center justify-between gap-xl mb-4xl border border-white/5 relative overflow-hidden shadow-sm">
             <div className="absolute right-0 top-0 h-full w-1/3 bg-primary/10 skew-x-12 translate-x-1/2 pointer-events-none"></div>
             <div className="space-y-md relative z-10">
               <span className="material-symbols-outlined text-primary text-[48px] block">
@@ -1910,7 +1910,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                   document.getElementById('rfq-form-section')?.scrollIntoView({ behavior: 'smooth' })
                 }, 100)
               }}
-              className="bg-primary text-[#0A0A0A] font-bold px-xxl py-lg rounded-xl hover:bg-[#fabd00] hover:scale-105 transition-all duration-200 shrink-0 relative z-10 flex items-center justify-center font-label-caps"
+              className="bg-primary text-[#0A0A0A] font-bold px-xxl py-lg rounded hover:bg-[#fabd00] hover:scale-105 transition-all duration-200 shrink-0 relative z-10 flex items-center justify-center font-label-caps"
             >
               Get Custom RFQ
             </a>
@@ -2008,7 +2008,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       </h3>
                       <p className="text-[#6C757D] text-xs">Partner: {pro.name} • {pro.location}</p>
                       <div className="flex items-center gap-xs text-[13px] text-[#0A0A0A] font-bold">
-                        <span className="material-symbols-outlined text-[#FFC107] text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                        <span className="material-symbols-outlined text-primary text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                         {pro.rating} <span className="text-[#6C757D] font-normal">({pro.reviewCount} reviews)</span>
                       </div>
                     </div>
@@ -2057,7 +2057,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                           setSelectedPro(pro)
                           setShowDirectQuoteModal(true)
                         }}
-                        className="bg-[#FFC107] text-[#0A0A0A] rounded-[12px] h-9 text-xs font-bold hover:bg-[#fabd00] transition-colors"
+                        className="bg-primary text-[#0A0A0A] rounded-[12px] h-9 text-xs font-bold hover:bg-[#fabd00] transition-colors"
                       >
                         Request Quote
                       </button>
@@ -2118,7 +2118,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       {[...Array(5)].map((_, i) => (
                         <span
                           key={i}
-                          className="material-symbols-outlined text-[#FFC107] text-[18px]"
+                          className="material-symbols-outlined text-primary text-[18px]"
                           style={{ fontVariationSettings: `'FILL' ${i < review.rating ? 1 : 0}` }}
                         >
                           star
@@ -2130,7 +2130,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                     </p>
                   </div>
                   <div className="pt-md border-t border-[#E9ECEF] flex items-center gap-md">
-                    <div className="w-10 h-10 rounded-full bg-[#FFC107]/10 flex items-center justify-center font-bold text-primary">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
                       {review.author[0]}
                     </div>
                     <div>
@@ -2292,8 +2292,8 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
               </p>
 
               {/* Hero Search Module */}
-              <div className="w-full bg-white p-md rounded-[20px] shadow-lg border border-[#E9ECEF] flex flex-col lg:flex-row items-center gap-md mt-lg">
-                <div className="flex-1 w-full flex items-center gap-sm bg-[#F8F9FA] px-md py-sm rounded-lg border border-transparent focus-within:border-[#FFC107] focus-within:bg-white transition-all">
+              <div className="w-full bg-white p-md rounded-[20px] shadow-sm border border-[#E9ECEF] flex flex-col lg:flex-row items-center gap-md mt-lg">
+                <div className="flex-1 w-full flex items-center gap-sm bg-[#F8F9FA] px-md py-sm rounded border border-transparent focus-within:border-primary focus-within:bg-white transition-all">
                   <span className="material-symbols-outlined text-[#6C757D]">search</span>
                   <input
                     type="text"
@@ -2304,7 +2304,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                   />
                 </div>
 
-                <div className="w-full lg:w-48 flex items-center gap-sm bg-[#F8F9FA] px-md py-sm rounded-lg border border-transparent focus-within:border-[#FFC107] focus-within:bg-white transition-all">
+                <div className="w-full lg:w-48 flex items-center gap-sm bg-[#F8F9FA] px-md py-sm rounded border border-transparent focus-within:border-primary focus-within:bg-white transition-all">
                   <span className="material-symbols-outlined text-[#6C757D]">location_on</span>
                   <select
                     value={hubCityFilter}
@@ -2322,7 +2322,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                   onClick={() => {
                     document.getElementById('professionals-grid-section')?.scrollIntoView({ behavior: 'smooth' })
                   }}
-                  className="w-full lg:w-auto bg-[#FFC107] text-[#0A0A0A] px-xl h-12 rounded-[12px] font-bold text-[14px] hover:bg-[#fabd00] transition-colors shrink-0 flex items-center justify-center"
+                  className="w-full lg:w-auto bg-primary text-[#0A0A0A] px-xl h-12 rounded-[12px] font-bold text-[14px] hover:bg-[#fabd00] transition-colors shrink-0 flex items-center justify-center"
                 >
                   Find Professionals
                 </button>
@@ -2353,7 +2353,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
             <div className="lg:col-span-5 hidden lg:block relative h-[480px]">
               <div className="absolute inset-0 bg-gradient-to-tr from-[#FFC107]/20 to-transparent rounded-[24px] blur-md -z-10"></div>
               {/* Image Frame */}
-              <div className="w-full h-full rounded-[24px] overflow-hidden border border-[#E9ECEF] shadow-lg relative bg-white group hover:scale-[1.02] transition-transform duration-300">
+              <div className="w-full h-full rounded-[24px] overflow-hidden border border-[#E9ECEF] shadow-sm relative bg-white group hover:scale-[1.02] transition-transform duration-300">
                 <img
                   src="/services_house_construction.png"
                   alt="ARCUS Construction and Maintenance Services"
@@ -2361,7 +2361,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                 />
                 
                 {/* Floating Badge 1: Verified Badge */}
-                <div className="absolute top-6 left-6 bg-white border border-[#E9ECEF] rounded-[16px] p-md shadow-lg flex items-center gap-sm">
+                <div className="absolute top-6 left-6 bg-white border border-[#E9ECEF] rounded-[16px] p-md shadow-sm flex items-center gap-sm">
                   <div className="w-8 h-8 rounded-full bg-[#E8F5E9] flex items-center justify-center text-[#2E7D32]">
                     <span className="material-symbols-outlined text-[20px] font-bold">verified</span>
                   </div>
@@ -2372,8 +2372,8 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                 </div>
 
                 {/* Floating Badge 2: Ongoing Project Badge */}
-                <div className="absolute bottom-6 right-6 bg-[#0A0A0A] rounded-[16px] p-md shadow-lg flex items-center gap-sm border border-white/10 text-white">
-                  <div className="w-8 h-8 rounded-full bg-[#FFC107] flex items-center justify-center text-[#0A0A0A]">
+                <div className="absolute bottom-6 right-6 bg-[#0A0A0A] rounded-[16px] p-md shadow-sm flex items-center gap-sm border border-white/10 text-white">
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-[#0A0A0A]">
                     <span className="material-symbols-outlined text-[20px]">engineering</span>
                   </div>
                   <div className="text-left">
@@ -2391,7 +2391,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
       <section className="mt-5xl px-lg max-w-[1320px] mx-auto text-left">
         <div className="flex justify-between items-end mb-xl">
           <div>
-            <span className="font-label-caps text-[#FFC107] mb-xs block uppercase tracking-wider text-[10px] font-bold">Service Taxonomy</span>
+            <span className="font-label-caps text-primary mb-xs block uppercase tracking-wider text-[10px] font-bold">Service Taxonomy</span>
             <h2 className="font-headline-h2 text-[32px] font-extrabold text-[#0A0A0A] tracking-tight">
               Browse Service Categories
             </h2>
@@ -2402,7 +2402,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
               e.preventDefault()
               document.getElementById('services-categories-grid')?.scrollIntoView({ behavior: 'smooth' })
             }}
-            className="text-[#FFC107] font-bold hover:underline flex items-center gap-xs text-body-sm"
+            className="text-primary font-bold hover:underline flex items-center gap-xs text-body-sm"
           >
             View All Categories
             <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
@@ -2425,19 +2425,19 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
               onClick={() => {
                 window.location.hash = `#/services/${cat.slug}`
               }}
-              className="w-full h-[180px] bg-[#FFFFFF] rounded-[24px] border border-[#E9ECEF] p-lg flex flex-col justify-between hover:border-[#FFC107] hover:shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-200 cursor-pointer select-none group"
+              className="w-full h-[180px] bg-[#FFFFFF] rounded-[24px] border border-[#E9ECEF] p-lg flex flex-col justify-between hover:border-primary hover:shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-200 cursor-pointer select-none group"
             >
               <div className="flex justify-between items-start">
-                <div className="w-12 h-12 bg-[#F8F9FA] rounded-full flex items-center justify-center border border-[#E9ECEF] group-hover:bg-[#FFC107]/10 transition-colors">
-                  <span className="material-symbols-outlined text-[#0A0A0A] group-hover:text-[#FFC107] transition-colors">{cat.icon}</span>
+                <div className="w-12 h-12 bg-[#F8F9FA] rounded-full flex items-center justify-center border border-[#E9ECEF] group-hover:bg-primary/10 transition-colors">
+                  <span className="material-symbols-outlined text-[#0A0A0A] group-hover:text-primary transition-colors">{cat.icon}</span>
                 </div>
-                <span className="text-[10px] font-bold text-[#FFC107] font-label-caps uppercase tracking-wider flex items-center gap-xs">
+                <span className="text-[10px] font-bold text-primary font-label-caps uppercase tracking-wider flex items-center gap-xs">
                   Explore Services
                   <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
                 </span>
               </div>
               <div className="space-y-xs">
-                <h3 className="font-bold text-body-md text-[#0A0A0A] group-hover:text-[#FFC107] transition-colors">
+                <h3 className="font-bold text-body-md text-[#0A0A0A] group-hover:text-primary transition-colors">
                   {cat.name}
                 </h3>
                 <p className="text-xs text-[#6C757D] leading-relaxed line-clamp-3">
@@ -2464,7 +2464,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                 <div className="space-y-xs">
                   <div className="flex justify-between items-start">
                     <h4 className="font-bold text-body-md text-[#0A0A0A] leading-snug">{service.name}</h4>
-                    <span className="flex items-center gap-xs text-[#FFC107] font-bold text-xs shrink-0">
+                    <span className="flex items-center gap-xs text-primary font-bold text-xs shrink-0">
                       <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                       {service.rating}
                     </span>
@@ -2531,7 +2531,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                 <select
                   value={hubCityFilter}
                   onChange={(e) => setHubCityFilter(e.target.value)}
-                  className="bg-white border border-[#E9ECEF] rounded-lg h-9 px-md text-xs outline-none focus:border-[#FFC107] focus:ring-0 cursor-pointer w-full font-bold"
+                  className="bg-white border border-[#E9ECEF] rounded h-9 px-md text-xs outline-none focus:border-primary focus:ring-0 cursor-pointer w-full font-bold"
                 >
                   <option value="All">All Cities</option>
                   <option value="Bangalore">Bangalore</option>
@@ -2546,7 +2546,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                 <select
                   value={hubCategoryFilter}
                   onChange={(e) => setHubCategoryFilter(e.target.value)}
-                  className="bg-white border border-[#E9ECEF] rounded-lg h-9 px-md text-xs outline-none focus:border-[#FFC107] focus:ring-0 cursor-pointer w-full font-bold"
+                  className="bg-white border border-[#E9ECEF] rounded h-9 px-md text-xs outline-none focus:border-primary focus:ring-0 cursor-pointer w-full font-bold"
                 >
                   <option value="All">All Categories</option>
                   <option value="Plumbing">Plumbing</option>
@@ -2565,7 +2565,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                 <select
                   value={hubExpFilter}
                   onChange={(e) => setHubExpFilter(e.target.value)}
-                  className="bg-white border border-[#E9ECEF] rounded-lg h-9 px-md text-xs outline-none focus:border-[#FFC107] focus:ring-0 cursor-pointer w-full font-bold"
+                  className="bg-white border border-[#E9ECEF] rounded h-9 px-md text-xs outline-none focus:border-primary focus:ring-0 cursor-pointer w-full font-bold"
                 >
                   <option value="All">All Experience levels</option>
                   <option value="Under 10 Yrs">Under 10 Years</option>
@@ -2579,7 +2579,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                 <select
                   value={hubRatingFilter}
                   onChange={(e) => setHubRatingFilter(e.target.value)}
-                  className="bg-white border border-[#E9ECEF] rounded-lg h-9 px-md text-xs outline-none focus:border-[#FFC107] focus:ring-0 cursor-pointer w-full font-bold"
+                  className="bg-white border border-[#E9ECEF] rounded h-9 px-md text-xs outline-none focus:border-primary focus:ring-0 cursor-pointer w-full font-bold"
                 >
                   <option value="All">All Ratings</option>
                   <option value="4.9★+">4.9★ &amp; Above</option>
@@ -2592,7 +2592,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                 <select
                   value={hubBudgetFilter}
                   onChange={(e) => setHubBudgetFilter(e.target.value)}
-                  className="bg-white border border-[#E9ECEF] rounded-lg h-9 px-md text-xs outline-none focus:border-[#FFC107] focus:ring-0 cursor-pointer w-full font-bold"
+                  className="bg-white border border-[#E9ECEF] rounded h-9 px-md text-xs outline-none focus:border-primary focus:ring-0 cursor-pointer w-full font-bold"
                 >
                   <option value="All">All budgets</option>
                   <option value="Low">Low (under ₹500)</option>
@@ -2608,7 +2608,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                   type="checkbox"
                   checked={hubVerifiedOnly}
                   onChange={(e) => setHubVerifiedOnly(e.target.checked)}
-                  className="rounded text-[#FFC107] focus:ring-[#FFC107] h-4 w-4 border-[#E9ECEF]"
+                  className="rounded text-primary focus:ring-primary h-4 w-4 border-[#E9ECEF]"
                 />
               </div>
             </div>
@@ -2620,7 +2620,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
             <div className="flex justify-between items-center lg:hidden bg-[#F8F9FA] p-md rounded-[16px] border border-[#E9ECEF] mb-md">
               <button
                 onClick={() => setHubShowMobileFilters(true)}
-                className="flex items-center gap-xs font-bold text-xs text-[#0A0A0A] bg-white px-lg py-sm rounded-lg border border-[#E9ECEF]"
+                className="flex items-center gap-xs font-bold text-xs text-[#0A0A0A] bg-white px-lg py-sm rounded border border-[#E9ECEF]"
               >
                 <span className="material-symbols-outlined text-[16px]">filter_list</span>
                 Filter &amp; Sort
@@ -2638,7 +2638,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                 <select
                   value={hubSortOption}
                   onChange={(e) => setHubSortOption(e.target.value)}
-                  className="bg-[#F8F9FA] text-xs font-bold border border-transparent hover:border-[#E9ECEF] rounded-lg h-9 px-md outline-none cursor-pointer"
+                  className="bg-[#F8F9FA] text-xs font-bold border border-transparent hover:border-[#E9ECEF] rounded h-9 px-md outline-none cursor-pointer"
                 >
                   <option value="Recommended">Recommended</option>
                   <option value="Top Rated">Top Rated</option>
@@ -2690,7 +2690,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                         </h3>
                         <p className="text-[#6C757D] text-xs">Partner: {pro.name} • {pro.location}</p>
                         <div className="flex items-center gap-xs text-[13px] text-[#0A0A0A] font-bold">
-                          <span className="material-symbols-outlined text-[#FFC107] text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                          <span className="material-symbols-outlined text-primary text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                           {pro.rating} <span className="text-[#6C757D] font-normal">({pro.reviewCount} reviews)</span>
                         </div>
                       </div>
@@ -2740,7 +2740,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                             setSelectedPro(pro)
                             setShowDirectQuoteModal(true)
                           }}
-                          className="bg-[#FFC107] text-[#0A0A0A] rounded-[12px] h-9 text-xs font-bold hover:bg-[#fabd00] transition-colors"
+                          className="bg-primary text-[#0A0A0A] rounded-[12px] h-9 text-xs font-bold hover:bg-[#fabd00] transition-colors"
                         >
                           Request Quote
                         </button>
@@ -2778,7 +2778,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                   <h3 className="font-bold text-body-md text-[#0A0A0A]">{item.title}</h3>
                   <p className="text-xs text-[#6C757D] leading-relaxed">{item.desc}</p>
                 </div>
-                <span className="text-xs text-[#FFC107] font-bold font-label-caps uppercase">{item.timeline}</span>
+                <span className="text-xs text-primary font-bold font-label-caps uppercase">{item.timeline}</span>
               </div>
             ))}
           </div>
@@ -2806,7 +2806,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
             { icon: 'support_agent', title: 'Dedicated Support Desk', desc: 'Site inspection scheduling, dispute mapping, and escalation support via ARCUS engineers.' }
           ].map((item, idx) => (
             <div key={idx} className="p-lg bg-white border border-[#E9ECEF] rounded-[20px] flex gap-md items-start">
-              <span className="material-symbols-outlined text-[#FFC107] text-[32px] shrink-0">{item.icon}</span>
+              <span className="material-symbols-outlined text-primary text-[32px] shrink-0">{item.icon}</span>
               <div className="space-y-xs">
                 <h3 className="font-bold text-body-md text-[#0A0A0A]">{item.title}</h3>
                 <p className="text-xs text-[#6C757D] leading-relaxed">{item.desc}</p>
@@ -2821,7 +2821,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
         <div className="w-full bg-[#FFF8E1] rounded-[32px] p-8 md:p-12 border border-[#FFE082]/60 relative overflow-hidden">
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-xl items-center">
             <div className="lg:col-span-5 space-y-md">
-              <span className="bg-[#FFC107] text-[#0A0A0A] font-bold px-md py-1 rounded w-fit text-[10px] font-label-caps tracking-wider uppercase">
+              <span className="bg-primary text-[#0A0A0A] font-bold px-md py-1 rounded w-fit text-[10px] font-label-caps tracking-wider uppercase">
                 Bids &amp; Procurement
               </span>
               <h2 className="font-headline-h2 text-[36px] font-extrabold text-[#0A0A0A] leading-tight">
@@ -2850,7 +2850,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                   <p className="text-secondary text-body-sm max-w-sm mx-auto leading-relaxed">
                     Our lead engineers are evaluating your specifications and BOQ. Up to 3 matching partners will contact you within 2 hours.
                   </p>
-                  <button onClick={() => setHubRfqSubmitted(false)} className="text-[#FFC107] font-bold hover:underline text-xs block mx-auto">
+                  <button onClick={() => setHubRfqSubmitted(false)} className="text-primary font-bold hover:underline text-xs block mx-auto">
                     Submit Another Query
                   </button>
                 </div>
@@ -2861,7 +2861,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                     <select
                       value={hubRfqForm.category}
                       onChange={(e) => setHubRfqForm({ ...hubRfqForm, category: e.target.value })}
-                      className="bg-[#F8F9FA] border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm focus:border-2 focus:border-[#FFC107] focus:ring-0 outline-none"
+                      className="bg-[#F8F9FA] border border-[#E9ECEF] rounded h-11 px-md text-body-sm focus:border-2 focus:border-primary focus:ring-0 outline-none"
                     >
                       <option value="Full Home Renovation">Full Home Renovation</option>
                       <option value="New Construction">New House Construction</option>
@@ -2877,7 +2877,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       type="text"
                       value={hubRfqForm.name}
                       onChange={(e) => setHubRfqForm({ ...hubRfqForm, name: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm focus:border-2 focus:border-[#FFC107] focus:ring-0 outline-none"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm focus:border-2 focus:border-primary focus:ring-0 outline-none"
                       placeholder="e.g. Indiranagar, Bangalore"
                       required
                     />
@@ -2889,7 +2889,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       type="text"
                       value={hubRfqForm.budget}
                       onChange={(e) => setHubRfqForm({ ...hubRfqForm, budget: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm focus:border-2 focus:border-[#FFC107] focus:ring-0 outline-none"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm focus:border-2 focus:border-primary focus:ring-0 outline-none"
                       placeholder="e.g. ₹25 Lakhs"
                       required
                     />
@@ -2901,7 +2901,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       type="text"
                       value={hubRfqForm.timeline}
                       onChange={(e) => setHubRfqForm({ ...hubRfqForm, timeline: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm focus:border-2 focus:border-[#FFC107] focus:ring-0 outline-none"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm focus:border-2 focus:border-primary focus:ring-0 outline-none"
                       placeholder="e.g. 6 Months"
                       required
                     />
@@ -2913,7 +2913,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       type="tel"
                       value={hubRfqForm.phone}
                       onChange={(e) => setHubRfqForm({ ...hubRfqForm, phone: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm focus:border-2 focus:border-[#FFC107] focus:ring-0 outline-none"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm focus:border-2 focus:border-primary focus:ring-0 outline-none"
                       placeholder="+91 XXXXX XXXXX"
                       required
                     />
@@ -2924,14 +2924,14 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                     <textarea
                       value={hubRfqForm.desc}
                       onChange={(e) => setHubRfqForm({ ...hubRfqForm, desc: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg p-md text-body-sm focus:border-2 focus:border-[#FFC107] focus:ring-0 outline-none h-20 resize-none"
+                      className="bg-white border border-[#E9ECEF] rounded p-md text-body-sm focus:border-2 focus:border-primary focus:ring-0 outline-none h-20 resize-none"
                       placeholder="Enter specifications (e.g. total square footage, layout drawings details)..."
                     />
                   </div>
 
                   <div className="flex flex-col gap-xs md:col-span-2">
                     <label className="text-[10px] font-bold uppercase tracking-wider text-[#6C757D] font-label-caps">Upload layouts / BOQ (Optional)</label>
-                    <div className="border border-dashed border-[#E9ECEF] bg-[#F8F9FA] rounded-lg p-md text-center hover:bg-white transition-colors cursor-pointer flex flex-col items-center justify-center gap-xs h-20">
+                    <div className="border border-dashed border-[#E9ECEF] bg-[#F8F9FA] rounded p-md text-center hover:bg-white transition-colors cursor-pointer flex flex-col items-center justify-center gap-xs h-20">
                       <span className="material-symbols-outlined text-[#6C757D] text-[20px]">upload_file</span>
                       <span className="text-xs text-[#6C757D] font-medium">Click to select PDF BOQ or Floor plans</span>
                     </div>
@@ -2939,7 +2939,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
 
                   <button
                     type="submit"
-                    className="md:col-span-2 bg-[#FFC107] text-[#0A0A0A] font-bold h-12 rounded-[12px] hover:bg-[#fabd00] transition-colors mt-xs shadow"
+                    className="md:col-span-2 bg-primary text-[#0A0A0A] font-bold h-12 rounded-[12px] hover:bg-[#fabd00] transition-colors mt-xs shadow"
                   >
                     Get Quotes
                   </button>
@@ -2963,7 +2963,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
               </div>
               <div className="p-lg space-y-sm">
                 <div className="flex justify-between items-center">
-                  <span className="bg-[#FFC107]/10 text-[#5b4300] font-label-caps text-[9px] px-sm py-0.5 rounded font-bold uppercase tracking-wider">
+                  <span className="bg-primary/10 text-[#5b4300] font-label-caps text-[9px] px-sm py-0.5 rounded font-bold uppercase tracking-wider">
                     {proj.type}
                   </span>
                   <span className="text-[11px] text-[#6C757D] font-bold">{proj.date}</span>
@@ -2993,7 +2993,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                     <h4 className="font-bold text-[#0A0A0A] text-body-md">{test.name}</h4>
                     <p className="text-xs text-[#6C757D]">{test.location} • Client</p>
                   </div>
-                  <div className="flex text-[#FFC107]">
+                  <div className="flex text-primary">
                     {Array.from({ length: test.rating }).map((_, rIdx) => (
                       <span key={rIdx} className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                     ))}
@@ -3015,9 +3015,9 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
       {/* SECTION 10: BECOME A SERVICE PARTNER */}
       <section className="mt-5xl px-lg max-w-[1320px] mx-auto text-left">
         <div className="w-full bg-[#0A0A0A] text-white rounded-[32px] p-8 md:p-12 relative overflow-hidden">
-          <div className="absolute right-0 top-0 h-full w-1/3 bg-[#FFC107]/10 skew-x-12 translate-x-1/2 pointer-events-none"></div>
+          <div className="absolute right-0 top-0 h-full w-1/3 bg-primary/10 skew-x-12 translate-x-1/2 pointer-events-none"></div>
           <div className="relative z-10 max-w-xl space-y-md">
-            <span className="bg-[#FFC107] text-[#0A0A0A] font-bold px-md py-1 rounded w-fit text-[9px] font-label-caps tracking-wider uppercase">
+            <span className="bg-primary text-[#0A0A0A] font-bold px-md py-1 rounded w-fit text-[9px] font-label-caps tracking-wider uppercase">
               GROW YOUR WORKFLOW
             </span>
             <h2 className="font-headline-h2 text-[32px] md:text-[40px] font-extrabold text-white leading-tight">
@@ -3029,7 +3029,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
             <div className="flex flex-wrap gap-md pt-sm">
               <button
                 onClick={() => alert('Simulator: Service partner registration form will release shortly.')}
-                className="bg-[#FFC107] text-[#0A0A0A] px-xl h-12 rounded-[12px] font-bold text-body-sm hover:bg-[#fabd00] transition-colors"
+                className="bg-primary text-[#0A0A0A] px-xl h-12 rounded-[12px] font-bold text-body-sm hover:bg-[#fabd00] transition-colors"
               >
                 Become A Service Partner
               </button>
@@ -3077,7 +3077,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
       {/* POPULAR SERVICE BOOKING MODAL */}
       {showBookModal && selectedService && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[99] flex items-center justify-center p-lg">
-          <div className="bg-white rounded-[24px] border border-[#E9ECEF] w-full max-w-md p-lg md:p-xl space-y-lg text-left shadow-2xl relative">
+          <div className="bg-white rounded-[24px] border border-[#E9ECEF] w-full max-w-md p-lg md:p-xl space-y-lg text-left shadow relative">
             <button
               onClick={() => setShowBookModal(false)}
               className="absolute top-4 right-4 p-sm hover:bg-[#F8F9FA] rounded-full text-[#6C757D]"
@@ -3105,7 +3105,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                     type="text"
                     value={bookForm.name}
                     onChange={(e) => setBookForm({ ...bookForm, name: e.target.value })}
-                    className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                    className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                     placeholder="Enter your full name"
                     required
                   />
@@ -3116,7 +3116,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                     type="tel"
                     value={bookForm.phone}
                     onChange={(e) => setBookForm({ ...bookForm, phone: e.target.value })}
-                    className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                    className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                     placeholder="e.g. +91 99999 88888"
                     required
                   />
@@ -3127,7 +3127,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                     type="date"
                     value={bookForm.date}
                     onChange={(e) => setBookForm({ ...bookForm, date: e.target.value })}
-                    className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                    className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                     required
                   />
                 </div>
@@ -3136,13 +3136,13 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                   <textarea
                     value={bookForm.notes}
                     onChange={(e) => setBookForm({ ...bookForm, notes: e.target.value })}
-                    className="bg-white border border-[#E9ECEF] rounded-lg p-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0 h-16 resize-none"
+                    className="bg-white border border-[#E9ECEF] rounded p-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0 h-16 resize-none"
                     placeholder="Provide any location instructions or layout details..."
                   />
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-[#FFC107] text-[#0A0A0A] font-bold h-11 rounded-[12px] hover:bg-[#fabd00] transition-colors shadow"
+                  className="w-full bg-primary text-[#0A0A0A] font-bold h-11 rounded-[12px] hover:bg-[#fabd00] transition-colors shadow"
                 >
                   Confirm Slot Booking
                 </button>
@@ -3155,7 +3155,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
       {/* DIRECT PRO QUOTE REQUEST MODAL */}
       {showDirectQuoteModal && selectedPro && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[99] flex items-center justify-center p-lg">
-          <div className="bg-white rounded-[24px] border border-[#E9ECEF] w-full max-w-md p-lg md:p-xl space-y-lg text-left shadow-2xl relative">
+          <div className="bg-white rounded-[24px] border border-[#E9ECEF] w-full max-w-md p-lg md:p-xl space-y-lg text-left shadow relative">
             <button
               onClick={() => setShowDirectQuoteModal(false)}
               className="absolute top-4 right-4 p-sm hover:bg-[#F8F9FA] rounded-full text-[#6C757D]"
@@ -3183,7 +3183,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                     type="text"
                     value={directQuoteForm.name}
                     onChange={(e) => setDirectQuoteForm({ ...directQuoteForm, name: e.target.value })}
-                    className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                    className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                     placeholder="Enter your full name"
                     required
                   />
@@ -3194,7 +3194,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                     type="tel"
                     value={directQuoteForm.phone}
                     onChange={(e) => setDirectQuoteForm({ ...directQuoteForm, phone: e.target.value })}
-                    className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                    className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                     placeholder="+91 XXXXX XXXXX"
                     required
                   />
@@ -3206,7 +3206,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       type="text"
                       value={directQuoteForm.budget}
                       onChange={(e) => setDirectQuoteForm({ ...directQuoteForm, budget: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                       placeholder="e.g. ₹50,000"
                       required
                     />
@@ -3217,7 +3217,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                       type="text"
                       value={directQuoteForm.timeline}
                       onChange={(e) => setDirectQuoteForm({ ...directQuoteForm, timeline: e.target.value })}
-                      className="bg-white border border-[#E9ECEF] rounded-lg h-11 px-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0"
+                      className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
                       placeholder="e.g. 2 Weeks"
                       required
                     />
@@ -3228,14 +3228,14 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                   <textarea
                     value={directQuoteForm.desc}
                     onChange={(e) => setDirectQuoteForm({ ...directQuoteForm, desc: e.target.value })}
-                    className="bg-white border border-[#E9ECEF] rounded-lg p-md text-body-sm outline-none focus:border-2 focus:border-[#FFC107] focus:ring-0 h-20 resize-none"
+                    className="bg-white border border-[#E9ECEF] rounded p-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0 h-20 resize-none"
                     placeholder="Describe specific work items, dimensions or material requirements..."
                     required
                   />
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-[#FFC107] text-[#0A0A0A] font-bold h-11 rounded-[12px] hover:bg-[#fabd00] transition-colors shadow"
+                  className="w-full bg-primary text-[#0A0A0A] font-bold h-11 rounded-[12px] hover:bg-[#fabd00] transition-colors shadow"
                 >
                   Send Quote Request
                 </button>
@@ -3248,7 +3248,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
       {/* MOBILE FILTER DRAWER OVERLAY */}
       {hubShowMobileFilters && (
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm lg:hidden flex justify-end">
-          <div className="bg-white w-80 h-full p-xl overflow-y-auto flex flex-col justify-between shadow-2xl relative animate-slide-left">
+          <div className="bg-white w-80 h-full p-xl overflow-y-auto flex flex-col justify-between shadow relative animate-slide-left">
             <button
               onClick={() => setHubShowMobileFilters(false)}
               className="absolute top-4 right-4 p-sm hover:bg-[#F8F9FA] rounded-full text-[#6C757D]"
@@ -3267,7 +3267,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                   <select
                     value={hubCityFilter}
                     onChange={(e) => setHubCityFilter(e.target.value)}
-                    className="bg-white border border-[#E9ECEF] rounded-lg h-9 px-md text-xs outline-none focus:border-[#FFC107] focus:ring-0 cursor-pointer w-full font-bold"
+                    className="bg-white border border-[#E9ECEF] rounded h-9 px-md text-xs outline-none focus:border-primary focus:ring-0 cursor-pointer w-full font-bold"
                   >
                     <option value="All">All Cities</option>
                     <option value="Bangalore">Bangalore</option>
@@ -3282,7 +3282,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                   <select
                     value={hubCategoryFilter}
                     onChange={(e) => setHubCategoryFilter(e.target.value)}
-                    className="bg-white border border-[#E9ECEF] rounded-lg h-9 px-md text-xs outline-none focus:border-[#FFC107] focus:ring-0 cursor-pointer w-full font-bold"
+                    className="bg-white border border-[#E9ECEF] rounded h-9 px-md text-xs outline-none focus:border-primary focus:ring-0 cursor-pointer w-full font-bold"
                   >
                     <option value="All">All Categories</option>
                     <option value="Plumbing">Plumbing</option>
@@ -3301,7 +3301,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                   <select
                     value={hubExpFilter}
                     onChange={(e) => setHubExpFilter(e.target.value)}
-                    className="bg-white border border-[#E9ECEF] rounded-lg h-9 px-md text-xs outline-none focus:border-[#FFC107] focus:ring-0 cursor-pointer w-full font-bold"
+                    className="bg-white border border-[#E9ECEF] rounded h-9 px-md text-xs outline-none focus:border-primary focus:ring-0 cursor-pointer w-full font-bold"
                   >
                     <option value="All">All Experience levels</option>
                     <option value="Under 10 Yrs">Under 10 Years</option>
@@ -3315,7 +3315,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                   <select
                     value={hubRatingFilter}
                     onChange={(e) => setHubRatingFilter(e.target.value)}
-                    className="bg-white border border-[#E9ECEF] rounded-lg h-9 px-md text-xs outline-none focus:border-[#FFC107] focus:ring-0 cursor-pointer w-full font-bold"
+                    className="bg-white border border-[#E9ECEF] rounded h-9 px-md text-xs outline-none focus:border-primary focus:ring-0 cursor-pointer w-full font-bold"
                   >
                     <option value="All">All Ratings</option>
                     <option value="4.9★+">4.9★ &amp; Above</option>
@@ -3328,7 +3328,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                   <select
                     value={hubBudgetFilter}
                     onChange={(e) => setHubBudgetFilter(e.target.value)}
-                    className="bg-white border border-[#E9ECEF] rounded-lg h-9 px-md text-xs outline-none focus:border-[#FFC107] focus:ring-0 cursor-pointer w-full font-bold"
+                    className="bg-white border border-[#E9ECEF] rounded h-9 px-md text-xs outline-none focus:border-primary focus:ring-0 cursor-pointer w-full font-bold"
                   >
                     <option value="All">All budgets</option>
                     <option value="Low">Low (under ₹500)</option>
@@ -3344,14 +3344,14 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
                     type="checkbox"
                     checked={hubVerifiedOnly}
                     onChange={(e) => setHubVerifiedOnly(e.target.checked)}
-                    className="rounded text-[#FFC107] focus:ring-[#FFC107] h-4 w-4 border-[#E9ECEF]"
+                    className="rounded text-primary focus:ring-primary h-4 w-4 border-[#E9ECEF]"
                   />
                 </div>
               </div>
             </div>
             <button
               onClick={() => setHubShowMobileFilters(false)}
-              className="w-full bg-[#FFC107] text-[#0A0A0A] font-bold h-11 rounded-[12px] hover:bg-[#fabd00] transition-colors mt-lg shadow"
+              className="w-full bg-primary text-[#0A0A0A] font-bold h-11 rounded-[12px] hover:bg-[#fabd00] transition-colors mt-lg shadow"
             >
               Apply Filters
             </button>
@@ -3371,7 +3371,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
             e.preventDefault()
             document.getElementById('request-quotes')?.scrollIntoView({ behavior: 'smooth' })
           }}
-          className="bg-[#FFC107] text-[#0A0A0A] px-xl h-11 rounded-[12px] font-bold text-xs hover:bg-[#fabd00] transition-colors flex items-center gap-xs shadow"
+          className="bg-primary text-[#0A0A0A] px-xl h-11 rounded-[12px] font-bold text-xs hover:bg-[#fabd00] transition-colors flex items-center gap-xs shadow"
         >
           <span className="material-symbols-outlined text-[18px]">request_quote</span>
           Get Quotes

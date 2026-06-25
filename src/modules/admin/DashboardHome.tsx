@@ -40,14 +40,14 @@ export const DashboardHome: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#FFC107]"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   if (error || !kpis) {
     return (
-      <div className="bg-red-50 text-red-800 p-4 rounded-2xl border border-red-200">
+      <div className="bg-red-50 text-red-800 p-4 rounded border border-red-200">
         <p className="font-semibold">Error: {error || 'Could not fetch KPI metrics.'}</p>
       </div>
     );
@@ -122,7 +122,7 @@ export const DashboardHome: React.FC = () => {
               <CardTitle className="text-base font-extrabold">Daily Sales Revenue Trend</CardTitle>
               <CardDescription>Rolling 7-day transaction volumes</CardDescription>
             </div>
-            <div className="text-xs bg-[#FFC107]/10 text-amber-900 border border-[#FFC107]/20 rounded-xl px-3 py-1 font-bold">
+            <div className="text-xs bg-primary/10 text-amber-900 border border-primary/20 rounded px-3 py-1 font-bold">
               INR (₹) Total
             </div>
           </CardHeader>
@@ -210,7 +210,7 @@ export const DashboardHome: React.FC = () => {
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="bg-amber-50 p-2 rounded-xl text-amber-500">
+                <div className="bg-amber-50 p-2 rounded text-amber-500">
                   <Users className="h-5 w-5" />
                 </div>
                 <div>
@@ -223,7 +223,7 @@ export const DashboardHome: React.FC = () => {
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="bg-green-50 p-2 rounded-xl text-green-500">
+                <div className="bg-green-50 p-2 rounded text-green-500">
                   <UserCheck className="h-5 w-5" />
                 </div>
                 <div>
@@ -236,7 +236,7 @@ export const DashboardHome: React.FC = () => {
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="bg-red-50 p-2 rounded-xl text-red-500">
+                <div className="bg-red-50 p-2 rounded text-red-500">
                   <AlertTriangle className="h-5 w-5" />
                 </div>
                 <div>
@@ -247,7 +247,7 @@ export const DashboardHome: React.FC = () => {
               <span className="font-extrabold text-red-600 text-base bg-red-50 px-2 py-0.5 rounded border border-red-200">{kpis.inventory.lowStockCount}</span>
             </div>
 
-            <div className="bg-surface-secondary border border-border p-3 rounded-xl text-xs leading-relaxed text-text-secondary font-semibold flex gap-2 mt-4">
+            <div className="bg-surface-secondary border border-border p-3 rounded text-xs leading-relaxed text-text-secondary font-semibold flex gap-2 mt-4">
               <ShieldCheck className="text-primary h-5 w-5 flex-shrink-0" />
               System status: Operating normally. All database sync channels are fully active.
             </div>

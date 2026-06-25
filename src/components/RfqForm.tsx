@@ -257,7 +257,7 @@ export default function RfqForm() {
         </div>
 
         {/* Right Side: Interactive Multi-type RFQ Form Console */}
-        <div className="lg:col-span-8 bg-white border border-surface-variant text-on-surface rounded-lg p-6 shadow-xl">
+        <div className="lg:col-span-8 bg-white border border-surface-variant text-on-surface rounded p-6 shadow">
           {submitted ? (
             <div className="flex flex-col items-center justify-center py-12 text-center gap-4">
               <span className="material-symbols-outlined text-[#10B981] text-6xl">

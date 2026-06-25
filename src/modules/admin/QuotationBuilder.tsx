@@ -246,7 +246,7 @@ export const QuotationBuilder: React.FC<Props> = ({ rfq, existingQuotations, onS
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6 text-xs text-slate-800">
+    <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded p-6 shadow-sm space-y-6 text-xs text-slate-800">
       
       {/* Title */}
       <div className="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -272,7 +272,7 @@ export const QuotationBuilder: React.FC<Props> = ({ rfq, existingQuotations, onS
       )}
 
       {/* Row 1: Quote Identifiers */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded border border-slate-100">
         <div className="flex flex-col gap-1">
           <label className="font-bold text-gray-500 uppercase tracking-wider text-[9px]">Quotation Number</label>
           <input
@@ -317,7 +317,7 @@ export const QuotationBuilder: React.FC<Props> = ({ rfq, existingQuotations, onS
           </button>
         </div>
 
-        <div className="border border-slate-150 rounded-xl overflow-hidden shadow-sm">
+        <div className="border border-slate-150 rounded overflow-hidden shadow-sm">
           <table className="w-full text-xs text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 text-slate-500 font-bold uppercase text-[9px] border-b border-slate-200">
@@ -461,7 +461,7 @@ export const QuotationBuilder: React.FC<Props> = ({ rfq, existingQuotations, onS
         </div>
 
         {/* Global Commercial Calculations */}
-        <div className="bg-slate-50 border border-slate-100 rounded-xl p-5 space-y-4">
+        <div className="bg-slate-50 border border-slate-100 rounded p-5 space-y-4">
           <h5 className="font-bold text-slate-700 uppercase tracking-wider text-[10px] border-b pb-2">Grand Summary</h5>
           
           {/* Discounts controls */}
@@ -554,14 +554,14 @@ export const QuotationBuilder: React.FC<Props> = ({ rfq, existingQuotations, onS
         <button
           type="button"
           onClick={onCancel}
-          className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold uppercase rounded-lg border-0"
+          className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold uppercase rounded border-0"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold uppercase rounded-lg border-0 shadow-md flex items-center gap-1"
+          className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold uppercase rounded border-0 shadow-md flex items-center gap-1"
         >
           {loading ? 'Saving...' : 'Send Quotation to Buyer'}
         </button>

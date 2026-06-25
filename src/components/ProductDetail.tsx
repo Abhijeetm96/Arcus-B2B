@@ -656,7 +656,7 @@ export default function ProductDetail() {
     <div className="w-full bg-background min-h-screen text-on-surface pt-lg pb-5xl">
       {/* Sticky Purchase Bar */}
       <div
-        className={`fixed top-0 left-0 w-full bg-white shadow-lg z-[60] border-b border-surface-variant transition-transform duration-300 ${
+        className={`fixed top-0 left-0 w-full bg-white shadow-sm z-[60] border-b border-surface-variant transition-transform duration-300 ${
           showStickyBar ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
@@ -850,7 +850,7 @@ export default function ProductDetail() {
                 <button
                   onClick={handleSyncStock}
                   disabled={syncingStock}
-                  className="flex items-center gap-xs text-xs text-primary font-bold hover:underline bg-[#FFC107]/10 py-xs px-sm rounded border border-[#FFC107]/20 disabled:opacity-50 transition-all cursor-pointer"
+                  className="flex items-center gap-xs text-xs text-primary font-bold hover:underline bg-primary/10 py-xs px-sm rounded border border-primary/20 disabled:opacity-50 transition-all cursor-pointer"
                 >
                   {syncingStock ? (
                     <svg className="animate-spin h-3.5 w-3.5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -1315,7 +1315,7 @@ export default function ProductDetail() {
               {/* Left Section: Recommended Products */}
               <div id="recommended-products-grid" className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-[24px]">
                 {recommendedProducts.map((item) => (
-                  <div key={item.id} className="w-full h-[220px] bg-white border border-[#E9ECEF] rounded-[20px] p-lg flex flex-col justify-between transition-all duration-200 ease-out transform hover:-translate-y-1 hover:border-[#FFC107] hover:shadow-[0_10px_30px_rgba(0,0,0,0.08)] relative group select-none text-left">
+                  <div key={item.id} className="w-full h-[220px] bg-white border border-[#E9ECEF] rounded-[20px] p-lg flex flex-col justify-between transition-all duration-200 ease-out transform hover:-translate-y-1 hover:border-primary hover:shadow-[0_10px_30px_rgba(0,0,0,0.08)] relative group select-none text-left">
                     {/* Top Section */}
                     <div className="flex justify-between items-center w-full">
                       <label className="flex items-center gap-xs cursor-pointer">
@@ -1323,7 +1323,7 @@ export default function ProductDetail() {
                           type="checkbox"
                           checked={selectedRecommendations[item.id]}
                           onChange={() => toggleRecSelection(item.id)}
-                          className="w-5 h-5 text-[#FFC107] border-gray-300 rounded focus:ring-[#FFC107] cursor-pointer accent-[#FFC107]"
+                          className="w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary cursor-pointer accent-[#FFC107]"
                         />
                         <span className="text-[11px] font-bold uppercase tracking-wider text-secondary font-label-caps ml-1">
                           Select Product
@@ -1392,7 +1392,7 @@ export default function ProductDetail() {
                 <div className="lg:sticky lg:top-[120px] flex flex-col gap-md">
                   {qty > 500 && (
                     <div className="bg-[#FFF8E1] border border-[#FFD54F] rounded-[16px] p-5 text-left flex flex-col gap-sm">
-                      <div className="flex items-center gap-sm text-[#FFC107]">
+                      <div className="flex items-center gap-sm text-primary">
                         <span className="material-symbols-outlined text-[24px]">info</span>
                         <span className="font-bold text-body-sm text-[#0A0A0A]">Procurement Estimate</span>
                       </div>
@@ -1417,7 +1417,7 @@ export default function ProductDetail() {
                         <span className="font-bold text-on-surface">{totalUnits.toLocaleString('en-IN')}</span>
                       </div>
 
-                      <div className="bg-white/50 p-md rounded-lg border border-[#FFE082]/30 mt-xs text-[12px] space-y-1.5 font-medium max-h-48 overflow-y-auto no-scrollbar">
+                      <div className="bg-white/50 p-md rounded border border-[#FFE082]/30 mt-xs text-[12px] space-y-1.5 font-medium max-h-48 overflow-y-auto no-scrollbar">
                         <div className="flex justify-between text-on-surface font-semibold">
                           <span className="truncate">Astral CPVC Pipe</span>
                           <span>× {qty}</span>
@@ -1470,7 +1470,7 @@ export default function ProductDetail() {
                         </div>
                         <div className="w-full h-2 bg-[#E9ECEF] rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-[#FFC107] transition-all duration-300"
+                            className="h-full bg-primary transition-all duration-300"
                             style={{ width: `${(totalProductsSelected / 6) * 100}%` }}
                           ></div>
                         </div>
@@ -1480,7 +1480,7 @@ export default function ProductDetail() {
                     <div className="flex flex-col gap-md">
                       <button 
                         onClick={handleAddKitToCart}
-                        className="w-full h-14 bg-[#FFC107] text-[#0A0A0A] font-semibold rounded-[12px] hover:bg-[#fabd00] transition-colors flex items-center justify-center gap-sm text-[14px]"
+                        className="w-full h-14 bg-primary text-[#0A0A0A] font-semibold rounded-[12px] hover:bg-[#fabd00] transition-colors flex items-center justify-center gap-sm text-[14px]"
                       >
                         <span className="material-symbols-outlined text-[20px]">shopping_cart</span>
                         {qty > 500 ? 'Add Complete Procurement Package' : 'Add Complete Kit To Cart'}
@@ -1516,7 +1516,7 @@ export default function ProductDetail() {
                 Planning a major project? Get custom logistics, direct factory pricing, and priority allocation for orders exceeding 1,000 units.
               </p>
             </div>
-            <div className="bg-white p-xl rounded-md text-on-surface shadow-2xl border border-surface-variant">
+            <div className="bg-white p-xl rounded-md text-on-surface shadow border border-surface-variant">
               {rfqSubmitted ? (
                 <div className="py-xl text-center space-y-md">
                   <span className="material-symbols-outlined text-[54px] text-green-600 block">verified</span>
@@ -1792,7 +1792,7 @@ export default function ProductDetail() {
               <span className="text-[10px] text-[#2E7D32] font-bold">Save ₹{bundleSavings.toLocaleString('en-IN')}</span>
             )}
           </div>
-          <button className="bg-[#FFC107] text-[#0A0A0A] px-xl h-11 rounded-[12px] font-bold text-xs hover:bg-[#fabd00] transition-colors flex items-center gap-xs shadow-sm">
+          <button className="bg-primary text-[#0A0A0A] px-xl h-11 rounded-[12px] font-bold text-xs hover:bg-[#fabd00] transition-colors flex items-center gap-xs shadow-sm">
             <span className="material-symbols-outlined text-[18px]">shopping_cart</span>
             {qty > 500 ? 'Add Procurement' : 'Add Complete Kit'}
           </button>
@@ -1867,7 +1867,7 @@ export default function ProductDetail() {
           </button>
 
           {/* Bottom Thumbnails Strip */}
-          <div className="absolute bottom-6 flex gap-sm bg-black/40 p-sm rounded-lg border border-white/10 max-w-[90vw] overflow-x-auto">
+          <div className="absolute bottom-6 flex gap-sm bg-black/40 p-sm rounded border border-white/10 max-w-[90vw] overflow-x-auto">
             {images.map((img, idx) => (
               <div
                 key={idx}
@@ -1889,7 +1889,7 @@ export default function ProductDetail() {
       {/* Quick RFQ Popup Modal (Type 3) */}
       {showQuickRfqModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] flex items-center justify-center p-4 animate-fade-in select-none">
-          <div className="bg-white text-gray-900 rounded-lg p-6 max-w-md w-full shadow-2xl relative text-left border border-gray-150">
+          <div className="bg-white text-gray-900 rounded p-6 max-w-md w-full shadow relative text-left border border-gray-150">
             {/* Close Button */}
             <button
               onClick={() => setShowQuickRfqModal(false)}
@@ -1990,7 +1990,7 @@ export default function ProductDetail() {
       )}
 
       {toastMessage && (
-        <div className="fixed bottom-5 right-5 bg-on-surface text-white px-lg py-md rounded-xl shadow-2xl z-50 animate-fade-in flex items-center gap-sm font-semibold border border-white/10 text-body-sm">
+        <div className="fixed bottom-5 right-5 bg-on-surface text-white px-lg py-md rounded shadow z-50 animate-fade-in flex items-center gap-sm font-semibold border border-white/10 text-body-sm">
           <span className="material-symbols-outlined text-primary-container">check_circle</span>
           {toastMessage}
         </div>

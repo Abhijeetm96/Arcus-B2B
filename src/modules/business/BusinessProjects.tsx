@@ -40,7 +40,7 @@ export const BusinessProjects: React.FC = () => {
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl p-lg shadow-sm space-y-md text-left">
+    <div className="bg-white border border-slate-200 rounded p-lg shadow-sm space-y-md text-left">
       <div className="flex justify-between items-center border-b border-slate-100 pb-sm">
         <div>
           <h3 className="font-bold text-md text-slate-800">Commercial Projects &amp; Sites</h3>
@@ -48,7 +48,7 @@ export const BusinessProjects: React.FC = () => {
         </div>
         <button
           onClick={handleAddProject}
-          className="px-md py-1.5 bg-[#FFC107] text-[#0A0A0A] hover:bg-[#fabd00] font-bold rounded-lg text-xs flex items-center gap-xs shadow-sm"
+          className="px-md py-1.5 bg-primary text-[#0A0A0A] hover:bg-[#fabd00] font-bold rounded text-xs flex items-center gap-xs shadow-sm"
         >
           <span className="material-symbols-outlined text-[16px]">add</span>
           Add New Project Site
@@ -57,7 +57,7 @@ export const BusinessProjects: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-md pt-xs text-xs">
         {projects.map((proj) => (
-          <div key={proj.id} className="bg-slate-50 p-md rounded-2xl border border-slate-200 space-y-sm">
+          <div key={proj.id} className="bg-slate-50 p-md rounded border border-slate-200 space-y-sm">
             <div className="flex justify-between items-start">
               <div>
                 <span className="text-[10px] text-slate-400 font-bold font-mono">{proj.id}</span>

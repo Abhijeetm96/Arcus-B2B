@@ -25,7 +25,7 @@ export default function Hero() {
             <br />
             Procure Smarter.
             <br />
-            <span className="text-[#FFC107]">Deliver Better.</span>
+            <span className="text-primary">Deliver Better.</span>
           </h1>
           <p className="font-body-lg text-body-lg text-secondary max-w-xl text-left">
             Procure materials, hire contractors, manage deliveries and complete projects faster with an uncompromisingly professional platform designed for the heavy-duty demands of B2B construction.

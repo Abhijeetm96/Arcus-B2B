@@ -22,7 +22,7 @@ export const BusinessInvoices: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center py-xl">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#FFC107]"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -31,12 +31,12 @@ export const BusinessInvoices: React.FC = () => {
     <div className="space-y-lg text-left">
       {/* GST Summary Card */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
-        <div className="bg-[#FFFDF5] border border-[#FFC107]/20 p-md rounded-2xl">
-          <span className="material-symbols-outlined text-[#FFC107] text-[32px]">percent</span>
+        <div className="bg-[#FFFDF5] border border-primary/20 p-md rounded">
+          <span className="material-symbols-outlined text-primary text-[32px]">percent</span>
           <p className="text-[28px] font-extrabold text-[#0A0A0A] mt-sm leading-none">{formatCurrency(gstSavings)}</p>
           <p className="text-secondary text-[10px] font-bold uppercase tracking-wider font-label-caps mt-sm">GST Input Credit Claimable</p>
         </div>
-        <div className="bg-white border border-slate-200 p-md rounded-2xl shadow-sm">
+        <div className="bg-white border border-slate-200 p-md rounded shadow-sm">
           <span className="material-symbols-outlined text-green-600 text-[32px]">check_circle</span>
           <p className="text-[14px] font-extrabold text-slate-800 mt-sm leading-tight">{user?.gstNumber || 'NO GSTIN ASSOCIATED'}</p>
           <p className="text-secondary text-[10px] font-bold uppercase tracking-wider font-label-caps mt-xs">Company GSTIN Verified Profile</p>
@@ -44,7 +44,7 @@ export const BusinessInvoices: React.FC = () => {
       </div>
 
       {/* Invoices List */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded shadow-sm overflow-hidden">
         <div className="p-md border-b border-slate-100">
           <h3 className="font-bold text-slate-800 text-sm">Corporate Tax Invoices</h3>
           <p className="text-secondary text-[10px] mt-xs">Download official GST-compliant tax invoices for financial bookkeeping and filings.</p>
@@ -79,7 +79,7 @@ export const BusinessInvoices: React.FC = () => {
                       <td className="p-md text-right">
                         <button
                           onClick={() => alert(`Downloading Invoice INV-${o.id.split('-').pop()}...`)}
-                          className="px-md py-1 border border-slate-200 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded-lg text-[10px] flex items-center gap-xs ml-auto"
+                          className="px-md py-1 border border-slate-200 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-[10px] flex items-center gap-xs ml-auto"
                         >
                           <span className="material-symbols-outlined text-[14px]">download</span>
                           Download PDF

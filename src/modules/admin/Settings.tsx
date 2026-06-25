@@ -62,14 +62,14 @@ export const Settings: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center py-xl">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#FFC107]"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   if (error && !settings) {
     return (
-      <div className="bg-red-50 text-red-800 p-md rounded-2xl border border-red-200">
+      <div className="bg-red-50 text-red-800 p-md rounded border border-red-200">
         <p className="font-semibold">Error: {error}</p>
       </div>
     );
@@ -79,27 +79,27 @@ export const Settings: React.FC = () => {
     <div className="space-y-lg text-left max-w-3xl">
       {/* Notifications */}
       {error && (
-        <div className="bg-red-50 text-red-800 p-md rounded-2xl border border-red-200 flex justify-between items-center">
+        <div className="bg-red-50 text-red-800 p-md rounded border border-red-200 flex justify-between items-center">
           <span>{error}</span>
           <button onClick={() => setError(null)} className="material-symbols-outlined text-[18px]">close</button>
         </div>
       )}
       {success && (
-        <div className="bg-green-50 text-green-800 p-md rounded-2xl border border-green-200 flex justify-between items-center">
+        <div className="bg-green-50 text-green-800 p-md rounded border border-green-200 flex justify-between items-center">
           <span>{success}</span>
           <button onClick={() => setSuccess(null)} className="material-symbols-outlined text-[18px]">close</button>
         </div>
       )}
 
       {/* Main Container */}
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm flex flex-col md:flex-row min-h-[450px]">
+      <div className="bg-white border border-slate-200 rounded overflow-hidden shadow-sm flex flex-col md:flex-row min-h-[450px]">
         {/* Left Vertical Tabs */}
         <div className="w-full md:w-56 bg-slate-50 border-r border-slate-200 p-sm space-y-xs flex-shrink-0 flex md:flex-col overflow-x-auto md:overflow-x-visible">
           <button
             type="button"
             onClick={() => setActiveTab('commerce')}
-            className={`w-full text-left px-md py-sm rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-xs transition-all ${
-              activeTab === 'commerce' ? 'bg-[#FFC107] text-slate-950 font-black' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/55'
+            className={`w-full text-left px-md py-sm rounded text-xs font-bold uppercase tracking-wider flex items-center gap-xs transition-all ${
+              activeTab === 'commerce' ? 'bg-primary text-slate-950 font-black' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/55'
             }`}
           >
             <span className="material-symbols-outlined text-[18px]">payments</span>
@@ -108,8 +108,8 @@ export const Settings: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('inventory')}
-            className={`w-full text-left px-md py-sm rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-xs transition-all ${
-              activeTab === 'inventory' ? 'bg-[#FFC107] text-slate-950 font-black' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/55'
+            className={`w-full text-left px-md py-sm rounded text-xs font-bold uppercase tracking-wider flex items-center gap-xs transition-all ${
+              activeTab === 'inventory' ? 'bg-primary text-slate-950 font-black' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/55'
             }`}
           >
             <span className="material-symbols-outlined text-[18px]">warehouse</span>
@@ -118,8 +118,8 @@ export const Settings: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('rfq')}
-            className={`w-full text-left px-md py-sm rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-xs transition-all ${
-              activeTab === 'rfq' ? 'bg-[#FFC107] text-slate-950 font-black' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/55'
+            className={`w-full text-left px-md py-sm rounded text-xs font-bold uppercase tracking-wider flex items-center gap-xs transition-all ${
+              activeTab === 'rfq' ? 'bg-primary text-slate-950 font-black' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/55'
             }`}
           >
             <span className="material-symbols-outlined text-[18px]">request_quote</span>
@@ -128,8 +128,8 @@ export const Settings: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('search')}
-            className={`w-full text-left px-md py-sm rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-xs transition-all ${
-              activeTab === 'search' ? 'bg-[#FFC107] text-slate-950 font-black' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/55'
+            className={`w-full text-left px-md py-sm rounded text-xs font-bold uppercase tracking-wider flex items-center gap-xs transition-all ${
+              activeTab === 'search' ? 'bg-primary text-slate-950 font-black' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/55'
             }`}
           >
             <span className="material-symbols-outlined text-[18px]">manage_search</span>
@@ -138,8 +138,8 @@ export const Settings: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('notifications')}
-            className={`w-full text-left px-md py-sm rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-xs transition-all ${
-              activeTab === 'notifications' ? 'bg-[#FFC107] text-slate-950 font-black' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/55'
+            className={`w-full text-left px-md py-sm rounded text-xs font-bold uppercase tracking-wider flex items-center gap-xs transition-all ${
+              activeTab === 'notifications' ? 'bg-primary text-slate-950 font-black' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/55'
             }`}
           >
             <span className="material-symbols-outlined text-[18px]">notifications_active</span>
@@ -161,7 +161,7 @@ export const Settings: React.FC = () => {
                     required
                     value={settings.b2cMinimumOrderValue}
                     onChange={e => updateField('b2cMinimumOrderValue', Number(e.target.value))}
-                    className="w-full max-w-xs h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm font-bold text-slate-900"
+                    className="w-full max-w-xs h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm font-bold text-slate-900"
                   />
                   <p className="text-[10px] text-slate-400 mt-xs font-medium">B2C carts with total amount below this value will not be allowed to place order.</p>
                 </div>
@@ -173,7 +173,7 @@ export const Settings: React.FC = () => {
                     required
                     value={settings.freeShippingThreshold || 5000}
                     onChange={e => updateField('freeShippingThreshold', Number(e.target.value))}
-                    className="w-full max-w-xs h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm font-bold text-slate-900"
+                    className="w-full max-w-xs h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm font-bold text-slate-900"
                   />
                 </div>
               </div>
@@ -190,7 +190,7 @@ export const Settings: React.FC = () => {
                     required
                     value={settings.defaultMoq !== undefined ? settings.defaultMoq : 1}
                     onChange={e => updateField('defaultMoq', Number(e.target.value))}
-                    className="w-full max-w-xs h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm font-bold text-slate-900"
+                    className="w-full max-w-xs h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm font-bold text-slate-900"
                   />
                 </div>
 
@@ -201,7 +201,7 @@ export const Settings: React.FC = () => {
                     required
                     value={settings.defaultOrderMultiple !== undefined ? settings.defaultOrderMultiple : 1}
                     onChange={e => updateField('defaultOrderMultiple', Number(e.target.value))}
-                    className="w-full max-w-xs h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm font-bold text-slate-900"
+                    className="w-full max-w-xs h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm font-bold text-slate-900"
                   />
                 </div>
               </div>
@@ -216,7 +216,7 @@ export const Settings: React.FC = () => {
                   <select
                     value={settings.rfqAutoAssignment || 'Unassigned'}
                     onChange={e => updateField('rfqAutoAssignment', e.target.value)}
-                    className="w-full max-w-xs h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm font-bold text-slate-900"
+                    className="w-full max-w-xs h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm font-bold text-slate-900"
                   >
                     <option value="Unassigned">Unassigned (Manual allocation)</option>
                     <option value="RoundRobin">Round Robin (Auto allocate equally)</option>
@@ -231,7 +231,7 @@ export const Settings: React.FC = () => {
                     required
                     value={settings.quoteValidityDays || 30}
                     onChange={e => updateField('quoteValidityDays', Number(e.target.value))}
-                    className="w-full max-w-xs h-11 px-md border border-slate-200 rounded-xl focus:border-[#FFC107] focus:ring-0 text-body-sm font-bold text-slate-900"
+                    className="w-full max-w-xs h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm font-bold text-slate-900"
                   />
                 </div>
 
@@ -241,7 +241,7 @@ export const Settings: React.FC = () => {
                       type="checkbox"
                       checked={settings.rfqNotifications !== false}
                       onChange={e => updateField('rfqNotifications', e.target.checked)}
-                      className="w-5 h-5 rounded border-slate-300 text-[#FFC107] focus:ring-[#FFC107]"
+                      className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary"
                     />
                     Enable Auto RFQ Notifications for Sales Reps
                   </label>
@@ -259,7 +259,7 @@ export const Settings: React.FC = () => {
                       type="checkbox"
                       checked={settings.searchEnableLogging !== false}
                       onChange={e => updateField('searchEnableLogging', e.target.checked)}
-                      className="w-5 h-5 rounded border-slate-300 text-[#FFC107] focus:ring-[#FFC107]"
+                      className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary"
                     />
                     Log user search queries & click-through rates
                   </label>
@@ -278,7 +278,7 @@ export const Settings: React.FC = () => {
                       type="checkbox"
                       checked={settings.notificationEmailAlerts !== false}
                       onChange={e => updateField('notificationEmailAlerts', e.target.checked)}
-                      className="w-5 h-5 rounded border-slate-300 text-[#FFC107] focus:ring-[#FFC107]"
+                      className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary"
                     />
                     Enable Email Alerts for order status updates
                   </label>
@@ -288,7 +288,7 @@ export const Settings: React.FC = () => {
                       type="checkbox"
                       checked={settings.defaultGstRate === 18} // reuse check as mock setting
                       onChange={e => updateField('defaultGstRate', e.target.checked ? 18 : 0)}
-                      className="w-5 h-5 rounded border-slate-300 text-[#FFC107] focus:ring-[#FFC107]"
+                      className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary"
                     />
                     Enable SMS/WhatsApp transactional alerts
                   </label>
@@ -301,7 +301,7 @@ export const Settings: React.FC = () => {
           <div className="pt-lg border-t border-slate-200 flex justify-end">
             <button
               type="submit"
-              className="bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-xl h-11 rounded-xl font-bold text-xs transition-all shadow-sm"
+              className="bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-xl h-11 rounded font-bold text-xs transition-all shadow-sm"
             >
               Persist Settings updates
             </button>

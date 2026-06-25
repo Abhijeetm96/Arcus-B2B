@@ -419,7 +419,7 @@ export default function SearchPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="bg-white border border-[#E9ECEF] rounded-[24px] h-[400px] p-lg flex flex-col justify-between animate-pulse">
-                    <div className="w-full aspect-square bg-[#E9ECEF] rounded-lg"></div>
+                    <div className="w-full aspect-square bg-[#E9ECEF] rounded"></div>
                     <div className="h-4 bg-[#E9ECEF] rounded w-2/3 mt-md"></div>
                     <div className="h-6 bg-[#E9ECEF] rounded w-1/3 mt-sm"></div>
                   </div>
@@ -483,7 +483,7 @@ export default function SearchPage() {
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-md">
               {[
-                { name: 'Plumbing', slug: 'plumbing', icon: 'plumbing', bg: 'bg-[#FFC107]/5' },
+                { name: 'Plumbing', slug: 'plumbing', icon: 'plumbing', bg: 'bg-primary/5' },
                 { name: 'Electrical', slug: 'electrical', icon: 'bolt', bg: 'bg-blue-50/50' },
                 { name: 'Cement & Concrete', slug: 'cement-concrete', icon: 'architecture', bg: 'bg-green-50/50' },
                 { name: 'Steel & Structural', slug: 'steel-structural', icon: 'construction', bg: 'bg-purple-50/50' },
@@ -497,7 +497,7 @@ export default function SearchPage() {
                   href={`#/materials/${cat.slug}`}
                   className={`${cat.bg} p-lg rounded-[24px] border border-surface-variant/70 hover:border-primary hover:shadow-md transition-all duration-300 flex items-center gap-md group no-underline text-on-surface`}
                 >
-                  <div className="w-12 h-12 rounded-xl bg-white border border-[#E9ECEF] flex items-center justify-center shadow-sm">
+                  <div className="w-12 h-12 rounded bg-white border border-[#E9ECEF] flex items-center justify-center shadow-sm">
                     <span className="material-symbols-outlined text-primary text-[24px] group-hover:scale-110 transition-transform">
                       {cat.icon}
                     </span>
@@ -545,7 +545,7 @@ export default function SearchPage() {
                     </div>
                     <a
                       href={`#/product/${prod.id}`}
-                      className="w-full py-sm bg-[#121212] text-white text-xs font-bold rounded-xl hover:bg-[#fabd00] hover:text-[#121212] transition-colors flex items-center justify-center gap-xs no-underline text-center cursor-pointer"
+                      className="w-full py-sm bg-[#121212] text-white text-xs font-bold rounded hover:bg-[#fabd00] hover:text-[#121212] transition-colors flex items-center justify-center gap-xs no-underline text-center cursor-pointer"
                     >
                       <span className="material-symbols-outlined text-[16px]">visibility</span>
                       View Product
@@ -576,7 +576,7 @@ export default function SearchPage() {
         </h1>
 
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-md text-red-700 text-sm rounded-lg mb-xl">
+          <div className="bg-red-50 border-l-4 border-red-500 p-md text-red-700 text-sm rounded mb-xl">
             {error}
           </div>
         )}
@@ -673,7 +673,7 @@ export default function SearchPage() {
                   <div key={idx} className="bg-white border border-[#E9ECEF] rounded-[24px] p-lg hover:shadow-[0_12px_36px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-primary transition-all duration-300 flex flex-col justify-between group text-left">
                     <div>
                       <div className="flex items-center gap-md mb-md">
-                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded bg-primary/10 flex items-center justify-center">
                           <span className="material-symbols-outlined text-primary text-[24px]">
                             {service.categorySlug === 'plumbing-services' ? 'plumbing' :
                              service.categorySlug === 'electrical-services' ? 'bolt' :
@@ -704,7 +704,7 @@ export default function SearchPage() {
                       </div>
                       <a
                         href={service.path}
-                        className="px-lg py-sm bg-[#121212] text-white text-xs font-bold rounded-xl hover:bg-primary hover:text-[#121212] transition-all no-underline"
+                        className="px-lg py-sm bg-[#121212] text-white text-xs font-bold rounded hover:bg-primary hover:text-[#121212] transition-all no-underline"
                       >
                         Book Service
                       </a>
@@ -765,7 +765,7 @@ export default function SearchPage() {
                       </div>
                       <a
                         href={`#/services/contractors/${pro.id}`}
-                        className="px-lg py-sm border border-[#121212] text-[#121212] text-xs font-bold rounded-xl hover:bg-surface-variant/20 transition-all no-underline"
+                        className="px-lg py-sm border border-[#121212] text-[#121212] text-xs font-bold rounded hover:bg-surface-variant/20 transition-all no-underline"
                       >
                         View Profile
                       </a>
@@ -907,7 +907,7 @@ export default function SearchPage() {
                       <select
                         value={sortOption}
                         onChange={(e) => setSortOption(e.target.value)}
-                        className="border border-[#CED4DA] bg-white rounded-lg px-md h-9 text-body-sm font-bold text-[#0A0A0A] focus:border-primary outline-none cursor-pointer"
+                        className="border border-[#CED4DA] bg-white rounded px-md h-9 text-body-sm font-bold text-[#0A0A0A] focus:border-primary outline-none cursor-pointer"
                       >
                         <option value="Relevance">Relevance</option>
                         <option value="Price Low to High">Price: Low to High</option>
@@ -931,7 +931,7 @@ export default function SearchPage() {
                           setSelectedPrices([])
                           setSelectedAvailability([])
                         }}
-                        className="px-xl py-sm bg-[#121212] text-white font-bold rounded-xl hover:bg-[#fabd00] hover:text-[#121212] transition-colors cursor-pointer"
+                        className="px-xl py-sm bg-[#121212] text-white font-bold rounded hover:bg-[#fabd00] hover:text-[#121212] transition-colors cursor-pointer"
                       >
                         Clear Filters
                       </button>
@@ -1002,7 +1002,7 @@ export default function SearchPage() {
                               
                               {/* Rating Stars */}
                               <div className="flex items-center gap-xs mt-sm">
-                                <span className="material-symbols-outlined text-[#FFC107] text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                                <span className="material-symbols-outlined text-primary text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>
                                   star
                                 </span>
                                 <span className="font-bold text-body-sm text-[#0A0A0A]">{product.rating || '4.5'}</span>
@@ -1025,7 +1025,7 @@ export default function SearchPage() {
 
                               {/* Quantity controls (only if active & in stock) */}
                               {!isOutOfStock && !isComingSoon && (
-                                <div className="flex items-center justify-between gap-sm border border-[#E9ECEF] p-xs rounded-xl bg-[#F8F9FA]">
+                                <div className="flex items-center justify-between gap-sm border border-[#E9ECEF] p-xs rounded bg-[#F8F9FA]">
                                   <span className="font-label-caps text-[11px] font-bold text-secondary pl-xs">
                                     Quantity
                                   </span>
@@ -1054,7 +1054,7 @@ export default function SearchPage() {
                                 {!isOutOfStock && !isComingSoon ? (
                                   <button
                                     onClick={() => handleAddToCart(product)}
-                                    className="py-sm bg-[#121212] text-white text-xs font-bold rounded-xl hover:bg-primary-container hover:text-[#121212] transition-all flex items-center justify-center gap-xs border border-transparent cursor-pointer"
+                                    className="py-sm bg-[#121212] text-white text-xs font-bold rounded hover:bg-primary-container hover:text-[#121212] transition-all flex items-center justify-center gap-xs border border-transparent cursor-pointer"
                                   >
                                     <span className="material-symbols-outlined text-[16px]">shopping_cart</span>
                                     Add to Cart
@@ -1063,7 +1063,7 @@ export default function SearchPage() {
                                   <a
                                     href={`#/product/${product.id}`}
                                     onClick={() => handleProductClick(product)}
-                                    className="py-sm bg-[#F8F9FA] text-[#0A0A0A] text-xs font-bold rounded-xl border border-[#CED4DA] hover:bg-white hover:border-[#0A0A0A] transition-all flex items-center justify-center gap-xs no-underline text-center cursor-pointer"
+                                    className="py-sm bg-[#F8F9FA] text-[#0A0A0A] text-xs font-bold rounded border border-[#CED4DA] hover:bg-white hover:border-[#0A0A0A] transition-all flex items-center justify-center gap-xs no-underline text-center cursor-pointer"
                                   >
                                     <span className="material-symbols-outlined text-[16px]">visibility</span>
                                     View Details
@@ -1072,7 +1072,7 @@ export default function SearchPage() {
                                 
                                 <button
                                   onClick={() => openRfqModal(product)}
-                                  className="py-sm border border-[#121212] text-[#121212] text-xs font-bold rounded-xl hover:bg-surface-variant/20 transition-all flex items-center justify-center gap-xs bg-white cursor-pointer"
+                                  className="py-sm border border-[#121212] text-[#121212] text-xs font-bold rounded hover:bg-surface-variant/20 transition-all flex items-center justify-center gap-xs bg-white cursor-pointer"
                                 >
                                   <span className="material-symbols-outlined text-[16px]">request_quote</span>
                                   Request Quote
@@ -1094,7 +1094,7 @@ export default function SearchPage() {
       {/* RFQ Prefilled Modal */}
       {rfqProduct && (
         <div className="fixed inset-0 bg-[#0A0A0A]/60 backdrop-blur-sm z-50 flex items-center justify-center p-md">
-          <div className="bg-white border border-[#E9ECEF] rounded-[24px] max-w-lg w-full max-h-[90vh] overflow-y-auto p-xl shadow-2xl animate-fade-in relative text-left">
+          <div className="bg-white border border-[#E9ECEF] rounded-[24px] max-w-lg w-full max-h-[90vh] overflow-y-auto p-xl shadow animate-fade-in relative text-left">
             <button
               onClick={() => setRfqProduct(null)}
               className="absolute top-4 right-4 w-8 h-8 rounded-full border border-[#E9ECEF] flex items-center justify-center hover:bg-[#F8F9FA] cursor-pointer text-[#0A0A0A]"
@@ -1147,7 +1147,7 @@ export default function SearchPage() {
                         required
                         value={rfqFormData.name}
                         onChange={(e) => setRfqFormData({ ...rfqFormData, name: e.target.value })}
-                        className="w-full h-11 px-md rounded-lg border border-[#CED4DA] bg-white focus:border-primary outline-none text-body-sm"
+                        className="w-full h-11 px-md rounded border border-[#CED4DA] bg-white focus:border-primary outline-none text-body-sm"
                         placeholder="e.g. John Doe"
                         type="text"
                       />
@@ -1160,7 +1160,7 @@ export default function SearchPage() {
                         required
                         value={rfqFormData.phone}
                         onChange={(e) => setRfqFormData({ ...rfqFormData, phone: e.target.value })}
-                        className="w-full h-11 px-md rounded-lg border border-[#CED4DA] bg-white focus:border-primary outline-none text-body-sm"
+                        className="w-full h-11 px-md rounded border border-[#CED4DA] bg-white focus:border-primary outline-none text-body-sm"
                         placeholder="e.g. +91 9876543210"
                         type="tel"
                       />
@@ -1173,7 +1173,7 @@ export default function SearchPage() {
                         required
                         value={rfqFormData.quantity}
                         onChange={(e) => setRfqFormData({ ...rfqFormData, quantity: e.target.value })}
-                        className="w-full h-11 px-md rounded-lg border border-[#CED4DA] bg-white focus:border-primary outline-none text-body-sm"
+                        className="w-full h-11 px-md rounded border border-[#CED4DA] bg-white focus:border-primary outline-none text-body-sm"
                         placeholder="e.g. 500 Pieces"
                         type="text"
                       />
@@ -1186,7 +1186,7 @@ export default function SearchPage() {
                         required
                         value={rfqFormData.location}
                         onChange={(e) => setRfqFormData({ ...rfqFormData, location: e.target.value })}
-                        className="w-full h-11 px-md rounded-lg border border-[#CED4DA] bg-white focus:border-primary outline-none text-body-sm"
+                        className="w-full h-11 px-md rounded border border-[#CED4DA] bg-white focus:border-primary outline-none text-body-sm"
                         placeholder="e.g. Bengaluru, 560001"
                         type="text"
                       />
@@ -1198,7 +1198,7 @@ export default function SearchPage() {
                       <select
                         value={rfqFormData.timeline}
                         onChange={(e) => setRfqFormData({ ...rfqFormData, timeline: e.target.value })}
-                        className="w-full h-11 px-md rounded-lg border border-[#CED4DA] bg-white focus:border-primary outline-none text-body-sm cursor-pointer"
+                        className="w-full h-11 px-md rounded border border-[#CED4DA] bg-white focus:border-primary outline-none text-body-sm cursor-pointer"
                       >
                         <option value="Immediate (1-3 Days)">Immediate (1-3 Days)</option>
                         <option value="Within 1 Week">Within 1 Week</option>
@@ -1213,7 +1213,7 @@ export default function SearchPage() {
                       <input
                         value={rfqFormData.budget}
                         onChange={(e) => setRfqFormData({ ...rfqFormData, budget: e.target.value })}
-                        className="w-full h-11 px-md rounded-lg border border-[#CED4DA] bg-white focus:border-primary outline-none text-body-sm"
+                        className="w-full h-11 px-md rounded border border-[#CED4DA] bg-white focus:border-primary outline-none text-body-sm"
                         placeholder="e.g. 500000"
                         type="text"
                       />
@@ -1225,14 +1225,14 @@ export default function SearchPage() {
                       <textarea
                         value={rfqFormData.details}
                         onChange={(e) => setRfqFormData({ ...rfqFormData, details: e.target.value })}
-                        className="w-full rounded-lg border border-[#CED4DA] bg-white focus:border-primary outline-none text-body-sm h-28 p-md resize-none"
+                        className="w-full rounded border border-[#CED4DA] bg-white focus:border-primary outline-none text-body-sm h-28 p-md resize-none"
                         placeholder="Please details any specifics here..."
                       ></textarea>
                     </div>
                   </div>
                   <button
                     type="submit"
-                    className="w-full h-12 bg-primary text-[#121212] font-semibold rounded-xl border-none hover:bg-[#fabd00] transition-colors font-label-caps text-[14px] cursor-pointer mt-md"
+                    className="w-full h-12 bg-primary text-[#121212] font-semibold rounded border-none hover:bg-[#fabd00] transition-colors font-label-caps text-[14px] cursor-pointer mt-md"
                   >
                     Submit RFQ
                   </button>
@@ -1246,7 +1246,7 @@ export default function SearchPage() {
       {/* Cart success toast */}
       {toastMessage && (
         <div
-          className="fixed bottom-8 right-8 z-50 bg-[#121212] text-white px-md py-sm rounded-md shadow-lg flex items-center gap-sm border border-surface-variant font-semibold animate-fade-in"
+          className="fixed bottom-8 right-8 z-50 bg-[#121212] text-white px-md py-sm rounded-md shadow-sm flex items-center gap-sm border border-surface-variant font-semibold animate-fade-in"
           style={{ boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3)' }}
         >
           <span className="material-symbols-outlined text-[#10B981] text-[20px]">check_circle</span>

@@ -175,13 +175,13 @@ export const AuditLogs: React.FC = () => {
     <div className="space-y-md text-left">
       {/* Notifications */}
       {error && (
-        <div className="bg-red-50 text-red-800 p-md rounded-2xl border border-red-200">
+        <div className="bg-red-50 text-red-800 p-md rounded border border-red-200">
           <p className="font-semibold">Error: {error}</p>
         </div>
       )}
 
       {/* Filter Toolbar */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-md bg-white p-md rounded-2xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-md bg-white p-md rounded border border-slate-200 shadow-sm">
         <div className="flex flex-wrap items-center gap-sm w-full md:w-auto">
           {/* Search Box */}
           <div className="relative flex-1 min-w-[250px] md:max-w-md">
@@ -191,7 +191,7 @@ export const AuditLogs: React.FC = () => {
               placeholder="Search by action, details, actor..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-11 pl-xxl pr-md border border-slate-200 rounded-xl text-body-sm focus:border-[#FFC107] focus:ring-0 bg-slate-50"
+              className="w-full h-11 pl-xxl pr-md border border-slate-200 rounded text-body-sm focus:border-primary focus:ring-0 bg-slate-50"
             />
           </div>
 
@@ -199,7 +199,7 @@ export const AuditLogs: React.FC = () => {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="h-11 px-md border border-slate-200 rounded-xl text-body-sm bg-slate-50 focus:border-[#FFC107] focus:ring-0 font-bold"
+            className="h-11 px-md border border-slate-200 rounded text-body-sm bg-slate-50 focus:border-primary focus:ring-0 font-bold"
           >
             <option value="all">All Action Types</option>
             <option value="SETTINGS_CHANGE">Settings Changes</option>
@@ -209,7 +209,7 @@ export const AuditLogs: React.FC = () => {
           </select>
         </div>
 
-        <div className="text-xs bg-slate-100 text-slate-500 rounded-xl px-md py-sm font-extrabold font-label-caps uppercase tracking-wide">
+        <div className="text-xs bg-slate-100 text-slate-500 rounded px-md py-sm font-extrabold font-label-caps uppercase tracking-wide">
           {filteredLogs.length} Events logged
         </div>
       </div>
@@ -217,10 +217,10 @@ export const AuditLogs: React.FC = () => {
       {/* Audit Logs Table */}
       {loading ? (
         <div className="flex justify-center py-xl">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#FFC107]"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-white border border-slate-200 rounded overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-body-sm text-left border-collapse">
               <thead>
@@ -250,7 +250,7 @@ export const AuditLogs: React.FC = () => {
                           return (
                             <button
                               onClick={() => handleEntityClick(ent.type, ent.id)}
-                              className="text-left text-[#FFC107] font-bold hover:underline hover:text-amber-600 transition-all inline-flex items-center gap-xs cursor-pointer"
+                              className="text-left text-primary font-bold hover:underline hover:text-amber-600 transition-all inline-flex items-center gap-xs cursor-pointer"
                             >
                               <span className="material-symbols-outlined text-[14px]">open_in_new</span>
                               {log.details}
@@ -290,12 +290,12 @@ export const AuditLogs: React.FC = () => {
 
             {/* Slide-over panel */}
             <div className="absolute inset-y-0 right-0 pl-10 max-w-full flex">
-              <div className="w-screen max-w-lg bg-white shadow-2xl border-l border-slate-200 flex flex-col text-left">
+              <div className="w-screen max-w-lg bg-white shadow border-l border-slate-200 flex flex-col text-left">
                 {/* Header */}
                 <div className="px-lg py-md border-b border-slate-200 bg-slate-50 flex items-center justify-between">
                   <div>
                     <h3 className="font-extrabold text-slate-900 text-body-md capitalize flex items-center gap-xs">
-                      <span className="material-symbols-outlined text-[#FFC107]">
+                      <span className="material-symbols-outlined text-primary">
                         {selectedEntity.type === 'product' ? 'category' : selectedEntity.type === 'rfq' ? 'request_quote' : 'receipt_long'}
                       </span>
                       {selectedEntity.type} Details
@@ -314,7 +314,7 @@ export const AuditLogs: React.FC = () => {
                 <div className="flex-1 overflow-y-auto p-lg space-y-lg">
                   {entityLoading ? (
                     <div className="flex flex-col justify-center items-center py-xl space-y-md h-60">
-                      <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#FFC107]"></div>
+                      <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
                       <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Fetching details...</p>
                     </div>
                   ) : !entityData ? (
@@ -328,7 +328,7 @@ export const AuditLogs: React.FC = () => {
                       {/* Product details view */}
                       {selectedEntity.type === 'product' && (
                         <div className="space-y-md">
-                          <div className="bg-slate-50 p-md rounded-xl border border-slate-100 space-y-sm">
+                          <div className="bg-slate-50 p-md rounded border border-slate-100 space-y-sm">
                             <h4 className="font-extrabold text-slate-900 text-body-sm">{entityData.name}</h4>
                             <p className="text-xs text-slate-500 leading-relaxed">{entityData.description || 'No description provided.'}</p>
                           </div>
@@ -354,7 +354,7 @@ export const AuditLogs: React.FC = () => {
 
                           <div className="border-t border-slate-100 pt-md space-y-sm">
                             <h5 className="font-bold text-xs text-slate-500 uppercase tracking-wider">Inventory Metrics</h5>
-                            <div className="grid grid-cols-3 gap-xs bg-slate-50 p-sm rounded-lg border border-slate-100 text-center font-bold text-[10px]">
+                            <div className="grid grid-cols-3 gap-xs bg-slate-50 p-sm rounded border border-slate-100 text-center font-bold text-[10px]">
                               <div>
                                 <p className="text-slate-400 font-medium">Available</p>
                                 <p className="text-slate-800 text-body-xs font-black">{entityData.inventory?.available ?? entityData.stock ?? 0}</p>
@@ -394,12 +394,12 @@ export const AuditLogs: React.FC = () => {
                       {/* RFQ details view */}
                       {selectedEntity.type === 'rfq' && (
                         <div className="space-y-md">
-                          <div className="flex justify-between items-start bg-slate-50 p-md rounded-xl border border-slate-100">
+                          <div className="flex justify-between items-start bg-slate-50 p-md rounded border border-slate-100">
                             <div>
                               <h4 className="font-extrabold text-slate-900 text-body-sm">{entityData.title || 'Inquiry Request'}</h4>
                               <p className="text-xs text-slate-400 mt-1">Submitted by buyer: {entityData.buyerId || 'Guest'}</p>
                             </div>
-                            <span className="px-md py-1 rounded-full text-[10px] font-black uppercase bg-[#FFC107]/10 text-[#FFC107] border border-[#FFC107]/20">
+                            <span className="px-md py-1 rounded-full text-[10px] font-black uppercase bg-primary/10 text-primary border border-primary/20">
                               {entityData.status || 'Submitted'}
                             </span>
                           </div>
@@ -418,7 +418,7 @@ export const AuditLogs: React.FC = () => {
                           {entityData.items && entityData.items.length > 0 && (
                             <div className="border-t border-slate-100 pt-md space-y-sm">
                               <h5 className="font-bold text-xs text-slate-500 uppercase tracking-wider">Requested Items</h5>
-                              <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden">
+                              <div className="divide-y divide-slate-100 border border-slate-200 rounded overflow-hidden">
                                 {entityData.items.map((item: any, i: number) => (
                                   <div key={i} className="p-md bg-white hover:bg-slate-50/50 flex justify-between items-center text-xs">
                                     <div>
@@ -440,7 +440,7 @@ export const AuditLogs: React.FC = () => {
                       {/* Order details view */}
                       {selectedEntity.type === 'order' && (
                         <div className="space-y-md">
-                          <div className="flex justify-between items-start bg-slate-50 p-md rounded-xl border border-slate-100">
+                          <div className="flex justify-between items-start bg-slate-50 p-md rounded border border-slate-100">
                             <div>
                               <h4 className="font-extrabold text-slate-900 text-body-sm">Order Summary</h4>
                               <p className="text-xs text-slate-400 mt-1">Customer: {entityData.userId || 'N/A'}</p>
@@ -464,7 +464,7 @@ export const AuditLogs: React.FC = () => {
                           {entityData.items && entityData.items.length > 0 && (
                             <div className="border-t border-slate-100 pt-md space-y-sm">
                               <h5 className="font-bold text-xs text-slate-500 uppercase tracking-wider">Line Items</h5>
-                              <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden">
+                              <div className="divide-y divide-slate-100 border border-slate-200 rounded overflow-hidden">
                                 {entityData.items.map((item: any, i: number) => (
                                   <div key={i} className="p-md bg-white hover:bg-slate-50/50 flex justify-between items-center text-xs">
                                     <div>
@@ -490,7 +490,7 @@ export const AuditLogs: React.FC = () => {
                 <div className="px-lg py-md border-t border-slate-200 bg-slate-50 flex justify-end">
                   <button
                     onClick={() => setSelectedEntity(null)}
-                    className="px-xl h-11 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-sm transition-all cursor-pointer"
+                    className="px-xl h-11 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded shadow-sm transition-all cursor-pointer"
                   >
                     Close Drawer
                   </button>

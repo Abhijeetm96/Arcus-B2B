@@ -1,29 +1,25 @@
 import * as React from 'react';
-import { Play, Eye, FileText, AlertTriangle } from 'lucide-react';
+import { ShieldCheck, Home, Wrench, Sparkles, Star, Bell, Award } from 'lucide-react';
+import { cn } from '../ui/utils';
 import { Button } from '../ui/Button';
-import { Input, Textarea } from '../ui/Input';
+import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
-import { Badge } from '../ui/Badge';
 import { Checkbox } from '../ui/Checkbox';
 import { Radio } from '../ui/Radio';
 import { Switch } from '../ui/Switch';
 import { Avatar } from '../ui/Avatar';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/Tabs';
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../ui/Accordion';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/Dialog';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '../ui/Drawer';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerClose } from '../ui/Drawer';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '../ui/Dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from '../ui/Sheet';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerClose, DrawerTrigger } from '../ui/Drawer';
 import { Popover, PopoverTrigger, PopoverContent } from '../ui/Popover';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../ui/Tooltip';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '../ui/DropdownMenu';
 import { StatusBadge } from '../ui/StatusBadge';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, MetricCard } from './Card';
-import { SearchInput } from './SearchInput';
-import { Skeleton, EmptyState, LoadingState } from './States';
-import { Timeline, type TimelineItem } from './Timeline';
+import { Skeleton, EmptyState } from './States';
 import { Breadcrumb } from '../navigation/Breadcrumb';
-import { PageHeader } from '../navigation/PageHeader';
 import { Pagination } from '../navigation/Pagination';
+import { WorkspaceLayout } from '../layout/WorkspaceLayout';
 import { toast, Toaster } from 'sonner';
 import { DataTable } from '../ui/Table';
 import { type ColumnDef } from '@tanstack/react-table';
@@ -49,11 +45,9 @@ interface MaterialItem {
 }
 
 export function UIPlayground() {
-  const [inputText, setInputText] = React.useState('');
-  const [selectVal, setSelectVal] = React.useState('');
-  const [currentPage, setCurrentPage] = React.useState(1);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [activePlaygroundTab, setActivePlaygroundTab] = React.useState('colors');
 
+  // Form setup
   const form = useForm<PlaygroundFormValues>({
     resolver: zodResolver(playgroundFormSchema),
     defaultValues: {
@@ -91,9 +85,7 @@ export function UIPlayground() {
     {
       accessorKey: 'price',
       header: 'Unit Price',
-      cell: ({ row }) => {
-        return `₹${row.original.price.toLocaleString('en-IN')}`;
-      },
+      cell: ({ row }) => `₹${row.original.price.toLocaleString('en-IN')}`,
     },
   ];
 
@@ -105,707 +97,890 @@ export function UIPlayground() {
   // Overlay states
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = React.useState(false);
 
   // Nested Overlay Test States
   const [isNestedOuterOpen, setIsNestedOuterOpen] = React.useState(false);
   const [isNestedInnerOpen, setIsNestedInnerOpen] = React.useState(false);
-  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = React.useState(false);
 
-  const mockTimeline: TimelineItem[] = [
-    { id: 1, title: 'RFQ Posted', description: 'RFQ #1024 was submitted by Business Buyer Astral Ltd.', timestamp: '10:00 AM', status: 'info' },
-    { id: 2, title: 'Admin Review Complete', description: 'Assigned to Operator ID 42', timestamp: '10:30 AM', status: 'success' },
-    { id: 3, title: 'Supplier Bids Simulated', description: 'Simulated 3 vendor offers', timestamp: '11:15 AM', status: 'warning' },
-    { id: 4, title: 'Pending Buyer Acceptance', description: 'Sent revised quotes to client', timestamp: '12:00 PM', status: 'default' },
+
+
+  // Sidebar navigation menu item configuration
+  const navigationSections = [
+    {
+      group: 'Foundations',
+      items: [
+        { id: 'colors', name: 'Colors & Brand Theme' },
+        { id: 'typography', name: 'Typography Scale' },
+        { id: 'spacing', name: 'Spacing Tokens' },
+      ]
+    },
+    {
+      group: 'Basic Controls',
+      items: [
+        { id: 'buttons', name: 'Buttons & Action Toggles' },
+        { id: 'inputs', name: 'Inputs & Form Fields' },
+        { id: 'forms', name: 'Form Validation (Zod)' },
+      ]
+    },
+    {
+      group: 'Overlays & Modals',
+      items: [
+        { id: 'dialogs', name: 'Dialogs & Modal Alerts' },
+        { id: 'sheets', name: 'Sheets & Sidebar Drawers' },
+        { id: 'tooltips', name: 'Tooltips & Popovers' },
+        { id: 'dropdowns', name: 'Dropdown Menus' },
+      ]
+    },
+    {
+      group: 'Data & Display',
+      items: [
+        { id: 'cards', name: 'Cards & Metrics' },
+        { id: 'avatars', name: 'Avatars & Status Badges' },
+        { id: 'tables', name: 'Data Tables (TanStack)' },
+      ]
+    },
+    {
+      group: 'Navigation & Layouts',
+      items: [
+        { id: 'navigation', name: 'Breadcrumbs & Pagination' },
+        { id: 'layouts', name: 'Page & Workspace Layouts' },
+      ]
+    },
+    {
+      group: 'Feedback & States',
+      items: [
+        { id: 'states', name: 'Empty & Loading States' },
+        { id: 'toasts', name: 'Toasts & Alerts' },
+        { id: 'motion', name: 'Icons & Motion' },
+      ]
+    }
   ];
 
   return (
-    <div className="min-h-screen bg-background text-text-primary p-6 md:p-8 space-y-8">
+    <div className="flex min-h-screen bg-slate-50 text-text-primary flex-col md:flex-row">
       <Toaster position="top-right" richColors />
-      
-      {/* Page Header */}
-      <div className="pb-6 border-b border-border flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-text-primary">ARCUS UI PLAYGROUND</h1>
-          <p className="text-sm text-text-secondary mt-1 uppercase tracking-wider font-semibold">
-            Internal Component Showcase & Visual Testing Environment (v1.0)
-          </p>
+
+      {/* Storybook Sidebar Navigation Panel */}
+      <aside className="w-full md:w-64 border-r border-border bg-slate-900 text-slate-200 flex-shrink-0">
+        <div className="h-16 flex items-center px-6 border-b border-slate-800 bg-slate-950/40">
+          <div className="flex items-center gap-2">
+            <span className="font-extrabold text-base tracking-wider text-white flex items-center gap-1.5">
+              ARCUS <span className="text-primary text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary/10 border border-primary/20">STORYBOOK</span>
+            </span>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => toast.info('System notification generated')}>Trigger Info Toast</Button>
-          <Button variant="primary" size="sm" onClick={() => toast.success('Workspace settings updated successfully!')}>Trigger Success Toast</Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Navigation Sidebar */}
-        <div className="lg:col-span-1 space-y-4">
-          <Card className="sticky top-6">
-            <CardHeader>
-              <CardTitle className="text-base uppercase tracking-wider">Playground Index</CardTitle>
-              <CardDescription>Quick jump to sections</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <a href="#buttons" className="block text-sm font-semibold hover:text-primary transition-colors">Buttons & Actions</a>
-              <a href="#inputs" className="block text-sm font-semibold hover:text-primary transition-colors">Form Elements</a>
-              <a href="#toggles" className="block text-sm font-semibold hover:text-primary transition-colors">Toggles & Checks</a>
-              <a href="#avatars" className="block text-sm font-semibold hover:text-primary transition-colors">Avatars & Details</a>
-              <a href="#badges" className="block text-sm font-semibold hover:text-primary transition-colors">Status Badges</a>
-              <a href="#disclosure" className="block text-sm font-semibold hover:text-primary transition-colors">Tabs & Accordions</a>
-              <a href="#overlays" className="block text-sm font-semibold hover:text-primary transition-colors">Modals & Sheets</a>
-              <a href="#cards" className="block text-sm font-semibold hover:text-primary transition-colors">Cards & KPIs</a>
-              <a href="#navigation" className="block text-sm font-semibold hover:text-primary transition-colors">Navigation Items</a>
-              <a href="#states" className="block text-sm font-semibold hover:text-primary transition-colors">Placeholders & Loader States</a>
-              <a href="#timeline" className="block text-sm font-semibold hover:text-primary transition-colors">Timelines & Feeds</a>
-              <a href="#tables" className="block text-sm font-semibold hover:text-primary transition-colors">Data Tables (TanStack)</a>
-              <a href="#forms" className="block text-sm font-semibold hover:text-primary transition-colors">React Hook Form (Zod)</a>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Components Workspace */}
-        <div className="lg:col-span-3 space-y-12">
-          {/* Section 1: Buttons */}
-          <section id="buttons" className="space-y-4">
-            <h2 className="text-xl font-bold uppercase tracking-wider border-b border-border pb-2">Buttons & Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm uppercase tracking-wider">Button Variants</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-wrap gap-3">
-                  <Button variant="primary">Primary Yellow</Button>
-                  <Button variant="secondary">Secondary Gray</Button>
-                  <Button variant="outline">Outline Border</Button>
-                  <Button variant="ghost">Ghost Transparent</Button>
-                  <Button variant="danger">Danger Red</Button>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm uppercase tracking-wider">Sizes & States</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-wrap items-center gap-3">
-                  <Button size="sm">Small Button</Button>
-                  <Button size="md">Medium Base</Button>
-                  <Button size="lg">Large Action</Button>
-                  <Button disabled>Disabled State</Button>
-                  <Button isLoading={isLoading} onClick={() => {
-                    setIsLoading(true);
-                    setTimeout(() => setIsLoading(false), 2000);
-                  }}>
-                    Click to Load
-                  </Button>
-                </CardContent>
-              </Card>
+        <nav className="p-4 space-y-4 max-h-[calc(100vh-4rem)] overflow-y-auto">
+          {navigationSections.map((section, idx) => (
+            <div key={idx} className="space-y-1">
+              <span className="px-3 text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">
+                {section.group}
+              </span>
+              {section.items.map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => setActivePlaygroundTab(item.id)}
+                  className={cn(
+                    "w-full text-left px-3 py-1.5 rounded text-xs font-semibold transition-all flex items-center justify-between",
+                    activePlaygroundTab === item.id
+                      ? "bg-primary text-slate-950 font-bold shadow-sm"
+                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"
+                  )}
+                >
+                  {item.name}
+                  {activePlaygroundTab === item.id && <Sparkles className="h-3 w-3" />}
+                </button>
+              ))}
             </div>
-          </section>
+          ))}
+        </nav>
+      </aside>
 
-          {/* Section 2: Inputs */}
-          <section id="inputs" className="space-y-4">
-            <h2 className="text-xl font-bold uppercase tracking-wider border-b border-border pb-2">Form Elements</h2>
-            <Card>
-              <CardContent className="space-y-6 pt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input
-                    label="Standard Username"
-                    placeholder="Enter email or username"
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    required
-                  />
-                  <Input
-                    label="Input Error Warning"
-                    placeholder="Enter details"
-                    error="This field is required and must contain 10 characters."
-                    required
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Select
-                    label="Materials Select List"
-                    options={[
-                      { label: 'Astral CPVC Pipe (1.5 Inch)', value: 'astral_cpvc' },
-                      { label: 'UltraTech Cement (50kg Bag)', value: 'ultratech_cement' },
-                      { label: 'JSW Steel TMT Rebar (Fe500)', value: 'jsw_steel' },
-                    ]}
-                    value={selectVal}
-                    onChange={(e) => setSelectVal(e.target.value)}
-                    placeholder="Select catalog product"
-                  />
-                  <SearchInput
-                    placeholder="Global platform search..."
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    onClear={() => setInputText('')}
-                  />
-                </div>
+      {/* Active Workspace Pane */}
+      <main className="flex-1 flex flex-col min-w-0 bg-slate-50">
+        {/* Header Bar */}
+        <header className="h-16 border-b border-border bg-surface flex items-center justify-between px-6 md:px-8 flex-shrink-0 shadow-xs">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-black uppercase tracking-wider text-text-primary">
+              Design Playbook: {activePlaygroundTab.replace('-', ' ')}
+            </h2>
+          </div>
+          <div className="text-xs text-text-secondary font-semibold">
+            ARCUS Design System v1.0
+          </div>
+        </header>
 
-                <Textarea
-                  label="Detailed RFQ Specifications"
-                  placeholder="Enter bulk material specifications..."
-                  rows={4}
-                />
-              </CardContent>
-            </Card>
-          </section>
-
-          {/* Section 3: Toggles & Checks */}
-          <section id="toggles" className="space-y-4">
-            <h2 className="text-xl font-bold uppercase tracking-wider border-b border-border pb-2">Toggles & Checks</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm uppercase tracking-wider">Checkboxes</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Checkbox
-                    label="I accept terms and conditions"
-                    checked={checkedBox}
-                    onChange={setCheckedBox}
-                  />
-                  <Checkbox
-                    label="Disabled check state"
-                    checked={true}
-                    disabled
-                  />
-                  <Checkbox
-                    label="Tax Invoice requested"
-                    error="Required for business transactions."
-                  />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm uppercase tracking-wider">Radio Selection</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Radio
-                    name="playground-radio"
-                    label="Individual Account"
-                    checked={radioVal === 'option-a'}
-                    onChange={() => setRadioVal('option-a')}
-                  />
-                  <Radio
-                    name="playground-radio"
-                    label="Business Enterprise Account"
-                    checked={radioVal === 'option-b'}
-                    onChange={() => setRadioVal('option-b')}
-                  />
-                  <Radio
-                    name="playground-radio"
-                    label="Disabled Vendor Profile"
-                    disabled
-                  />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm uppercase tracking-wider">Switches</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Switch
-                    label="Enable SMS Alert notifications"
-                    checked={switchOn}
-                    onChange={setSwitchOn}
-                  />
-                  <Switch
-                    label="Dark Mode (Auto)"
-                    checked={true}
-                    disabled
-                  />
-                  <Switch
-                    label="Auto-verify GST Status"
-                    error="GST portal connection is offline."
-                  />
-                </CardContent>
-              </Card>
-            </div>
-          </section>
-
-          {/* Section 4: Avatars */}
-          <section id="avatars" className="space-y-4">
-            <h2 className="text-xl font-bold uppercase tracking-wider border-b border-border pb-2">Avatars & Details</h2>
-            <Card>
-              <CardContent className="flex flex-wrap items-center gap-6 pt-6">
-                <Avatar size="sm" fallback="JD" alt="John Doe" />
-                <Avatar size="md" fallback="AM" alt="Abhijeet M" className="bg-primary/20 text-text-primary" />
-                <Avatar size="lg" fallback="BP" alt="BuildPoints" />
-                <Avatar size="xl" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80" alt="Jane User" />
-                <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-text-primary">Jane Smith</span>
-                  <span className="text-xs text-text-secondary">Enterprise Administrator</span>
-                </div>
-              </CardContent>
-            </Card>
-          </section>
-
-          {/* Section 5: Badges */}
-          <section id="badges" className="space-y-4">
-            <h2 className="text-xl font-bold uppercase tracking-wider border-b border-border pb-2">Status Badges</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm uppercase tracking-wider">Generic Badges</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-wrap gap-3">
-                  <Badge variant="default">New</Badge>
-                  <Badge variant="secondary">Pending Review</Badge>
-                  <Badge variant="success">Completed</Badge>
-                  <Badge variant="warning">In Negotiation</Badge>
-                  <Badge variant="danger">Cancelled</Badge>
-                  <Badge variant="info">Assigned</Badge>
-                  <Badge variant="outline">Draft Mode</Badge>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm uppercase tracking-wider">Semantic Status Badge Mapping</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-wrap gap-3">
-                  <StatusBadge status="accepted" />
-                  <StatusBadge status="negotiating" />
-                  <StatusBadge status="failed" />
-                  <StatusBadge status="shipping" />
-                  <StatusBadge status="draft" />
-                </CardContent>
-              </Card>
-            </div>
-          </section>
-
-          {/* Section 6: Disclosure & Tabs */}
-          <section id="disclosure" className="space-y-4">
-            <h2 className="text-xl font-bold uppercase tracking-wider border-b border-border pb-2">Tabs & Accordions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <span className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Tabs Navigation</span>
-                <Tabs defaultValue="overview">
-                  <TabsList>
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="rfqs">RFQs</TabsTrigger>
-                    <TabsTrigger value="invoices">Invoices</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="overview">
-                    <p className="text-sm text-text-secondary">
-                      This is the overview content segment. It displays the summary of recent activities and KPI targets.
-                    </p>
-                  </TabsContent>
-                  <TabsContent value="rfqs">
-                    <p className="text-sm text-text-secondary">
-                      This panel contains the list of submitted B2B requests for quotations (RFQs).
-                    </p>
-                  </TabsContent>
-                  <TabsContent value="invoices">
-                    <p className="text-sm text-text-secondary">
-                      Review billing statements, transaction records, and tax invoices here.
-                    </p>
-                  </TabsContent>
-                </Tabs>
+        {/* Content Box */}
+        <div className="flex-grow p-6 md:p-8 max-h-[calc(100vh-4rem)] overflow-y-auto space-y-6 text-left">
+          {/* COLORS & THEME */}
+          {activePlaygroundTab === 'colors' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-wider text-text-primary">Colors & Brand Palette</h3>
+                <p className="text-xs text-text-secondary mt-1">Official color tokens mapping to the ARCUS procurement brand values.</p>
               </div>
-
-              <div className="space-y-2">
-                <span className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Accordion Expandables</span>
-                <Accordion type="single" defaultValue="item-1">
-                  <AccordionItem value="item-1">
-                    <AccordionTrigger value="item-1">How do BuildPoints work?</AccordionTrigger>
-                    <AccordionContent value="item-1">
-                      BuildPoints are loyalty points accumulated on every transaction. They can be redeemed during checkout to save money on construction materials.
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="item-2">
-                    <AccordionTrigger value="item-2">What is the standard response time for quotes?</AccordionTrigger>
-                    <AccordionContent value="item-2">
-                      Typically, suppliers respond with quotation bids within 24 to 48 hours after the RFQ is posted on the B2B portal.
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="item-3">
-                    <AccordionTrigger value="item-3">Can I edit my business GST settings?</AccordionTrigger>
-                    <AccordionContent value="item-3">
-                      Yes, you can edit business parameters and GST details inside the Settings module of your designated portal.
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card>
+                  <div className="h-24 bg-primary rounded-t flex items-end p-3"><span className="text-slate-950 font-extrabold text-xs">Primary Gold</span></div>
+                  <CardContent className="p-3 text-xs space-y-1">
+                    <p className="font-bold">#FFC107</p>
+                    <p className="text-text-secondary">bg-primary, text-primary</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <div className="h-24 bg-slate-900 rounded-t flex items-end p-3"><span className="text-white font-extrabold text-xs">Dark Charcoal</span></div>
+                  <CardContent className="p-3 text-xs space-y-1">
+                    <p className="font-bold">#0F172A</p>
+                    <p className="text-text-secondary">bg-slate-900, text-white</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <div className="h-24 bg-surface border border-border rounded-t flex items-end p-3"><span className="text-text-primary font-extrabold text-xs">Canvas Surface</span></div>
+                  <CardContent className="p-3 text-xs space-y-1">
+                    <p className="font-bold">#FFFFFF</p>
+                    <p className="text-text-secondary">bg-surface, bg-white</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <div className="h-24 bg-slate-50 border border-border rounded-t flex items-end p-3"><span className="text-text-primary font-extrabold text-xs">Page Background</span></div>
+                  <CardContent className="p-3 text-xs space-y-1">
+                    <p className="font-bold">#F8FAFC</p>
+                    <p className="text-text-secondary">bg-slate-50</p>
+                  </CardContent>
+                </Card>
               </div>
             </div>
-          </section>
+          )}
 
-          {/* Section 7: Overlays & Modals */}
-          <section id="overlays" className="space-y-4">
-            <h2 className="text-xl font-bold uppercase tracking-wider border-b border-border pb-2">Modals & Sheets</h2>
-            <Card>
-              <CardContent className="flex flex-wrap gap-4 pt-6">
-                <Button variant="primary" onClick={() => setIsDialogOpen(true)}>Open Dialog Modal</Button>
-                <Button variant="secondary" onClick={() => setIsSheetOpen(true)}>Open Right Sheet</Button>
-              </CardContent>
-            </Card>
-
-            {/* Dialog Component Showcase */}
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Confirm Project Deletion</DialogTitle>
-                  <DialogDescription>
-                    Are you sure you want to delete this project workspace? This will permanently erase all associated RFQ drafts and quotations. This action is irreversible.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="flex justify-end gap-3 mt-4">
-                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-                  <Button variant="danger" onClick={() => {
-                    setIsDialogOpen(false);
-                    toast.error('Project workspace deleted successfully');
-                  }}>Confirm Delete</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            {/* Sheet Component Showcase */}
-            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-              <SheetContent side="right">
-                <SheetHeader>
-                  <SheetTitle>Audit Log Details</SheetTitle>
-                  <SheetDescription>
-                    System events and changes logged for RFQ #1024.
-                  </SheetDescription>
-                </SheetHeader>
-                <div className="space-y-4 mt-6">
-                  <div className="rounded-lg bg-surface-secondary p-4 border border-border">
-                    <span className="block text-xs font-semibold text-text-secondary">Operator ID</span>
-                    <span className="text-sm font-medium text-text-primary">User #42 (Support Agent)</span>
-                  </div>
-                  <div className="rounded-lg bg-surface-secondary p-4 border border-border">
-                    <span className="block text-xs font-semibold text-text-secondary">Action Code</span>
-                    <span className="text-sm font-medium text-text-primary">SIMULATE_SUPPLIER_BIDS</span>
-                  </div>
-                  <div className="rounded-lg bg-surface-secondary p-4 border border-border">
-                    <span className="block text-xs font-semibold text-text-secondary">Execution Timestamp</span>
-                    <span className="text-sm font-medium text-text-primary">2026-06-25 11:15 AM</span>
-                  </div>
-                  <Button variant="outline" className="w-full mt-6" onClick={() => setIsSheetOpen(false)}>Close Sidebar</Button>
-                </div>
-              </SheetContent>
-            </Sheet>
-
-            {/* Nested Overlay Scenarios */}
-            <Card className="mt-4">
-              <CardHeader>
-                <CardTitle className="text-sm uppercase tracking-wider">Nested Overlay Verification Scenarios</CardTitle>
-                <CardDescription>Mandatory verification of stacked, interactive overlays</CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-wrap gap-4">
-                <Button variant="outline" onClick={() => setIsNestedOuterOpen(true)}>
-                  Scenario 1-4: Open Main Dialog
-                </Button>
-                <Button variant="outline" onClick={() => setIsMobileDrawerOpen(true)}>
-                  Scenario 5: Open Mobile Drawer
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Main Test Dialog */}
-            <Dialog open={isNestedOuterOpen} onOpenChange={setIsNestedOuterOpen}>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Scenario Host Dialog</DialogTitle>
-                  <DialogDescription>
-                    Use the buttons below to test nested overlay scenarios.
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="space-y-4 my-4 p-4 border border-border rounded bg-surface-secondary">
-                  {/* Scenario 1: Dialog inside Dialog */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-text-secondary">1. Nested Dialog</span>
-                    <Button size="sm" onClick={() => setIsNestedInnerOpen(true)}>Open Inner Dialog</Button>
-                  </div>
-
-                  {/* Scenario 2: Dropdown inside Dialog */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-text-secondary">2. Dropdown Menu</span>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button size="sm" variant="outline">Trigger Dropdown</Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-56">
-                        <DropdownMenuLabel>Enterprise Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => toast.success('Action 1 clicked')}>Action 1</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => toast.success('Action 2 clicked')}>Action 2</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-
-                  {/* Scenario 3: Popover inside Dialog */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-text-secondary">3. Nested Popover</span>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button size="sm" variant="outline">Trigger Popover</Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-64">
-                        <p className="text-xs font-medium">Enterprise Spacing Filter</p>
-                        <p className="text-[11px] text-text-secondary mt-1">This popover is fully inside the Dialog wrapper.</p>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-
-                  {/* Scenario 4: Tooltip inside Dialog */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-text-secondary">4. Tooltip Action</span>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button size="sm" variant="outline">Hover or Focus Me</Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>WCAG compliant accessibility tooltip</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-2">
-                  <Button variant="primary" onClick={() => setIsNestedOuterOpen(false)}>Close Host</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            {/* Inner Dialog (Scenario 1) */}
-            <Dialog open={isNestedInnerOpen} onOpenChange={setIsNestedInnerOpen}>
-              <DialogContent className="max-w-xs">
-                <DialogHeader>
-                  <DialogTitle>Inner Nested Dialog</DialogTitle>
-                  <DialogDescription>
-                    Verify focus trapping and escape closure (Esc should only close this dialog).
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="flex justify-end gap-2 mt-4">
-                  <Button variant="secondary" size="sm" onClick={() => setIsNestedInnerOpen(false)}>Close Inner</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            {/* Mobile Drawer (Scenario 5) */}
-            <Drawer open={isMobileDrawerOpen} onOpenChange={setIsMobileDrawerOpen}>
-              <DrawerContent>
-                <DrawerHeader>
-                  <DrawerTitle>Mobile Bottom Drawer</DrawerTitle>
-                  <DrawerDescription>
-                    Verify body scroll lock, drag overlay, and swipe settings.
-                  </DrawerDescription>
-                </DrawerHeader>
-                <div className="p-4 space-y-4">
-                  <p className="text-xs text-text-secondary">Bottom drawer content rendered using Vaul primitive.</p>
-                  <DrawerClose asChild>
-                    <Button className="w-full">Dismiss Drawer</Button>
-                  </DrawerClose>
-                </div>
-              </DrawerContent>
-            </Drawer>
-          </section>
-
-          {/* Section 8: Cards */}
-          <section id="cards" className="space-y-4">
-            <h2 className="text-xl font-bold uppercase tracking-wider border-b border-border pb-2">Cards & KPIs</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <MetricCard
-                title="Active Projects"
-                value="12"
-                description="8 in Bengaluru, 4 in Chennai"
-                icon={<Eye className="h-4 w-4" />}
-                trend={{ value: '25%', isPositive: true }}
-              />
-              <MetricCard
-                title="Redeemed BuildPoints"
-                value="2,450"
-                description="Equivalent to ₹2,450 savings"
-                icon={<Play className="h-4 w-4" />}
-                trend={{ value: '12%', isPositive: true }}
-              />
-              <MetricCard
-                title="Pending B2B RFQs"
-                value="4"
-                description="Awaiting supplier simulation"
-                icon={<FileText className="h-4 w-4" />}
-                trend={{ value: '3%', isPositive: false }}
-              />
-            </div>
-          </section>
-
-          {/* Section 9: Navigation */}
-          <section id="navigation" className="space-y-4">
-            <h2 className="text-xl font-bold uppercase tracking-wider border-b border-border pb-2">Navigation Items</h2>
-            <Card>
-              <CardContent className="space-y-6 pt-6">
-                <Breadcrumb
-                  items={[
-                    { label: 'Admin Portal', href: '#/portal/admin' },
-                    { label: 'RFQ Management', href: '#/portal/admin/rfqs' },
-                    { label: 'RFQ #1024' },
-                  ]}
-                />
-                
-                <PageHeader
-                  title="RFQ Bidding Workspace"
-                  description="Audit, negotiate and version quotations for RFQ #1024."
-                  actions={
-                    <>
-                      <Button variant="outline" size="sm">Download PDF</Button>
-                      <Button variant="primary" size="sm">Submit Quotation</Button>
-                    </>
-                  }
-                />
-
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={5}
-                  onPageChange={setCurrentPage}
-                  totalItems={45}
-                  itemsPerPage={10}
-                />
-              </CardContent>
-            </Card>
-          </section>
-
-          {/* Section 10: Placeholders & Loaders */}
-          <section id="states" className="space-y-4">
-            <h2 className="text-xl font-bold uppercase tracking-wider border-b border-border pb-2">Placeholders & Loader States</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* TYPOGRAPHY */}
+          {activePlaygroundTab === 'typography' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-wider text-text-primary">Typography Scale</h3>
+                <p className="text-xs text-text-secondary mt-1">Official line height, font weights, and sizes for ARCUS portal views.</p>
+              </div>
               <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm uppercase tracking-wider">Empty State Template</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <EmptyState
-                    title="No Active Bids Found"
-                    description="This RFQ has not received any supplier quotations yet. Trigger a bid simulation to begin."
-                    icon={<AlertTriangle className="h-10 w-10 text-warning" />}
-                    action={<Button size="sm">Simulate Bids</Button>}
-                  />
+                <CardContent className="p-6 space-y-6">
+                  <div className="border-b border-border pb-4">
+                    <span className="text-[10px] font-bold text-slate-400 block mb-1">h1. Heading Main</span>
+                    <h1 className="text-3xl font-extrabold tracking-tight">ARCUS Commercial</h1>
+                  </div>
+                  <div className="border-b border-border pb-4">
+                    <span className="text-[10px] font-bold text-slate-400 block mb-1">h2. Section Title</span>
+                    <h2 className="text-xl font-bold uppercase tracking-wider">Purchase Workspace</h2>
+                  </div>
+                  <div className="border-b border-border pb-4">
+                    <span className="text-[10px] font-bold text-slate-400 block mb-1">body. Core Text</span>
+                    <p className="text-sm leading-relaxed">
+                      Astral Poly Technik Limited provides a comprehensive 12-Year Limited Manufacturer Warranty against defects in materials and workmanship.
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 block mb-1">caption. Small Headers</span>
+                    <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                      daily sales revenue trend
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
+            </div>
+          )}
 
+          {/* SPACING TOKENS */}
+          {activePlaygroundTab === 'spacing' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-wider text-text-primary">Spacing Tokens</h3>
+                <p className="text-xs text-text-secondary mt-1">Consistent margin, padding, and gaps applied in layouts.</p>
+              </div>
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-sm uppercase tracking-wider">Skeleton & Loading State</CardTitle>
+                  <CardTitle className="text-sm uppercase tracking-wider">Padding & Layout Spacing Visualizer</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <LoadingState text="Fetching audit metrics..." />
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-[250px]" />
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-4 w-[150px]" />
+                  <div className="space-y-1">
+                    <span className="text-xs font-bold text-text-secondary">p-8 (Desktop Page Padding - 32px)</span>
+                    <div className="p-8 bg-primary/10 border border-dashed border-primary rounded text-center text-xs font-bold text-amber-900">
+                      Standard outer dashboard shell padding
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs font-bold text-text-secondary">p-6 (Mobile/Dialog/Card Inner Padding - 24px)</span>
+                    <div className="p-6 bg-slate-100 border border-dashed border-slate-300 rounded text-center text-xs font-bold text-slate-600">
+                      Dialog overlays and stats card content padding
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs font-bold text-text-secondary">gap-6 (Grid Gap - 24px)</span>
+                    <div className="flex gap-6 bg-slate-50 border border-dashed border-slate-200 p-4 rounded">
+                      <div className="flex-1 bg-surface border border-border p-3 text-center text-xs font-bold">Grid Panel 1</div>
+                      <div className="flex-1 bg-surface border border-border p-3 text-center text-xs font-bold">Grid Panel 2</div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
-          </section>
+          )}
 
-          {/* Section 11: Timelines */}
-          <section id="timeline" className="space-y-4">
-            <h2 className="text-xl font-bold uppercase tracking-wider border-b border-border pb-2">Timelines & Feeds</h2>
-            <Card>
-              <CardContent className="pt-6">
-                <Timeline items={mockTimeline} />
-              </CardContent>
-            </Card>
-          </section>
+          {/* BUTTONS */}
+          {activePlaygroundTab === 'buttons' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-wider text-text-primary">Buttons & Action Controls</h3>
+                <p className="text-xs text-text-secondary mt-1">Action button triggers in various sizes, variants, and loading states.</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm uppercase tracking-wider">Button Variants</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex flex-wrap gap-3">
+                    <Button variant="primary">Primary Yellow</Button>
+                    <Button variant="secondary">Secondary Slate</Button>
+                    <Button variant="outline">Outline Border</Button>
+                    <Button variant="ghost">Ghost Icon/Link</Button>
+                    <Button variant="danger">Danger Action</Button>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm uppercase tracking-wider">Sizes & Loading States</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex flex-wrap items-center gap-3">
+                    <Button size="sm">Small Action</Button>
+                    <Button size="md">Default Md</Button>
+                    <Button size="lg">Large Hero</Button>
+                    <Button isLoading>Trigger Loading</Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
 
-          {/* Section 12: Data Tables */}
-          <section id="tables" className="space-y-4">
-            <h2 className="text-xl font-bold uppercase tracking-wider border-b border-border pb-2">Data Tables (TanStack)</h2>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm uppercase tracking-wider">TanStack React Table Integration</CardTitle>
-                <CardDescription>Includes pagination, column sorting, and filter text search.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <DataTable
-                  columns={materialColumns}
-                  data={mockMaterials}
-                  filterColumnId="name"
-                  filterPlaceholder="Search material name..."
+          {/* INPUTS */}
+          {activePlaygroundTab === 'inputs' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-wider text-text-primary">Form Input Controls</h3>
+                <p className="text-xs text-text-secondary mt-1">Interactive input controls (Inputs, Textareas, Selects, Checkboxes, Switches, RadioGroups).</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm uppercase tracking-wider">Text Fields</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-text-secondary uppercase">Product SKU</label>
+                      <Input placeholder="Enter product code (e.g. AST-104)" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-text-secondary uppercase">Material Select</label>
+                      <Select 
+                        value={radioVal} 
+                        onChange={(e) => setRadioVal(e.target.value)}
+                        options={[
+                          { label: 'Plumbing CPVC Pipe', value: 'option-a' },
+                          { label: 'JSW TMT Rebars', value: 'option-b' },
+                          { label: 'OPC Cement Cement', value: 'option-c' },
+                        ]}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm uppercase tracking-wider">Checks & Switches</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="terms" checked={checkedBox} onCheckedChange={(val) => setCheckedBox(!!val)} />
+                      <label htmlFor="terms" className="text-xs font-semibold text-text-primary">I accept the terms and conditions</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch id="toggle-stock" checked={switchOn} onCheckedChange={setSwitchOn} />
+                      <label htmlFor="toggle-stock" className="text-xs font-semibold text-text-primary">Filter low stock alerts only</label>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-text-secondary uppercase block">Select Priority</label>
+                      <Radio id="prio-low" name="prio" value="low" checked={radioVal === 'low'} onChange={() => setRadioVal('low')} label="Low Priority" />
+                      <Radio id="prio-med" name="prio" value="med" checked={radioVal === 'med'} onChange={() => setRadioVal('med')} label="Medium Priority" />
+                      <Radio id="prio-high" name="prio" value="high" checked={radioVal === 'high'} onChange={() => setRadioVal('high')} label="High Priority" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
+
+          {/* FORMS */}
+          {activePlaygroundTab === 'forms' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-wider text-text-primary">React Hook Form with Zod</h3>
+                <p className="text-xs text-text-secondary mt-1">Official form validator wrapper integrating Zod resolver schemas.</p>
+              </div>
+              <Card className="max-w-xl">
+                <CardHeader>
+                  <CardTitle className="text-sm uppercase tracking-wider">New RFQ Product Entry</CardTitle>
+                  <CardDescription>All fields contain client validation rules</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmitForm)} className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="materialName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Material Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Cement, TMT Steel, CPVC Pipe..." {...field} />
+                            </FormControl>
+                            <FormDescription>Please specify exact manufacturer details.</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="quantity"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Quantity</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                {...field} 
+                                onChange={(e) => field.onChange(parseInt(e.target.value) || 0)} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="priority"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Priority</FormLabel>
+                            <FormControl>
+                              <Select 
+                                {...field}
+                                options={[
+                                  { label: 'Low Priority', value: 'low' },
+                                  { label: 'Medium Priority', value: 'medium' },
+                                  { label: 'High Priority', value: 'high' },
+                                ]}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button type="submit" className="w-full">Create RFQ Record</Button>
+                    </form>
+                  </Form>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* DIALOGS */}
+          {activePlaygroundTab === 'dialogs' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-wider text-text-primary">Dialogs & Modals</h3>
+                <p className="text-xs text-text-secondary mt-1">Radix Dialog primitive overlay modals with focus trapping.</p>
+              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm uppercase tracking-wider">Modal Interactions</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-wrap gap-4">
+                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button onClick={() => setIsDialogOpen(true)}>Open Action Dialog</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Standard Action Dialog</DialogTitle>
+                        <DialogDescription>
+                          This modal has custom backdrop blur, traps focus, and closes via Escape or close button.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="py-4 text-sm text-text-secondary">
+                        Fill in any details here. Focus is maintained inside this container.
+                      </div>
+                      <div className="flex justify-end gap-3">
+                        <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                        <Button variant="primary" onClick={() => { setIsDialogOpen(false); toast.success('Dialog action confirmed'); }}>Confirm Action</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
+                  {/* Stacked Dialog Verification */}
+                  <Button onClick={() => setIsNestedOuterOpen(true)}>Verify Stacked Dialogs</Button>
+                  <Dialog open={isNestedOuterOpen} onOpenChange={setIsNestedOuterOpen}>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Parent Modal</DialogTitle>
+                        <DialogDescription>First overlay stack. Click below to stack another dialog.</DialogDescription>
+                      </DialogHeader>
+                      <div className="py-4">
+                        <Button onClick={() => setIsNestedInnerOpen(true)}>Open Child Modal</Button>
+                      </div>
+                      <div className="flex justify-end">
+                        <Button variant="outline" onClick={() => setIsNestedOuterOpen(false)}>Close Parent</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                  <Dialog open={isNestedInnerOpen} onOpenChange={setIsNestedInnerOpen}>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Child Modal</DialogTitle>
+                        <DialogDescription>Second overlay stack. Focus is trapped here. Closing this returns focus to Parent.</DialogDescription>
+                      </DialogHeader>
+                      <div className="py-4 text-xs text-danger font-semibold">
+                        Pressing Escape will close this top modal only.
+                      </div>
+                      <div className="flex justify-end">
+                        <Button variant="primary" onClick={() => setIsNestedInnerOpen(false)}>Close Child</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* SHEETS */}
+          {activePlaygroundTab === 'sheets' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-wider text-text-primary">Sheets & Drawers</h3>
+                <p className="text-xs text-text-secondary mt-1">Radix Dialog side panel sheets and mobile bottom drawers.</p>
+              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm uppercase tracking-wider">Sheet Panels</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-wrap gap-4">
+                  <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                    <SheetTrigger asChild>
+                      <Button onClick={() => setIsSheetOpen(true)}>Trigger Right Sheet</Button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="w-80">
+                      <SheetHeader>
+                        <SheetTitle>Right Panel Sidebar</SheetTitle>
+                        <SheetDescription>Usually for filters, activity details, or checklist logs.</SheetDescription>
+                      </SheetHeader>
+                      <div className="py-6 text-xs space-y-3">
+                        <p className="font-bold uppercase text-text-secondary">Detail log info:</p>
+                        <div className="p-3 bg-slate-50 border rounded text-slate-600 leading-relaxed">
+                          All logs generated are locked to the user scope.
+                        </div>
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+
+                  {/* Drawer (Sheet bottom side panel wrapper) */}
+                  <Drawer open={isMobileDrawerOpen} onOpenChange={setIsMobileDrawerOpen}>
+                    <DrawerTrigger asChild>
+                      <Button onClick={() => setIsMobileDrawerOpen(true)}>Trigger Bottom Drawer</Button>
+                    </DrawerTrigger>
+                    <DrawerContent>
+                      <DrawerHeader>
+                        <DrawerTitle>Specialized Bottom Drawer</DrawerTitle>
+                        <DrawerDescription>
+                          A Sheet-based bottom drawer avoiding duplicate vaul dependency overlaps.
+                        </DrawerDescription>
+                      </DrawerHeader>
+                      <div className="py-4 text-sm text-center">
+                        This layout is responsive, providing a clean indicator bar and bottom panel alignment.
+                      </div>
+                      <div className="flex justify-end p-4">
+                        <DrawerClose asChild>
+                          <Button variant="outline" onClick={() => setIsMobileDrawerOpen(false)}>Close Drawer</Button>
+                        </DrawerClose>
+                      </div>
+                    </DrawerContent>
+                  </Drawer>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* TOOLTIPS */}
+          {activePlaygroundTab === 'tooltips' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-wider text-text-primary">Tooltips & Popovers</h3>
+                <p className="text-xs text-text-secondary mt-1">Radix Tooltip hover actions and Radix Popover contextual cards.</p>
+              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm uppercase tracking-wider">Tooltip & Popover Demos</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-wrap items-center gap-6">
+                  <TooltipProvider>
+                    <Tooltip delayDuration={300}>
+                      <TooltipTrigger asChild>
+                        <Button variant="outline">Hover Tooltip</Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs font-semibold">Vetted CPVC Material Specifications</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline">Open Popover Card</Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80">
+                      <div className="space-y-2">
+                        <h4 className="font-bold text-sm text-text-primary">Active Procurement Sync</h4>
+                        <p className="text-xs text-text-secondary leading-relaxed">
+                          Database is synced directly with ACC Cement & JSW Steel local dispatch yards.
+                        </p>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* DROPDOWNS */}
+          {activePlaygroundTab === 'dropdowns' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-wider text-text-primary">Dropdown Menus</h3>
+                <p className="text-xs text-text-secondary mt-1">Radix DropdownMenu action selection with keyboard navigation support.</p>
+              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm uppercase tracking-wider">Dropdown Context Actions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button>Show Actions Dropdown</Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56">
+                      <DropdownMenuLabel>RFQ Settings</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => toast.success('RFQ edit mode enabled')}>
+                        <span>Edit RFQ Worksheet</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => toast.info('PDF export initialized')}>
+                        <span>Export as PDF Log</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem disabled>
+                        <span>Delete Worksheet (Locked)</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* CARDS */}
+          {activePlaygroundTab === 'cards' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-wider text-text-primary">Cards & Metrics</h3>
+                <p className="text-xs text-text-secondary mt-1">Standard layout panels and KPI metric cards with trends.</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm uppercase tracking-wider">Standard Canvas Panel</CardTitle>
+                    <CardDescription>A basic layout wrapper with borders</CardDescription>
+                  </CardHeader>
+                  <CardContent className="text-xs text-text-secondary leading-relaxed">
+                    This is a standard card content box. It has consistent padding, card typography weights, and border colors.
+                  </CardContent>
+                </Card>
+
+                <MetricCard
+                  title="Annual Sales Spend"
+                  value="₹84,93,200"
+                  description="Procurement volume over trailing 12 months"
+                  icon={<Award className="h-4 w-4 text-text-secondary" />}
+                  trend={{ value: '18.4%', isPositive: true }}
                 />
-              </CardContent>
-            </Card>
-          </section>
+              </div>
+            </div>
+          )}
 
-          {/* Section 13: Forms */}
-          <section id="forms" className="space-y-4">
-            <h2 className="text-xl font-bold uppercase tracking-wider border-b border-border pb-2">React Hook Form (Zod)</h2>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm uppercase tracking-wider">Enterprise Form System Showcase</CardTitle>
-                <CardDescription>Validating inputs with react-hook-form schema controllers and zod rules.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmitForm)} className="space-y-4 max-w-md">
-                    <FormField
-                      control={form.control}
-                      name="materialName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Material Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter material name..." {...field} />
-                          </FormControl>
-                          <FormDescription>The catalog designation of the material.</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+          {/* AVATARS */}
+          {activePlaygroundTab === 'avatars' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-wider text-text-primary">Avatars & Status Badges</h3>
+                <p className="text-xs text-text-secondary mt-1">Official profile picture slots and status tag indicators.</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm uppercase tracking-wider">Avatar Sizes</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex items-center gap-4 flex-wrap">
+                    <Avatar fallback="SM" size="sm" alt="Small Avatar" />
+                    <Avatar fallback="MD" size="md" alt="Default Avatar" />
+                    <Avatar fallback="LG" size="lg" alt="Large Avatar" />
+                    <Avatar fallback="XL" size="xl" alt="Extra Large Avatar" />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm uppercase tracking-wider">Status Indicators</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex flex-wrap gap-3">
+                    <StatusBadge status="Approved" />
+                    <StatusBadge status="Pending" />
+                    <StatusBadge status="Rejected" />
+                    <StatusBadge status="Delivered" />
+                    <StatusBadge status="Cancelled" />
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
+
+          {/* TABLES */}
+          {activePlaygroundTab === 'tables' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-wider text-text-primary">Data Tables (TanStack)</h3>
+                <p className="text-xs text-text-secondary mt-1">Re-usable paginated table wrapper incorporating column searching.</p>
+              </div>
+              <Card>
+                <CardContent className="p-6">
+                  <DataTable
+                    columns={materialColumns}
+                    data={mockMaterials}
+                    filterColumnId="name"
+                    filterPlaceholder="Search products in worksheet..."
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* NAVIGATION */}
+          {activePlaygroundTab === 'navigation' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-wider text-text-primary">Breadcrumbs & Pagination</h3>
+                <p className="text-xs text-text-secondary mt-1">Official navigation bars, breadcrumbs, and pagination wrappers.</p>
+              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm uppercase tracking-wider">Breadcrumb Path</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Breadcrumb
+                    items={[
+                      { label: 'Admin Portal', href: '#/portal/admin' },
+                      { label: 'Inventory Desk', href: '#/portal/admin/inventory' },
+                      { label: 'Stock Audit' }
+                    ]}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm uppercase tracking-wider">Pagination Shell</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Pagination
+                    currentPage={2}
+                    totalPages={5}
+                    onPageChange={(page) => toast.info(`Navigated to page ${page}`)}
+                    totalItems={45}
+                    itemsPerPage={10}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* LAYOUTS */}
+          {activePlaygroundTab === 'layouts' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-wider text-text-primary">Page & Workspace Layout Shells</h3>
+                <p className="text-xs text-text-secondary mt-1">Architectural templates demonstrating shell spacings and split pane detail views.</p>
+              </div>
+              <div className="space-y-4">
+                <span className="text-xs font-bold text-text-secondary uppercase">PageLayout Structure preview:</span>
+                <div className="border border-border rounded overflow-hidden shadow-sm bg-slate-100 flex flex-col h-40">
+                  <div className="h-8 bg-slate-900 text-white flex items-center px-4 justify-between text-[10px] font-bold">
+                    <span>ARCUS Page Shell</span>
+                    <span>Navbar.tsx</span>
+                  </div>
+                  <div className="flex flex-1 min-h-0">
+                    <div className="w-12 bg-slate-800 border-r border-slate-700 flex flex-col gap-1 p-1 text-[8px] text-slate-400 font-semibold">
+                      <div className="h-3 bg-slate-700 rounded-xs"></div>
+                      <div className="h-3 bg-slate-700 rounded-xs"></div>
+                      <div className="h-3 bg-slate-700 rounded-xs"></div>
+                    </div>
+                    <div className="flex-1 p-3 space-y-2 overflow-y-auto">
+                      <div className="h-3 bg-slate-300 w-1/4 rounded-xs"></div>
+                      <div className="h-3 bg-slate-300 w-1/2 rounded-xs"></div>
+                      <div className="h-10 bg-white border border-border rounded-xs"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <span className="text-xs font-bold text-text-secondary uppercase">WorkspaceLayout Split-Pane preview:</span>
+                <WorkspaceLayout
+                  className="min-h-0 h-48"
+                  toolbar={
+                    <div className="flex items-center justify-between w-full text-[10px] font-bold">
+                      <span>Workspace Toolbar Slot</span>
+                      <Button size="sm" className="h-6 text-[9px] px-2">Action Button</Button>
+                    </div>
+                  }
+                  splitPane
+                  workspaceSidebar={
+                    <div className="p-3 text-[10px] text-text-secondary space-y-1">
+                      <p className="font-bold">Sidebar List Pane</p>
+                      <div className="p-1.5 bg-primary/10 rounded-xs font-medium text-[9px]">Item Row 1</div>
+                      <div className="p-1.5 hover:bg-slate-100 rounded-xs font-medium text-[9px]">Item Row 2</div>
+                    </div>
+                  }
+                  workspaceDetails={
+                    <div className="p-3 text-[10px] text-text-secondary space-y-1">
+                      <p className="font-bold">Details Content Pane</p>
+                      <p className="text-[9px]">Select any sidebar item to populate detailed analytics logs.</p>
+                    </div>
+                  }
+                />
+              </div>
+            </div>
+          )}
+
+          {/* STATES */}
+          {activePlaygroundTab === 'states' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-wider text-text-primary">Empty & Loading States</h3>
+                <p className="text-xs text-text-secondary mt-1">Placeholder cards displaying data loader skeletons and empty lists.</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm uppercase tracking-wider">Empty State Card</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <EmptyState
+                      title="No RFQs Available"
+                      description="You do not have any pending negotiations inside this folder."
+                      className="min-h-0 py-6"
                     />
-                    <FormField
-                      control={form.control}
-                      name="quantity"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Quantity</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="10"
-                              {...field}
-                              onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                            />
-                          </FormControl>
-                          <FormDescription>Order batch quantity.</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="priority"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Priority</FormLabel>
-                          <FormControl>
-                            <Select
-                              options={[
-                                { label: 'Low priority', value: 'low' },
-                                { label: 'Medium priority', value: 'medium' },
-                                { label: 'High priority', value: 'high' },
-                              ]}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button type="submit" variant="primary">Submit Material Request</Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </section>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm uppercase tracking-wider">Skeleton Loaders</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-10 w-10 rounded-full" />
+                      <div className="space-y-1.5 flex-1">
+                        <Skeleton className="h-3 w-3/4" />
+                        <Skeleton className="h-3 w-1/2" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-16 w-full" />
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
+
+          {/* TOASTS */}
+          {activePlaygroundTab === 'toasts' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-wider text-text-primary">Toast & Alert Feedbacks</h3>
+                <p className="text-xs text-text-secondary mt-1">Standard notification push alerts triggered via user interactions.</p>
+              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm uppercase tracking-wider">Toasts Triggers</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-wrap gap-4">
+                  <Button variant="outline" onClick={() => toast.info('System notification generated')}>Trigger Info Toast</Button>
+                  <Button variant="primary" onClick={() => toast.success('Workspace settings updated successfully!')}>Trigger Success Toast</Button>
+                  <Button variant="danger" onClick={() => toast.error('Connection timeout during document dispatch.')}>Trigger Error Toast</Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* MOTION & ICONS */}
+          {activePlaygroundTab === 'motion' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-wider text-text-primary">Icons & Motion</h3>
+                <p className="text-xs text-text-secondary mt-1">Lucide SVG icons and Tailwind animate classes.</p>
+              </div>
+              <Card>
+                <CardContent className="p-6 space-y-6">
+                  <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4 text-center">
+                    <div className="flex flex-col items-center p-2 border border-border rounded bg-slate-50">
+                      <Home className="h-5 w-5 text-text-secondary" />
+                      <span className="text-[9px] font-mono mt-1">Home</span>
+                    </div>
+                    <div className="flex flex-col items-center p-2 border border-border rounded bg-slate-50">
+                      <Wrench className="h-5 w-5 text-text-secondary" />
+                      <span className="text-[9px] font-mono mt-1">Wrench</span>
+                    </div>
+                    <div className="flex flex-col items-center p-2 border border-border rounded bg-slate-50">
+                      <ShieldCheck className="h-5 w-5 text-text-secondary" />
+                      <span className="text-[9px] font-mono mt-1">Shield</span>
+                    </div>
+                    <div className="flex flex-col items-center p-2 border border-border rounded bg-slate-50">
+                      <Star className="h-5 w-5 text-text-secondary" />
+                      <span className="text-[9px] font-mono mt-1">Star</span>
+                    </div>
+                    <div className="flex flex-col items-center p-2 border border-border rounded bg-slate-50">
+                      <Bell className="h-5 w-5 text-text-secondary" />
+                      <span className="text-[9px] font-mono mt-1">Bell</span>
+                    </div>
+                    <div className="flex flex-col items-center p-2 border border-border rounded bg-slate-50">
+                      <Award className="h-5 w-5 text-text-secondary" />
+                      <span className="text-[9px] font-mono mt-1">Award</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <span className="text-xs font-bold text-text-secondary uppercase">Animate Spin (Loading state):</span>
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent"></div>
+                      <span className="text-xs font-semibold text-text-secondary">Syncing repository cache...</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
-      </div>
+      </main>
     </div>
   );
 }

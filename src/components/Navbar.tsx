@@ -257,7 +257,7 @@ export default function Navbar() {
             {showDropdown && (
               <div 
                 ref={dropdownRef}
-                className="absolute top-full left-0 w-full mt-2 bg-white dark:bg-surface-dim border border-surface-variant shadow-2xl rounded-md z-50 max-h-[480px] overflow-y-auto text-left"
+                className="absolute top-full left-0 w-full mt-2 bg-white dark:bg-surface-dim border border-surface-variant shadow rounded-md z-50 max-h-[480px] overflow-y-auto text-left"
               >
                 {(!searchResults?.products || searchResults.products.length === 0) &&
                  (!searchResults?.services || searchResults.services.length === 0) &&
@@ -391,7 +391,7 @@ export default function Navbar() {
               Materials
               <span className="material-symbols-outlined text-[16px] transition-transform group-hover:rotate-180">expand_more</span>
             </a>
-            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-xs w-[720px] bg-white border border-surface-variant shadow-2xl rounded-md hidden group-hover:flex z-50 overflow-hidden text-left">
+            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-xs w-[720px] bg-white border border-surface-variant shadow rounded-md hidden group-hover:flex z-50 overflow-hidden text-left">
               {/* Left Column: Categories List */}
               <div className="w-[260px] bg-surface-container-low border-r border-surface-variant py-md">
                 {materialsCategories.map((cat, idx) => (
@@ -448,7 +448,7 @@ export default function Navbar() {
               Services
               <span className="material-symbols-outlined text-[16px] transition-transform group-hover:rotate-180">expand_more</span>
             </a>
-            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-xs w-[720px] bg-white border border-surface-variant shadow-2xl rounded-md hidden group-hover:flex flex-col z-50 overflow-hidden text-left">
+            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-xs w-[720px] bg-white border border-surface-variant shadow rounded-md hidden group-hover:flex flex-col z-50 overflow-hidden text-left">
               <div className="flex">
                 {/* Left Column: Categories List */}
                 <div className="w-[260px] bg-surface-container-low border-r border-surface-variant py-md">
@@ -564,7 +564,7 @@ export default function Navbar() {
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center gap-xs cursor-pointer select-none"
               >
-                <div className="w-10 h-10 bg-[#FFC107] text-[#0A0A0A] font-bold rounded-full flex items-center justify-center border border-[#E9ECEF] hover:shadow-md transition-shadow">
+                <div className="w-10 h-10 bg-primary text-[#0A0A0A] font-bold rounded-full flex items-center justify-center border border-[#E9ECEF] hover:shadow-md transition-shadow">
                   {user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
                 </div>
                 <div className="hidden xl:flex flex-col text-left">
@@ -575,12 +575,12 @@ export default function Navbar() {
               </div>
 
               {isProfileOpen && (
-                <div className="absolute right-0 top-full mt-xs w-48 bg-white border border-surface-variant shadow-2xl rounded-md z-50 py-xs text-left">
+                <div className="absolute right-0 top-full mt-xs w-48 bg-white border border-surface-variant shadow rounded-md z-50 py-xs text-left">
                   <div className="px-md py-sm border-b border-surface-variant">
                     <p className="text-[9px] font-bold text-[#6C757D] font-label-caps uppercase tracking-wider">Account Details</p>
                     {user.companyName && (
                       <p className="text-body-xs font-semibold text-[#0A0A0A] mt-2 truncate flex items-center gap-xs">
-                        <span className="material-symbols-outlined text-sm text-[#FFC107]">business</span>
+                        <span className="material-symbols-outlined text-sm text-primary">business</span>
                         {user.companyName}
                       </p>
                     )}
@@ -588,8 +588,8 @@ export default function Navbar() {
                       <span className="material-symbols-outlined text-sm text-[#6C757D]">email</span>
                       {user.email}
                     </p>
-                    <p className="text-body-xs font-semibold text-[#FFC107] truncate mt-1 flex items-center gap-xs">
-                      <span className="material-symbols-outlined text-sm text-[#FFC107]">stars</span>
+                    <p className="text-body-xs font-semibold text-primary truncate mt-1 flex items-center gap-xs">
+                      <span className="material-symbols-outlined text-sm text-primary">stars</span>
                       BuildPoints: {user.buildPoints ?? 0}
                     </p>
                   </div>
@@ -648,7 +648,7 @@ export default function Navbar() {
 
       {/* Mobile Navigation Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden absolute top-[88px] left-0 w-full bg-surface border-b border-surface-variant z-40 p-lg shadow-lg flex flex-col gap-md">
+        <div className="md:hidden absolute top-[88px] left-0 w-full bg-surface border-b border-surface-variant z-40 p-lg shadow-sm flex flex-col gap-md">
           {/* Search bar inside mobile menu */}
           <div className="relative group w-full mb-sm">
             <span className="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-secondary z-10">
@@ -667,7 +667,7 @@ export default function Navbar() {
             {showDropdown && (
               <div 
                 ref={dropdownRef}
-                className="absolute top-full left-0 w-full mt-2 bg-white dark:bg-surface-dim border border-surface-variant shadow-2xl rounded-md z-50 max-h-[300px] overflow-y-auto text-left"
+                className="absolute top-full left-0 w-full mt-2 bg-white dark:bg-surface-dim border border-surface-variant shadow rounded-md z-50 max-h-[300px] overflow-y-auto text-left"
               >
                 {(!searchResults?.products || searchResults.products.length === 0) &&
                  (!searchResults?.services || searchResults.services.length === 0) &&
@@ -857,7 +857,7 @@ export default function Navbar() {
           {user ? (
             <div className="border-t border-surface-variant pt-sm flex flex-col gap-sm text-left">
               <div className="flex items-center gap-sm">
-                <div className="w-12 h-12 bg-[#FFC107] text-[#0A0A0A] font-bold rounded-full flex items-center justify-center border border-[#E9ECEF] text-[18px]">
+                <div className="w-12 h-12 bg-primary text-[#0A0A0A] font-bold rounded-full flex items-center justify-center border border-[#E9ECEF] text-[18px]">
                   {user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
                 </div>
                 <div className="flex flex-col">
@@ -865,12 +865,12 @@ export default function Navbar() {
                   <span className="text-xs text-[#6C757D] font-label-caps font-bold tracking-wider">{user.role}</span>
                   {user.companyName && (
                     <span className="text-xs text-[#6C757D] mt-1 flex items-center gap-xs">
-                      <span className="material-symbols-outlined text-xs text-[#FFC107]">business</span>
+                      <span className="material-symbols-outlined text-xs text-primary">business</span>
                       {user.companyName}
                     </span>
                   )}
-                  <span className="text-xs text-[#FFC107] font-semibold mt-1 flex items-center gap-xs">
-                    <span className="material-symbols-outlined text-xs text-[#FFC107]">stars</span>
+                  <span className="text-xs text-primary font-semibold mt-1 flex items-center gap-xs">
+                    <span className="material-symbols-outlined text-xs text-primary">stars</span>
                     BuildPoints: {user.buildPoints ?? 0}
                   </span>
                 </div>
@@ -923,7 +923,7 @@ export default function Navbar() {
       )}
 
       {/* Cart Drawer Panel */}
-      <div className={`fixed top-0 right-0 h-full w-full sm:w-[450px] bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${isCartOpen ? 'translate-x-0' : 'translate-x-full'
+      <div className={`fixed top-0 right-0 h-full w-full sm:w-[450px] bg-white shadow z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${isCartOpen ? 'translate-x-0' : 'translate-x-full'
         }`}>
         {/* Header */}
         <div className="p-xl border-b border-surface-variant flex items-center justify-between">
@@ -953,16 +953,16 @@ export default function Navbar() {
               </div>
               <button
                 onClick={() => { setIsCartOpen(false); window.location.hash = '#/materials'; }}
-                className="bg-primary-container text-on-primary-container hover:bg-[#fabd00] font-bold px-lg py-md rounded-xl text-body-sm transition-all shadow-sm w-full"
+                className="bg-primary-container text-on-primary-container hover:bg-[#fabd00] font-bold px-lg py-md rounded text-body-sm transition-all shadow-sm w-full"
               >
                 Browse Catalog
               </button>
             </div>
           ) : (
             cartItems.map((item) => (
-              <div key={item.id} className="flex gap-md p-md border border-surface-variant rounded-2xl bg-[#F8F9FA] relative group hover:border-primary-container transition-all">
+              <div key={item.id} className="flex gap-md p-md border border-surface-variant rounded bg-[#F8F9FA] relative group hover:border-primary-container transition-all">
                 {/* Item Image */}
-                <div className="w-20 h-20 bg-white rounded-xl overflow-hidden flex-shrink-0 border border-surface-variant">
+                <div className="w-20 h-20 bg-white rounded overflow-hidden flex-shrink-0 border border-surface-variant">
                   <img className="w-full h-full object-cover" src={item.image} alt={item.name} />
                 </div>
 
@@ -975,7 +975,7 @@ export default function Navbar() {
 
                   <div className="flex justify-between items-center mt-sm">
                     {/* Qty Counter */}
-                    <div className="flex items-center border border-surface-variant bg-white rounded-lg scale-90 origin-left">
+                    <div className="flex items-center border border-surface-variant bg-white rounded scale-90 origin-left">
                       <button
                         onClick={() => updateQty(item.id, item.qty - 1)}
                         className="px-sm py-xs text-secondary hover:text-primary font-bold text-xs"
@@ -1032,7 +1032,7 @@ export default function Navbar() {
             <div className="flex gap-md">
               <button
                 onClick={() => { setIsCartOpen(false); window.location.hash = '#/checkout'; }}
-                className="flex-1 bg-primary-container text-on-primary-container hover:bg-[#fabd00] h-14 rounded-xl font-bold flex items-center justify-center gap-sm transition-all shadow-md text-body-sm"
+                className="flex-1 bg-primary-container text-on-primary-container hover:bg-[#fabd00] h-14 rounded font-bold flex items-center justify-center gap-sm transition-all shadow-md text-body-sm"
               >
                 <span className="material-symbols-outlined text-[20px]">shopping_bag</span>
                 Proceed to Checkout

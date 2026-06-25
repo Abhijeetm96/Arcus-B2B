@@ -84,13 +84,13 @@ export const ExportProducts: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center py-xl">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#FFC107]"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto text-left bg-white p-lg rounded-2xl border border-slate-200 shadow-sm space-y-lg">
+    <div className="max-w-2xl mx-auto text-left bg-white p-lg rounded border border-slate-200 shadow-sm space-y-lg">
       <div>
         <h3 className="font-extrabold text-slate-900 text-headline-h6">Export Product Catalog</h3>
         <p className="text-body-sm text-slate-400">Configure your export parameters below to download your catalog sheet.</p>
@@ -103,7 +103,7 @@ export const ExportProducts: React.FC = () => {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full h-11 px-md border border-slate-200 rounded-xl bg-slate-50 focus:border-[#FFC107] focus:ring-0 font-semibold"
+            className="w-full h-11 px-md border border-slate-200 rounded bg-slate-50 focus:border-primary focus:ring-0 font-semibold"
           >
             <option value="all">All Categories</option>
             {categories.map(c => (
@@ -118,7 +118,7 @@ export const ExportProducts: React.FC = () => {
           <select
             value={selectedBrand}
             onChange={(e) => setSelectedBrand(e.target.value)}
-            className="w-full h-11 px-md border border-slate-200 rounded-xl bg-slate-50 focus:border-[#FFC107] focus:ring-0 font-semibold"
+            className="w-full h-11 px-md border border-slate-200 rounded bg-slate-50 focus:border-primary focus:ring-0 font-semibold"
           >
             <option value="all">All Brands</option>
             {brands.map(b => (
@@ -133,7 +133,7 @@ export const ExportProducts: React.FC = () => {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="w-full h-11 px-md border border-slate-200 rounded-xl bg-slate-50 focus:border-[#FFC107] focus:ring-0 font-semibold"
+            className="w-full h-11 px-md border border-slate-200 rounded bg-slate-50 focus:border-primary focus:ring-0 font-semibold"
           >
             <option value="all">All Statuses</option>
             <option value="ACTIVE">Active</option>
@@ -154,7 +154,7 @@ export const ExportProducts: React.FC = () => {
                 name="format"
                 checked={format === 'xlsx'}
                 onChange={() => setFormat('xlsx')}
-                className="w-5 h-5 text-[#FFC107] focus:ring-[#FFC107]"
+                className="w-5 h-5 text-primary focus:ring-primary"
               />
               Excel spreadsheet (.xlsx)
             </label>
@@ -164,7 +164,7 @@ export const ExportProducts: React.FC = () => {
                 name="format"
                 checked={format === 'csv'}
                 onChange={() => setFormat('csv')}
-                className="w-5 h-5 text-[#FFC107] focus:ring-[#FFC107]"
+                className="w-5 h-5 text-primary focus:ring-primary"
               />
               CSV text file (.csv)
             </label>
@@ -176,7 +176,7 @@ export const ExportProducts: React.FC = () => {
         <button
           onClick={handleExport}
           disabled={exporting}
-          className="flex items-center justify-center gap-xs bg-[#FFC107] text-slate-950 hover:bg-[#fabd00] disabled:bg-slate-100 disabled:text-slate-400 px-xl h-12 rounded-xl font-extrabold text-sm transition-all shadow-sm shadow-[#FFC107]/20"
+          className="flex items-center justify-center gap-xs bg-primary text-slate-950 hover:bg-[#fabd00] disabled:bg-slate-100 disabled:text-slate-400 px-xl h-12 rounded font-extrabold text-sm transition-all shadow-sm shadow-[#FFC107]/20"
         >
           {exporting ? (
             <>
