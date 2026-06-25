@@ -1,4 +1,21 @@
+/**
+ * ARCUS Wrapper
+ *
+ * Wraps the official shadcn component.
+ *
+ * Keep all ARCUS-specific styling,
+ * helper props,
+ * variants,
+ * enterprise behaviours,
+ * and compatibility adapters here.
+ *
+ * The corresponding *-base.tsx file
+ * should remain identical to the
+ * official shadcn CLI output whenever possible.
+ */
+
 import * as React from 'react';
+import * as TableBase from './table-base';
 import { cn } from './utils';
 import { Button } from './Button';
 import { Input } from './Input';
@@ -17,8 +34,8 @@ import {
 
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => (
-    <div className="relative w-full overflow-auto rounded border border-border bg-surface shadow-sm">
-      <table ref={ref} className={cn('w-full caption-bottom text-sm', className)} {...props} />
+    <div className="rounded border border-border bg-surface shadow-sm overflow-hidden">
+      <TableBase.Table ref={ref} className={className} {...props} />
     </div>
   )
 );
@@ -26,28 +43,28 @@ Table.displayName = 'Table';
 
 const TableHeader = React.forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(
   ({ className, ...props }, ref) => (
-    <thead ref={ref} className={cn('bg-surface-secondary border-b border-border [&_tr]:border-b-0', className)} {...props} />
+    <TableBase.TableHeader ref={ref} className={cn('bg-surface-secondary border-b border-border [&_tr]:border-b-0', className)} {...props} />
   )
 );
 TableHeader.displayName = 'TableHeader';
 
 const TableBody = React.forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(
   ({ className, ...props }, ref) => (
-    <tbody ref={ref} className={cn('[&_tr:last-child]:border-0', className)} {...props} />
+    <TableBase.TableBody ref={ref} className={className} {...props} />
   )
 );
 TableBody.displayName = 'TableBody';
 
 const TableFooter = React.forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(
   ({ className, ...props }, ref) => (
-    <tfoot ref={ref} className={cn('border-t border-border bg-surface-secondary/50 font-medium [&_tr]:last-child:border-b-0', className)} {...props} />
+    <TableBase.TableFooter ref={ref} className={cn('border-t border-border bg-surface-secondary/50 font-medium', className)} {...props} />
   )
 );
 TableFooter.displayName = 'TableFooter';
 
 const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTMLTableRowElement>>(
   ({ className, ...props }, ref) => (
-    <tr
+    <TableBase.TableRow
       ref={ref}
       className={cn(
         'border-b border-border transition-colors hover:bg-surface-secondary/50 data-[state=selected]:bg-surface-secondary/80',
@@ -61,10 +78,10 @@ TableRow.displayName = 'TableRow';
 
 const TableHead = React.forwardRef<HTMLTableCellElement, React.ThHTMLAttributes<HTMLTableCellElement>>(
   ({ className, ...props }, ref) => (
-    <th
+    <TableBase.TableHead
       ref={ref}
       className={cn(
-        'h-12 px-4 text-left align-middle font-semibold text-text-secondary uppercase tracking-wider text-xs [&:has([role=checkbox])]:pr-0',
+        'h-12 px-4 text-left align-middle font-semibold text-text-secondary uppercase tracking-wider text-xs',
         className
       )}
       {...props}
@@ -75,9 +92,9 @@ TableHead.displayName = 'TableHead';
 
 const TableCell = React.forwardRef<HTMLTableCellElement, React.TdHTMLAttributes<HTMLTableCellElement>>(
   ({ className, ...props }, ref) => (
-    <td
+    <TableBase.TableCell
       ref={ref}
-      className={cn('p-4 align-middle text-text-primary [&:has([role=checkbox])]:pr-0', className)}
+      className={cn('p-4 align-middle text-text-primary', className)}
       {...props}
     />
   )
@@ -86,7 +103,7 @@ TableCell.displayName = 'TableCell';
 
 const TableCaption = React.forwardRef<HTMLTableCaptionElement, React.HTMLAttributes<HTMLTableCaptionElement>>(
   ({ className, ...props }, ref) => (
-    <caption ref={ref} className={cn('mt-4 text-xs text-muted', className)} {...props} />
+    <TableBase.TableCaption ref={ref} className={cn('mt-4 text-xs text-muted', className)} {...props} />
   )
 );
 TableCaption.displayName = 'TableCaption';

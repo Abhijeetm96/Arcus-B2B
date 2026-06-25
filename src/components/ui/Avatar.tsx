@@ -1,8 +1,24 @@
+/**
+ * ARCUS Wrapper
+ *
+ * Wraps the official shadcn component.
+ *
+ * Keep all ARCUS-specific styling,
+ * helper props,
+ * variants,
+ * enterprise behaviours,
+ * and compatibility adapters here.
+ *
+ * The corresponding *-base.tsx file
+ * should remain identical to the
+ * official shadcn CLI output whenever possible.
+ */
+
 import * as React from 'react';
-import * as AvatarPrimitive from '@radix-ui/react-avatar';
+import * as AvatarBase from './avatar-base';
 import { cn } from './utils';
 
-export interface AvatarProps extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root> {
+export interface AvatarProps extends React.ComponentPropsWithoutRef<typeof AvatarBase.Avatar> {
   src?: string;
   alt?: string;
   fallback?: string;
@@ -10,7 +26,7 @@ export interface AvatarProps extends React.ComponentPropsWithoutRef<typeof Avata
 }
 
 const Avatar = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Root>,
+  React.ElementRef<typeof AvatarBase.Avatar>,
   AvatarProps
 >(({ className, src, alt, fallback, size = 'md', ...props }, ref) => {
   const sizeClasses = {
@@ -21,29 +37,31 @@ const Avatar = React.forwardRef<
   };
 
   return (
-    <AvatarPrimitive.Root
+    <AvatarBase.Avatar
       ref={ref}
       className={cn(
-        "relative flex shrink-0 overflow-hidden rounded-full bg-border font-semibold text-text-secondary items-center justify-center select-none shadow-sm",
+        "bg-border font-semibold text-text-secondary items-center justify-center select-none shadow-sm",
         sizeClasses[size],
         className
       )}
       {...props}
     >
-      <AvatarPrimitive.Image
+      <AvatarBase.AvatarImage
         src={src}
         alt={alt || "Avatar"}
         className="h-full w-full object-cover aspect-square"
       />
-      <AvatarPrimitive.Fallback
-        className="flex h-full w-full items-center justify-center bg-border uppercase text-text-primary"
+      <AvatarBase.AvatarFallback
+        className="flex h-full w-full items-center justify-center bg-border uppercase text-text-primary rounded-full"
         delayMs={600}
       >
         {fallback || alt?.substring(0, 2) || "U"}
-      </AvatarPrimitive.Fallback>
-    </AvatarPrimitive.Root>
+      </AvatarBase.AvatarFallback>
+    </AvatarBase.Avatar>
   );
 });
-Avatar.displayName = AvatarPrimitive.Root.displayName;
+Avatar.displayName = 'Avatar';
 
 export { Avatar };
+export * as AvatarBase from './avatar-base';
+export { AvatarImage, AvatarFallback } from './avatar-base';

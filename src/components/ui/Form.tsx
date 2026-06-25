@@ -1,176 +1,76 @@
+/**
+ * ARCUS Wrapper
+ *
+ * Wraps the official shadcn component.
+ *
+ * Keep all ARCUS-specific styling,
+ * helper props,
+ * variants,
+ * enterprise behaviours,
+ * and compatibility adapters here.
+ *
+ * The corresponding *-base.tsx file
+ * should remain identical to the
+ * official shadcn CLI output whenever possible.
+ */
+
 import * as React from 'react';
-import * as LabelPrimitive from '@radix-ui/react-label';
-import { Slot } from '@radix-ui/react-slot';
-import {
-  Controller,
-  type ControllerProps,
-  type FieldPath,
-  type FieldValues,
-  FormProvider,
-  useFormContext,
-} from 'react-hook-form';
+import * as FormBase from './form-base';
 import { cn } from './utils';
 
-const Form = FormProvider;
-
-type FormFieldContextValue<
-  TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
-> = {
-  name: TName;
-};
-
-const FormFieldContext = React.createContext<FormFieldContextValue>({} as any);
-
-const FormField = <
-  TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
->({
-  ...props
-}: ControllerProps<TFieldValues, TName>) => {
-  return (
-    FormFieldContext.Provider ? (
-      <FormFieldContext.Provider value={{ name: props.name }}>
-        <Controller {...props} />
-      </FormFieldContext.Provider>
-    ) : null
-  );
-};
-
-type FormItemContextValue = {
-  id: string;
-};
-
-const FormItemContext = React.createContext<FormItemContextValue>({} as any);
-
-const useFormField = () => {
-  const fieldContext = React.useContext(FormFieldContext);
-  const itemContext = React.useContext(FormItemContext);
-  const { getFieldState, formState } = useFormContext();
-
-  const fieldState = getFieldState(fieldContext.name, formState);
-
-  if (!fieldContext) {
-    throw new Error('useFormField should be used within <FormField>');
-  }
-
-  const { id } = itemContext;
-
-  return {
-    id,
-    name: fieldContext.name,
-    formItemId: `${id}-form-item`,
-    formDescriptionId: `${id}-form-item-description`,
-    formMessageId: `${id}-form-item-message`,
-    ...fieldState,
-  };
-};
-
-const FormItem = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => {
-  const id = React.useId();
-
-  return (
-    <FormItemContext.Provider value={{ id }}>
-      <div ref={ref} className={cn("space-y-2", className)} {...props} />
-    </FormItemContext.Provider>
-  );
-});
-FormItem.displayName = "FormItem";
+// Re-export hook form context and primitives
+export { useFormField } from './form-base';
+export const Form = FormBase.Form;
+export const FormField = FormBase.FormField;
+export const FormItem = FormBase.FormItem;
+export const FormControl = FormBase.FormControl;
 
 const FormLabel = React.forwardRef<
-  React.ElementRef<typeof LabelPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
+  React.ElementRef<typeof FormBase.FormLabel>,
+  React.ComponentPropsWithoutRef<typeof FormBase.FormLabel>
 >(({ className, ...props }, ref) => {
-  const { error, formItemId } = useFormField();
+  const { error } = FormBase.useFormField();
 
   return (
-    <LabelPrimitive.Root
+    <FormBase.FormLabel
       ref={ref}
       className={cn(
-        "block text-xs font-semibold text-text-secondary uppercase tracking-wider",
-        error && "text-danger",
+        'block text-xs font-semibold text-text-secondary uppercase tracking-wider',
+        error && 'text-danger',
         className
       )}
-      htmlFor={formItemId}
       {...props}
     />
   );
 });
-FormLabel.displayName = "FormLabel";
-
-const FormControl = React.forwardRef<
-  React.ElementRef<typeof Slot>,
-  React.ComponentPropsWithoutRef<typeof Slot>
->(({ ...props }, ref) => {
-  const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
-
-  return (
-    <Slot
-      ref={ref}
-      id={formItemId}
-      aria-describedby={
-        !error
-          ? `${formDescriptionId}`
-          : `${formDescriptionId} ${formMessageId}`
-      }
-      aria-invalid={!!error}
-      {...props}
-    />
-  );
-});
-FormControl.displayName = "FormControl";
+FormLabel.displayName = 'FormLabel';
 
 const FormDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => {
-  const { formDescriptionId } = useFormField();
-
-  return (
-    <p
-      ref={ref}
-      id={formDescriptionId}
-      className={cn("text-xs text-text-secondary", className)}
-      {...props}
-    />
-  );
-});
-FormDescription.displayName = "FormDescription";
+>(({ className, ...props }, ref) => (
+  <FormBase.FormDescription
+    ref={ref}
+    className={cn('text-xs text-text-secondary', className)}
+    {...props}
+  />
+));
+FormDescription.displayName = 'FormDescription';
 
 const FormMessage = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
->(({ className, children, ...props }, ref) => {
-  const { error, formMessageId } = useFormField();
-  const body = error ? String(error?.message) : children;
-
-  if (!body) {
-    return null;
-  }
-
-  return (
-    <p
-      ref={ref}
-      id={formMessageId}
-      className={cn("text-xs font-medium text-danger", className)}
-      {...props}
-    >
-      {body}
-    </p>
-  );
-});
-FormMessage.displayName = "FormMessage";
+>(({ className, ...props }, ref) => (
+  <FormBase.FormMessage
+    ref={ref}
+    className={cn('text-xs font-medium text-danger', className)}
+    {...props}
+  />
+));
+FormMessage.displayName = 'FormMessage';
 
 export {
-  useFormField,
-  Form,
-  FormItem,
   FormLabel,
-  FormControl,
   FormDescription,
   FormMessage,
-  FormField,
 };

@@ -2,17 +2,8 @@ import * as React from 'react';
 import { Loader2 } from 'lucide-react';
 import { cn } from '../ui/utils';
 
-// 1. Skeleton Loader Component
-interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-function Skeleton({ className, ...props }: SkeletonProps) {
-  return (
-    <div
-      className={cn('animate-pulse rounded bg-border/60', className)}
-      {...props}
-    />
-  );
-}
+import { Skeleton } from '../ui/Skeleton';
+export { Skeleton };
 
 // 2. Empty State Component
 interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -51,4 +42,4 @@ function LoadingState({ className, text = 'Loading details...', ...props }: Load
   );
 }
 
-export { Skeleton, EmptyState, LoadingState };
+export { EmptyState, LoadingState };
