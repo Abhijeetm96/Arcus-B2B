@@ -1,10 +1,24 @@
+/**
+ * ARCUS Wrapper
+ *
+ * Wraps the official shadcn component.
+ *
+ * All ARCUS-specific styling,
+ * helper props,
+ * variants,
+ * and behaviours belong here.
+ *
+ * The corresponding *-base.tsx file should remain
+ * as close as possible to the official shadcn CLI output.
+ */
+
 import * as React from 'react';
-import * as RadioGroupPrimitive from '@radix-ui/react-radio-group';
-import { Circle } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from './radio-group-base';
 import { cn } from './utils';
 
-export interface RadioProps extends Omit<React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item>, 'value' | 'onChange'> {
+export interface RadioProps extends Omit<React.ComponentPropsWithoutRef<typeof RadioGroupItem>, 'value' | 'onChange'> {
   label?: string;
+  description?: string;
   error?: string;
   name?: string;
   value?: string;
@@ -12,51 +26,63 @@ export interface RadioProps extends Omit<React.ComponentPropsWithoutRef<typeof R
 }
 
 const Radio = React.forwardRef<
-  React.ElementRef<typeof RadioGroupPrimitive.Item>,
+  React.ElementRef<typeof RadioGroupItem>,
   RadioProps
->(({ className, label, error, checked, disabled, id, name, onChange, value, ...props }, ref) => {
+>(({ className, label, description, error, checked, disabled, id, name, onChange, value, ...props }, ref) => {
   const uniqueId = id || React.useId();
 
   return (
-    <RadioGroupPrimitive.Root
-      value={checked ? (value || "selected") : ""}
+    <RadioGroup
+      value={checked ? (value || 'selected') : ''}
       onValueChange={() => onChange?.()}
       disabled={disabled}
       name={name}
       className="grid"
     >
-      <div className="flex flex-col gap-1">
-        <label
-          htmlFor={uniqueId}
-          className={cn(
-            "flex items-center gap-3 cursor-pointer select-none text-sm text-text-primary font-medium",
-            disabled && "cursor-not-allowed opacity-50"
-          )}
-        >
-          <RadioGroupPrimitive.Item
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-start gap-3">
+          <RadioGroupItem
             ref={ref}
             id={uniqueId}
-            value={value || "selected"}
+            value={value || 'selected'}
             disabled={disabled}
             className={cn(
-              "aspect-square h-5 w-5 rounded-full border border-border bg-surface text-primary shadow-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-              checked && "border-primary",
-              error && "border-danger focus-visible:ring-danger",
+              checked && 'border-primary',
+              error && 'border-danger focus-visible:ring-danger',
+              'mt-0.5',
               className
             )}
             {...props}
-          >
-            <RadioGroupPrimitive.Indicator className="flex items-center justify-center">
-              <Circle className="h-2.5 w-2.5 fill-current text-primary" />
-            </RadioGroupPrimitive.Indicator>
-          </RadioGroupPrimitive.Item>
-          {label && <span>{label}</span>}
-        </label>
-        {error && <span className="text-xs text-danger font-medium">{error}</span>}
+          />
+          {(label || description) && (
+            <div className="grid gap-1 select-none">
+              {label && (
+                <label
+                  htmlFor={uniqueId}
+                  className={cn(
+                    'text-sm text-text-primary font-medium cursor-pointer',
+                    disabled && 'cursor-not-allowed opacity-50'
+                  )}
+                >
+                  {label}
+                </label>
+              )}
+              {description && (
+                <p className={cn('text-xs text-text-secondary', disabled && 'opacity-50')}>
+                  {description}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+        {error && <span className="text-xs text-danger font-medium ml-8">{error}</span>}
       </div>
-    </RadioGroupPrimitive.Root>
+    </RadioGroup>
   );
 });
-Radio.displayName = "Radio";
+Radio.displayName = 'Radio';
 
 export { Radio };
+
+// Also export the base group components for standard shadcn radio groups
+export { RadioGroup as RadioGroupBase, RadioGroupItem as RadioGroupItemBase } from './radio-group-base';

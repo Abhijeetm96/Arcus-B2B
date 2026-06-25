@@ -1,51 +1,113 @@
+/**
+ * ARCUS Wrapper
+ *
+ * Wraps the official shadcn component.
+ *
+ * All ARCUS-specific styling,
+ * helper props,
+ * variants,
+ * and behaviours belong here.
+ *
+ * The corresponding *-base.tsx file should remain
+ * as close as possible to the official shadcn CLI output.
+ */
+
 import * as React from 'react';
+import * as SelectBase from './select-base';
 import { cn } from './utils';
 
-export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'value' | 'defaultValue' | 'onChange'> {
   error?: string;
   label?: string;
   options: { label: string; value: string | number }[];
   placeholder?: string;
+  value?: string | number;
+  defaultValue?: string | number;
+  onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
 }
 
-const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, error, label, options, placeholder, id, ...props }, ref) => {
+const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
+  (
+    {
+      className,
+      error,
+      label,
+      options,
+      placeholder,
+      id,
+      value,
+      defaultValue,
+      onChange,
+      disabled,
+      required,
+      name
+    },
+    ref
+  ) => {
+    const uniqueId = id || React.useId();
+
+    const handleValueChange = (newValue: string) => {
+      if (onChange) {
+        // Construct a synthetic event that mirrors the standard HTMLSelectElement's event shape
+        const syntheticEvent = {
+          target: {
+            name: name || '',
+            value: newValue,
+          },
+          currentTarget: {
+            name: name || '',
+            value: newValue,
+          },
+        } as unknown as React.ChangeEvent<HTMLSelectElement>;
+
+        onChange(syntheticEvent);
+      }
+    };
+
+    // Convert value and defaultValue to string as required by Radix Select
+    const selectValue = value !== undefined ? value.toString() : undefined;
+    const selectDefaultValue = defaultValue !== undefined ? defaultValue.toString() : undefined;
+
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={id} className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-xs">
+          <label
+            htmlFor={uniqueId}
+            className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-xs"
+          >
             {label}
-            {props.required && <span className="text-danger ml-0.5">*</span>}
+            {required && <span className="text-danger ml-0.5">*</span>}
           </label>
         )}
-        <div className="relative">
-          <select
-            id={id}
+        <SelectBase.Select
+          value={selectValue}
+          defaultValue={selectDefaultValue}
+          onValueChange={handleValueChange}
+          disabled={disabled}
+        >
+          <SelectBase.SelectTrigger
+            ref={ref}
+            id={uniqueId}
             className={cn(
-              'flex h-10 w-full rounded border border-border bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none pr-10',
-              error && 'border-danger focus-visible:ring-danger',
+              'border-border bg-surface text-text-primary focus:ring-primary focus:ring-offset-2',
+              error && 'border-danger focus:ring-danger',
               className
             )}
-            ref={ref}
-            {...props}
           >
-            {placeholder && (
-              <option value="" disabled selected={props.value === ''}>
-                {placeholder}
-              </option>
-            )}
+            <SelectBase.SelectValue placeholder={placeholder} />
+          </SelectBase.SelectTrigger>
+          <SelectBase.SelectContent className="bg-popover border-border text-popover-foreground">
             {options.map((opt) => (
-              <option key={opt.value} value={opt.value}>
+              <SelectBase.SelectItem
+                key={opt.value}
+                value={opt.value.toString()}
+                className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+              >
                 {opt.label}
-              </option>
+              </SelectBase.SelectItem>
             ))}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-text-secondary">
-            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-              <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-            </svg>
-          </div>
-        </div>
+          </SelectBase.SelectContent>
+        </SelectBase.Select>
         {error && <span className="mt-1 block text-xs font-medium text-danger">{error}</span>}
       </div>
     );
@@ -53,4 +115,20 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
 );
 Select.displayName = 'Select';
 
-export { Select };
+export {
+  Select,
+  SelectBase,
+};
+
+// Re-export subcomponents for flexibility
+export {
+  SelectGroup,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectLabel,
+  SelectItem,
+  SelectSeparator,
+  SelectScrollUpButton,
+  SelectScrollDownButton,
+} from './select-base';
