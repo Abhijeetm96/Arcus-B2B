@@ -12,6 +12,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/Tabs';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../ui/Accordion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/Dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '../ui/Drawer';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerClose } from '../ui/Drawer';
+import { Popover, PopoverTrigger, PopoverContent } from '../ui/Popover';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../ui/Tooltip';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '../ui/DropdownMenu';
 import { StatusBadge } from '../ui/StatusBadge';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, MetricCard } from './Card';
 import { SearchInput } from './SearchInput';
@@ -101,6 +105,11 @@ export function UIPlayground() {
   // Overlay states
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
+
+  // Nested Overlay Test States
+  const [isNestedOuterOpen, setIsNestedOuterOpen] = React.useState(false);
+  const [isNestedInnerOpen, setIsNestedInnerOpen] = React.useState(false);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = React.useState(false);
 
   const mockTimeline: TimelineItem[] = [
     { id: 1, title: 'RFQ Posted', description: 'RFQ #1024 was submitted by Business Buyer Astral Ltd.', timestamp: '10:00 AM', status: 'info' },
@@ -479,6 +488,124 @@ export function UIPlayground() {
                 </div>
               </SheetContent>
             </Sheet>
+
+            {/* Nested Overlay Scenarios */}
+            <Card className="mt-4">
+              <CardHeader>
+                <CardTitle className="text-sm uppercase tracking-wider">Nested Overlay Verification Scenarios</CardTitle>
+                <CardDescription>Mandatory verification of stacked, interactive overlays</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-4">
+                <Button variant="outline" onClick={() => setIsNestedOuterOpen(true)}>
+                  Scenario 1-4: Open Main Dialog
+                </Button>
+                <Button variant="outline" onClick={() => setIsMobileDrawerOpen(true)}>
+                  Scenario 5: Open Mobile Drawer
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Main Test Dialog */}
+            <Dialog open={isNestedOuterOpen} onOpenChange={setIsNestedOuterOpen}>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Scenario Host Dialog</DialogTitle>
+                  <DialogDescription>
+                    Use the buttons below to test nested overlay scenarios.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-4 my-4 p-4 border border-border rounded bg-surface-secondary">
+                  {/* Scenario 1: Dialog inside Dialog */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-text-secondary">1. Nested Dialog</span>
+                    <Button size="sm" onClick={() => setIsNestedInnerOpen(true)}>Open Inner Dialog</Button>
+                  </div>
+
+                  {/* Scenario 2: Dropdown inside Dialog */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-text-secondary">2. Dropdown Menu</span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="sm" variant="outline">Trigger Dropdown</Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56">
+                        <DropdownMenuLabel>Enterprise Actions</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => toast.success('Action 1 clicked')}>Action 1</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => toast.success('Action 2 clicked')}>Action 2</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
+                  {/* Scenario 3: Popover inside Dialog */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-text-secondary">3. Nested Popover</span>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button size="sm" variant="outline">Trigger Popover</Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-64">
+                        <p className="text-xs font-medium">Enterprise Spacing Filter</p>
+                        <p className="text-[11px] text-text-secondary mt-1">This popover is fully inside the Dialog wrapper.</p>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  {/* Scenario 4: Tooltip inside Dialog */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-text-secondary">4. Tooltip Action</span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button size="sm" variant="outline">Hover or Focus Me</Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>WCAG compliant accessibility tooltip</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button variant="primary" onClick={() => setIsNestedOuterOpen(false)}>Close Host</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Inner Dialog (Scenario 1) */}
+            <Dialog open={isNestedInnerOpen} onOpenChange={setIsNestedInnerOpen}>
+              <DialogContent className="max-w-xs">
+                <DialogHeader>
+                  <DialogTitle>Inner Nested Dialog</DialogTitle>
+                  <DialogDescription>
+                    Verify focus trapping and escape closure (Esc should only close this dialog).
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="flex justify-end gap-2 mt-4">
+                  <Button variant="secondary" size="sm" onClick={() => setIsNestedInnerOpen(false)}>Close Inner</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Mobile Drawer (Scenario 5) */}
+            <Drawer open={isMobileDrawerOpen} onOpenChange={setIsMobileDrawerOpen}>
+              <DrawerContent>
+                <DrawerHeader>
+                  <DrawerTitle>Mobile Bottom Drawer</DrawerTitle>
+                  <DrawerDescription>
+                    Verify body scroll lock, drag overlay, and swipe settings.
+                  </DrawerDescription>
+                </DrawerHeader>
+                <div className="p-4 space-y-4">
+                  <p className="text-xs text-text-secondary">Bottom drawer content rendered using Vaul primitive.</p>
+                  <DrawerClose asChild>
+                    <Button className="w-full">Dismiss Drawer</Button>
+                  </DrawerClose>
+                </div>
+              </DrawerContent>
+            </Drawer>
           </section>
 
           {/* Section 8: Cards */}
