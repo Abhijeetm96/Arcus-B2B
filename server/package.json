@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon src/index.ts",
     "build": "tsc",
-    "start": "node dist/server/src/index.js"
+    "start": "node dist/server/src/index.js",
+    "seed:dev": "ts-node -P tsconfig.json src/scripts/seedDevelopmentUsers.ts"
   },
   "dependencies": {
     "adm-zip": "^0.5.17",

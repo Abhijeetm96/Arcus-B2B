@@ -6,6 +6,7 @@ import https from 'https';
 import multer from 'multer';
 import * as XLSX from 'xlsx';
 import { 
+  pgPool, usePostgres, readJsonDb,
   addRfq, addBooking, addQuote, getAllRfqs, getAllBookings, getAllQuotes, getAllProducts, getProductById, updateProductStock, 
   addUser, getUserByEmail, getUserByPhone, getUserByGst, getUserById, addOrder, getOrdersByUserId, updateUser, addOtp, 
   getOtpByUserId, incrementOtpAttempts, deleteOtp, deleteOtpsByUserId, getOrderById, updateOrderStatus, deleteUserByEmail, 
@@ -1228,6 +1229,266 @@ app.put('/api/admin/inventory/:id', async (req, res) => {
 });
 
 // Admin RFQ CRUD
+app.post('/api/admin/rfqs', async (req, res) => {
+  try {
+    const isAdmin = await checkIsAdmin(req);
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+
+    if (!pgPool) {
+      return res.status(500).json({ error: 'Database pool not initialized.' });
+    }
+
+    const {
+      companyName,
+      contactName,
+      phone,
+      email,
+      location,
+      projectType,
+      details,
+      priority,
+      dueDate,
+      items
+    } = req.body;
+
+    if (!contactName || !phone) {
+      return res.status(400).json({ error: 'Contact name and phone are required.' });
+    }
+
+    const rfqId = `RFQ-2026-${String(Date.now()).substring(7)}`;
+    
+    // Calculate total value based on items
+    let rfqValue = 0;
+    const itemsArray = Array.isArray(items) ? items : [];
+    itemsArray.forEach((it: any) => {
+      const qty = parseFloat(it.quantity) || 0;
+      const price = parseFloat(it.targetPrice) || 0;
+      rfqValue += qty * price;
+    });
+
+    const timestamp = new Date().toISOString();
+    const status = 'Submitted';
+    const owner = 'Unassigned';
+
+    const customer = {
+      id: `CUST-${Date.now()}`,
+      name: contactName,
+      companyName: companyName || 'Generic Corp',
+      email: email || '',
+      phone: phone,
+      gstNumber: '',
+      location: location || '',
+      industry: 'Commercial Construction'
+    };
+
+    const timeline = [
+      {
+        id: `${rfqId}-EV-1`,
+        eventType: 'SUBMITTED',
+        title: 'RFQ Created via Admin Portal',
+        description: `RFQ successfully created by Admin for customer ${companyName || contactName}.`,
+        timestamp,
+        user: 'Admin Portal',
+        userRole: 'Admin'
+      }
+    ];
+
+    // Insert RFQ row
+    await pgPool.query(`
+      INSERT INTO rfqs (
+        id, timestamp, name, phone, category, quantity, location, timeline, details, 
+        buyer_id, status, title, budget, attachment_urls, owner, priority, value, 
+        due_date, timeline_json, notes, attachments, quotations_json, project_type, customer_json
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
+    `, [
+      rfqId,
+      timestamp,
+      contactName,
+      phone,
+      itemsArray[0]?.itemName || 'General Material',
+      String(itemsArray[0]?.quantity || 0),
+      location || '',
+      '15 Days',
+      details || '',
+      null,
+      status,
+      companyName ? `${companyName} - ${projectType || 'Material Purchase'}` : 'New Procurement Brief',
+      `₹${rfqValue.toLocaleString('en-IN')}`,
+      JSON.stringify([]),
+      owner,
+      priority || 'Normal',
+      rfqValue,
+      dueDate ? new Date(dueDate) : new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+      JSON.stringify(timeline),
+      JSON.stringify([]),
+      JSON.stringify([]),
+      JSON.stringify([]),
+      projectType || '',
+      JSON.stringify(customer)
+    ]);
+
+    // Insert items
+    for (let idx = 0; idx < itemsArray.length; idx++) {
+      const it = itemsArray[idx];
+      const itemId = `${rfqId}-ITEM-${idx + 1}`;
+      await pgPool.query(`
+        INSERT INTO rfq_items (id, rfq_id, item_name, quantity, specification_requirements)
+        VALUES ($1, $2, $3, $4, $5)
+      `, [
+        itemId,
+        rfqId,
+        it.itemName,
+        String(it.quantity || 0),
+        JSON.stringify({ description: it.description || '', unit: it.unit || 'Piece', targetPrice: it.targetPrice || 0 })
+      ]);
+    }
+
+    const detail = await fetchRFQDetailInternal(rfqId);
+    res.status(201).json(detail);
+  } catch (err: any) {
+    console.error('Error creating RFQ:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/admin/rfqs', async (req, res) => {
+  try {
+    const isAdmin = await checkIsAdmin(req);
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+
+    if (!pgPool) {
+      return res.status(500).json({ error: 'Database pool not initialized.' });
+    }
+
+    const result = await pgPool.query('SELECT id, timestamp, name, phone, category, quantity, location, timeline, details, buyer_id, status, title, budget, attachment_urls, owner, priority, value, due_date, timeline_json, project_type, customer_json, updated_at FROM rfqs ORDER BY timestamp DESC');
+    let list = result.rows.map((row: any) => ({
+      id: row.id,
+      rfqNumber: row.id,
+      companyName: row.customer_json?.companyName || row.name || 'Generic Corp',
+      contactName: row.name,
+      status: row.status,
+      priority: row.priority || 'Normal',
+      owner: row.owner || 'Unassigned',
+      value: row.value ? parseFloat(row.value) : 0,
+      lastUpdated: row.updated_at || row.timestamp,
+      dueDate: row.due_date || new Date().toISOString(),
+      location: row.location,
+      projectType: row.project_type
+    }));
+
+    // Apply filters matching rfqMockService.getRFQList
+    const { search, status, priority, owner, location, minVal, maxVal } = req.query;
+
+    if (search) {
+      const query = String(search).toLowerCase();
+      list = list.filter((r: any) => 
+        r.rfqNumber.toLowerCase().includes(query) ||
+        r.companyName.toLowerCase().includes(query) ||
+        r.contactName.toLowerCase().includes(query) ||
+        (r.projectType && r.projectType.toLowerCase().includes(query))
+      );
+    }
+
+    if (status && status !== 'all') {
+      const statusList = String(status).split(',');
+      list = list.filter((r: any) => statusList.includes(r.status));
+    }
+
+    if (priority && priority !== 'all') {
+      const priorityList = String(priority).split(',');
+      list = list.filter((r: any) => priorityList.includes(r.priority));
+    }
+
+    if (owner && owner !== 'all') {
+      list = list.filter((r: any) => r.owner === owner);
+    }
+
+    if (location && location !== 'all') {
+      list = list.filter((r: any) => r.location === location);
+    }
+
+    if (minVal !== undefined && minVal !== '') {
+      list = list.filter((r: any) => r.value >= parseFloat(String(minVal)));
+    }
+
+    if (maxVal !== undefined && maxVal !== '') {
+      list = list.filter((r: any) => r.value <= parseFloat(String(maxVal)));
+    }
+
+    res.json(list);
+  } catch (err: any) {
+    console.error('Error in GET /api/admin/rfqs:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/admin/rfqs/:id', async (req, res) => {
+  try {
+    const isAdmin = await checkIsAdmin(req);
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+
+    if (!pgPool) {
+      return res.status(500).json({ error: 'Database pool not initialized.' });
+    }
+
+    const id = req.params.id;
+    const rfqRes = await pgPool.query('SELECT * FROM rfqs WHERE id = $1', [id]);
+    if (rfqRes.rows.length === 0) {
+      return res.status(404).json({ error: 'RFQ not found' });
+    }
+    const row = rfqRes.rows[0];
+
+    // Fetch items
+    const itemsRes = await pgPool.query('SELECT * FROM rfq_items WHERE rfq_id = $1', [id]);
+    const items = itemsRes.rows.map((r: any) => {
+      const specs = typeof r.specification_requirements === 'string'
+        ? JSON.parse(r.specification_requirements)
+        : r.specification_requirements || {};
+      return {
+        id: r.id,
+        itemName: r.item_name,
+        description: specs.description || '',
+        quantity: parseInt(r.quantity, 10) || 0,
+        unit: specs.unit || 'Piece',
+        targetPrice: specs.targetPrice
+      };
+    });
+
+    const detail = {
+      id: row.id,
+      rfqNumber: row.id,
+      companyName: row.customer_json?.companyName || row.name || 'Generic Corp',
+      contactName: row.name,
+      status: row.status,
+      priority: row.priority || 'Normal',
+      owner: row.owner || 'Unassigned',
+      value: row.value ? parseFloat(row.value) : 0,
+      lastUpdated: row.updated_at || row.timestamp,
+      dueDate: row.due_date || new Date().toISOString(),
+      projectType: row.project_type,
+      description: row.details,
+      customer: row.customer_json || {},
+      items,
+      timeline: row.timeline_json || [],
+      notes: row.notes || [],
+      attachments: row.attachments || [],
+      quotations: row.quotations_json || []
+    };
+
+    res.json(detail);
+  } catch (err: any) {
+    console.error('Error in GET /api/admin/rfqs/:id:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.put('/api/admin/rfqs/:id/status', async (req, res) => {
   try {
     const isAdmin = await checkIsAdmin(req);
@@ -1235,21 +1496,316 @@ app.put('/api/admin/rfqs/:id/status', async (req, res) => {
       return res.status(403).json({ error: 'Forbidden. Admin access required.' });
     }
     const id = req.params.id;
-    const { status } = req.body;
+    const { status, user, userRole } = req.body;
     if (!status) {
       return res.status(400).json({ error: 'Missing status field.' });
     }
 
-    const updated = await updateRfqStatus(id, sanitizeText(status));
-    if (!updated) {
+    if (!pgPool) {
+      return res.status(500).json({ error: 'Database pool not initialized.' });
+    }
+
+    const rfqRes = await pgPool.query('SELECT status, timeline_json FROM rfqs WHERE id = $1', [id]);
+    if (rfqRes.rows.length === 0) {
       return res.status(404).json({ error: 'RFQ not found.' });
     }
-    res.json(updated);
+
+    const oldStatus = rfqRes.rows[0].status;
+    const timeline = rfqRes.rows[0].timeline_json || [];
+
+    const newEvent = {
+      id: `${id}-EV-${Date.now()}`,
+      eventType: status.toUpperCase().replace(/\s+/g, '_'),
+      title: `Status Changed to ${status}`,
+      description: `Status transitioned from ${oldStatus} to ${status}.`,
+      timestamp: new Date().toISOString(),
+      user: user || 'System Admin',
+      userRole: userRole || 'Admin'
+    };
+
+    const updatedTimeline = [newEvent, ...timeline];
+
+    await pgPool.query(
+      'UPDATE rfqs SET status = $1, timeline_json = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3',
+      [status, JSON.stringify(updatedTimeline), id]
+    );
+
+    const detailRes = await fetchRFQDetailInternal(id);
+    res.json(detailRes);
   } catch (err: any) {
     console.error('Error updating RFQ status:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+app.put('/api/admin/rfqs/:id/assign', async (req, res) => {
+  try {
+    const isAdmin = await checkIsAdmin(req);
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+    const id = req.params.id;
+    const { owner, user, userRole } = req.body;
+    if (!owner) {
+      return res.status(400).json({ error: 'Owner is required' });
+    }
+
+    if (!pgPool) {
+      return res.status(500).json({ error: 'Database pool not initialized.' });
+    }
+
+    const rfqRes = await pgPool.query('SELECT owner, timeline_json FROM rfqs WHERE id = $1', [id]);
+    if (rfqRes.rows.length === 0) {
+      return res.status(404).json({ error: 'RFQ not found' });
+    }
+
+    const oldOwner = rfqRes.rows[0].owner || 'Unassigned';
+    const timeline = rfqRes.rows[0].timeline_json || [];
+
+    const newEvent = {
+      id: `${id}-EV-${Date.now()}`,
+      eventType: 'ASSIGNED',
+      title: `Assigned to ${owner}`,
+      description: `Owner re-assigned from ${oldOwner} to ${owner}.`,
+      timestamp: new Date().toISOString(),
+      user: user || 'System Admin',
+      userRole: userRole || 'Admin'
+    };
+
+    const updatedTimeline = [newEvent, ...timeline];
+
+    await pgPool.query(
+      'UPDATE rfqs SET owner = $1, timeline_json = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3',
+      [owner, JSON.stringify(updatedTimeline), id]
+    );
+
+    const detailRes = await fetchRFQDetailInternal(id);
+    res.json(detailRes);
+  } catch (err: any) {
+    console.error('Error in PUT /api/admin/rfqs/:id/assign:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/admin/rfqs/:id/notes', async (req, res) => {
+  try {
+    const isAdmin = await checkIsAdmin(req);
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+    const id = req.params.id;
+    const { author, authorRole, text, isInternal } = req.body;
+    if (!text) {
+      return res.status(400).json({ error: 'Note text is required' });
+    }
+
+    if (!pgPool) {
+      return res.status(500).json({ error: 'Database pool not initialized.' });
+    }
+
+    const rfqRes = await pgPool.query('SELECT notes, timeline_json FROM rfqs WHERE id = $1', [id]);
+    if (rfqRes.rows.length === 0) {
+      return res.status(404).json({ error: 'RFQ not found' });
+    }
+
+    const notes = rfqRes.rows[0].notes || [];
+    const timeline = rfqRes.rows[0].timeline_json || [];
+
+    const newNote = {
+      id: `${id}-NOTE-${Date.now()}`,
+      author: author || 'System Admin',
+      authorRole: authorRole || 'Admin',
+      text,
+      timestamp: new Date().toISOString(),
+      isInternal: !!isInternal
+    };
+
+    const newEvent = {
+      id: `${id}-EV-${Date.now()}`,
+      eventType: 'NOTE_ADDED',
+      title: isInternal ? 'Internal Note Appended' : 'Customer Comment Logged',
+      description: text.length > 60 ? text.substring(0, 60) + '...' : text,
+      timestamp: new Date().toISOString(),
+      user: author || 'System Admin',
+      userRole: authorRole || 'Admin'
+    };
+
+    const updatedNotes = [newNote, ...notes];
+    const updatedTimeline = [newEvent, ...timeline];
+
+    await pgPool.query(
+      'UPDATE rfqs SET notes = $1, timeline_json = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3',
+      [JSON.stringify(updatedNotes), JSON.stringify(updatedTimeline), id]
+    );
+
+    const detailRes = await fetchRFQDetailInternal(id);
+    res.json(detailRes);
+  } catch (err: any) {
+    console.error('Error in POST /api/admin/rfqs/:id/notes:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/admin/rfqs/:id/attachments', async (req, res) => {
+  try {
+    const isAdmin = await checkIsAdmin(req);
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+    const id = req.params.id;
+    const { filename, fileType, size, uploader } = req.body;
+    if (!filename) return res.status(400).json({ error: 'Filename is required' });
+
+    if (!pgPool) {
+      return res.status(500).json({ error: 'Database pool not initialized.' });
+    }
+
+    const rfqRes = await pgPool.query('SELECT attachments, timeline_json FROM rfqs WHERE id = $1', [id]);
+    if (rfqRes.rows.length === 0) return res.status(404).json({ error: 'RFQ not found' });
+
+    const attachments = rfqRes.rows[0].attachments || [];
+    const timeline = rfqRes.rows[0].timeline_json || [];
+
+    const newAttachment = {
+      id: `${id}-ATT-${Date.now()}`,
+      filename,
+      fileType: fileType || 'PDF',
+      size: size || '1.0 MB',
+      uploader: uploader || 'System Admin',
+      uploadedAt: new Date().toISOString(),
+      version: 'v1.0'
+    };
+
+    const newEvent = {
+      id: `${id}-EV-${Date.now()}`,
+      eventType: 'ATTACHMENT_ADDED',
+      title: 'Attachment Uploaded',
+      description: `File ${filename} uploaded by ${uploader || 'System Admin'}.`,
+      timestamp: new Date().toISOString(),
+      user: uploader || 'System Admin',
+      userRole: 'Sales Representative'
+    };
+
+    const updatedAttachments = [...attachments, newAttachment];
+    const updatedTimeline = [newEvent, ...timeline];
+
+    await pgPool.query(
+      'UPDATE rfqs SET attachments = $1, timeline_json = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3',
+      [JSON.stringify(updatedAttachments), JSON.stringify(updatedTimeline), id]
+    );
+
+    const detailRes = await fetchRFQDetailInternal(id);
+    res.json(detailRes);
+  } catch (err: any) {
+    console.error('Error in POST /api/admin/rfqs/:id/attachments:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/admin/rfqs/:id/quotations-draft', async (req, res) => {
+  try {
+    const isAdmin = await checkIsAdmin(req);
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+    const id = req.params.id;
+    const { value, validityDays, user, userRole } = req.body;
+
+    if (!pgPool) {
+      return res.status(500).json({ error: 'Database pool not initialized.' });
+    }
+
+    const rfqRes = await pgPool.query('SELECT quotations_json, timeline_json, value FROM rfqs WHERE id = $1', [id]);
+    if (rfqRes.rows.length === 0) {
+      return res.status(404).json({ error: 'RFQ not found' });
+    }
+
+    const quotations = rfqRes.rows[0].quotations_json || [];
+    const timeline = rfqRes.rows[0].timeline_json || [];
+    const rfqValue = rfqRes.rows[0].value || 0;
+
+    const vNumber = quotations.length + 1;
+    const today = new Date();
+    const expiryDate = new Date(today.getTime() + (validityDays || 30) * 24 * 60 * 60 * 1000);
+
+    const newQuote = {
+      id: `QUO-${id}-${String(vNumber).padStart(3, '0')}`,
+      version: `v${vNumber}.0`,
+      value: value || (rfqValue * 0.95),
+      status: 'SENT',
+      createdAt: today.toISOString(),
+      validUntil: expiryDate.toISOString(),
+      pdfUrl: `/exports/quotes/quo-${id}-${String(vNumber).padStart(3, '0')}.pdf`
+    };
+
+    const newEvent = {
+      id: `${id}-EV-${Date.now()}`,
+      eventType: 'QUOTE_CREATED',
+      title: `Quotation Version v${vNumber}.0 Generated`,
+      description: `Offer value: ₹${newQuote.value.toLocaleString('en-IN')}, Valid until: ${expiryDate.toLocaleDateString('en-IN')}.`,
+      timestamp: today.toISOString(),
+      user: user || 'System Admin',
+      userRole: userRole || 'Admin'
+    };
+
+    const updatedQuotes = [...quotations, newQuote];
+    const updatedTimeline = [newEvent, ...timeline];
+
+    await pgPool.query(
+      "UPDATE rfqs SET quotations_json = $1, timeline_json = $2, status = 'Negotiation', updated_at = CURRENT_TIMESTAMP WHERE id = $3",
+      [JSON.stringify(updatedQuotes), JSON.stringify(updatedTimeline), id]
+    );
+
+    const detailRes = await fetchRFQDetailInternal(id);
+    res.json(detailRes);
+  } catch (err: any) {
+    console.error('Error creating quotation draft:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+async function fetchRFQDetailInternal(id: string) {
+  if (!pgPool) return null;
+  const rfqRes = await pgPool.query('SELECT * FROM rfqs WHERE id = $1', [id]);
+  if (rfqRes.rows.length === 0) return null;
+  const row = rfqRes.rows[0];
+
+  const itemsRes = await pgPool.query('SELECT * FROM rfq_items WHERE rfq_id = $1', [id]);
+  const items = itemsRes.rows.map((r: any) => {
+    const specs = typeof r.specification_requirements === 'string'
+      ? JSON.parse(r.specification_requirements)
+      : r.specification_requirements || {};
+    return {
+      id: r.id,
+      itemName: r.item_name,
+      description: specs.description || '',
+      quantity: parseInt(r.quantity, 10) || 0,
+      unit: specs.unit || 'Piece',
+      targetPrice: specs.targetPrice
+    };
+  });
+
+  return {
+    id: row.id,
+    rfqNumber: row.id,
+    companyName: row.customer_json?.companyName || row.name || 'Generic Corp',
+    contactName: row.name,
+    status: row.status,
+    priority: row.priority || 'Normal',
+    owner: row.owner || 'Unassigned',
+    value: row.value ? parseFloat(row.value) : 0,
+    lastUpdated: row.updated_at || row.timestamp,
+    dueDate: row.due_date || new Date().toISOString(),
+    projectType: row.project_type,
+    description: row.details,
+    customer: row.customer_json || {},
+    items,
+    timeline: row.timeline_json || [],
+    notes: row.notes || [],
+    attachments: row.attachments || [],
+    quotations: row.quotations_json || []
+  };
+}
 
 // Admin Order Status Update CRUD
 app.put('/api/admin/orders/:id/status', async (req, res) => {
@@ -1923,6 +2479,63 @@ app.post('/api/auth/resend-email-otp', async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error('Error in resend-email-otp:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/auth/health', async (req, res) => {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(404).json({ error: 'Endpoint not found.' });
+  }
+
+  try {
+    let dbConnected = false;
+    let devUsersCount = 0;
+    const emails = ['admin@arcus.com', 'business@arcus.com', 'professional@arcus.com', 'individual@arcus.com'];
+
+    if (usePostgres && pgPool) {
+      try {
+        await pgPool.query('SELECT 1');
+        dbConnected = true;
+        const countRes = await pgPool.query('SELECT COUNT(*)::int AS count FROM users WHERE email = ANY($1)', [emails]);
+        devUsersCount = countRes.rows[0].count;
+      } catch (err) {
+        console.error('Healthcheck DB Error:', err);
+      }
+    } else {
+      try {
+        const db = await readJsonDb();
+        dbConnected = true;
+        if (db.users) {
+          devUsersCount = db.users.filter((u: any) => emails.includes(u.email.toLowerCase())).length;
+        }
+      } catch (err) {
+        console.error('Healthcheck JSON DB Error:', err);
+      }
+    }
+
+    let jwtStatus = 'error';
+    try {
+      const testUserId = 'health_check_user';
+      const token = generateToken(testUserId);
+      const decodedId = verifyToken(token);
+      if (decodedId === testUserId) {
+        jwtStatus = 'working';
+      }
+    } catch (err) {
+      console.error('Healthcheck JWT Error:', err);
+    }
+
+    const authStatus = (dbConnected && jwtStatus === 'working' && devUsersCount === 4) ? 'healthy' : 'unhealthy';
+
+    res.json({
+      database: dbConnected ? 'connected' : 'disconnected',
+      jwt: jwtStatus,
+      authentication: authStatus,
+      developmentUsers: devUsersCount
+    });
+  } catch (err) {
+    console.error('Error in health check:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
