@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { apiFetch } from '../../lib/api';
 
 type UpdateType = 'price' | 'inventory' | 'moq' | 'status';
 
@@ -79,7 +80,7 @@ export const BulkUpdates: React.FC = () => {
 
     try {
       const token = localStorage.getItem('arcus_token');
-      const res = await fetch('http://localhost:5000/api/admin/catalog/bulk-update', {
+      const res = await apiFetch('/admin/catalog/bulk-update', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData

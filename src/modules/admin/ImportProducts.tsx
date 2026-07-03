@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../../lib/api';
 
 interface ValidationError {
   row: number;
@@ -72,7 +73,7 @@ export const ImportProducts: React.FC = () => {
     setHistoryLoading(true);
     try {
       const token = localStorage.getItem('arcus_token');
-      const res = await fetch('http://localhost:5000/api/admin/catalog/import/history', {
+      const res = await apiFetch('/admin/catalog/import/history', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -93,7 +94,7 @@ export const ImportProducts: React.FC = () => {
   }, [activeTab]);
 
   const handleTemplateDownload = (format: 'xlsx' | 'csv') => {
-    window.open(`http://localhost:5000/api/admin/catalog/template?format=${format}`);
+    window.open(`/api/admin/catalog/template?format=${format}`);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,7 +131,7 @@ export const ImportProducts: React.FC = () => {
 
     try {
       const token = localStorage.getItem('arcus_token');
-      const res = await fetch('http://localhost:5000/api/admin/catalog/import/upload', {
+      const res = await apiFetch('/admin/catalog/import/upload', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData
@@ -157,7 +158,7 @@ export const ImportProducts: React.FC = () => {
 
     try {
       const token = localStorage.getItem('arcus_token');
-      const res = await fetch('http://localhost:5000/api/admin/catalog/import/confirm', {
+      const res = await apiFetch('/admin/catalog/import/confirm', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -189,7 +190,7 @@ export const ImportProducts: React.FC = () => {
   };
 
   const handleDownloadErrorReport = (importId: string) => {
-    window.open(`http://localhost:5000/api/admin/catalog/import/history/${importId}/error-report`);
+    window.open(`/api/admin/catalog/import/history/${importId}/error-report`);
   };
 
   return (
@@ -549,28 +550,28 @@ export const ImportProducts: React.FC = () => {
           {/* Guidelines & Download Card */}
           <div className="space-y-lg">
             {/* Download Template Card */}
-            <div className="bg-slate-900 text-white p-lg rounded border border-slate-800 shadow space-y-md">
+            <div className="bg-white text-slate-900 p-lg rounded border border-slate-200 shadow-sm space-y-md">
               <span className="material-symbols-outlined text-primary text-[40px]">download_sheet</span>
-              <h3 className="font-extrabold text-md text-white">Import Templates</h3>
-              <p className="text-xs text-slate-400">Download the pre-formatted Excel or CSV spreadsheet template to prepare your catalog data.</p>
+              <h3 className="font-extrabold text-md text-slate-900">Import Templates</h3>
+              <p className="text-xs text-slate-500">Download the pre-formatted Excel or CSV spreadsheet template to prepare your catalog data.</p>
               
               <div className="flex flex-col gap-sm pt-xs">
                 <button
                   onClick={() => handleTemplateDownload('xlsx')}
-                  className="flex items-center justify-between bg-slate-800 hover:bg-slate-700 p-sm rounded text-xs font-bold transition-all border border-slate-700"
+                  className="flex items-center justify-between bg-slate-50 hover:bg-slate-100 p-sm rounded text-xs font-bold transition-all border border-slate-200 text-slate-700"
                 >
                   <span className="flex items-center gap-xs">
-                    <span className="material-symbols-outlined text-[18px] text-green-400">table_view</span>
+                    <span className="material-symbols-outlined text-[18px] text-green-600">table_view</span>
                     Excel Template (.xlsx)
                   </span>
                   <span className="material-symbols-outlined text-[16px] text-slate-400">download</span>
                 </button>
                 <button
                   onClick={() => handleTemplateDownload('csv')}
-                  className="flex items-center justify-between bg-slate-800 hover:bg-slate-700 p-sm rounded text-xs font-bold transition-all border border-slate-700"
+                  className="flex items-center justify-between bg-slate-50 hover:bg-slate-100 p-sm rounded text-xs font-bold transition-all border border-slate-200 text-slate-700"
                 >
                   <span className="flex items-center gap-xs">
-                    <span className="material-symbols-outlined text-[18px] text-slate-300">description</span>
+                    <span className="material-symbols-outlined text-[18px] text-slate-500">description</span>
                     CSV Template (.csv)
                   </span>
                   <span className="material-symbols-outlined text-[16px] text-slate-400">download</span>

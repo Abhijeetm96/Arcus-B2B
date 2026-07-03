@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiFetch } from '../../lib/api';
 
 export function useOrders() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -15,7 +16,7 @@ export function useOrders() {
         setLoading(false);
         return;
       }
-      const res = await fetch('http://localhost:5000/api/orders', {
+      const res = await apiFetch('/orders', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -36,7 +37,7 @@ export function useOrders() {
   const cancelOrder = async (orderId: string): Promise<boolean> => {
     try {
       const token = localStorage.getItem('arcus_token');
-      const res = await fetch(`http://localhost:5000/api/orders/${orderId}/cancel`, {
+      const res = await apiFetch(`/orders/${orderId}/cancel`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

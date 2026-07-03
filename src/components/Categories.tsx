@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { apiFetch } from '../lib/api';
 
 interface Category {
   name: string
@@ -22,7 +23,7 @@ export default function Categories() {
   const [categories, setCategories] = useState<Category[]>(localCategories)
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/admin/categories')
+    apiFetch('/admin/categories')
       .then((res) => {
         if (!res.ok) throw new Error()
         return res.json()

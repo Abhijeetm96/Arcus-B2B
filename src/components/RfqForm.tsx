@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { validateRfqForm } from '../../shared/validation';
+import { apiFetch } from '../lib/api';
 
 interface MaterialItem {
   itemName: string;
@@ -125,7 +126,7 @@ export default function RfqForm() {
         attachmentUrls: []
       };
 
-      const response = await fetch('/api/rfq', {
+      const response = await apiFetch('/rfq', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -174,7 +175,7 @@ export default function RfqForm() {
         attachmentUrls: []
       };
 
-      const response = await fetch('/api/rfq', {
+      const response = await apiFetch('/rfq', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

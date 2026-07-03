@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiFetch } from '../../lib/api';
 
 export function useProducts() {
   const [products, setProducts] = useState<any[]>([]);
@@ -13,7 +14,7 @@ export function useProducts() {
       const token = localStorage.getItem('arcus_token');
       const headers: Record<string, string> = token ? { 'Authorization': `Bearer ${token}` } : {};
       
-      const prodRes = await fetch('http://localhost:5000/api/products', { headers });
+      const prodRes = await apiFetch('/products', { headers });
       if (!prodRes.ok) throw new Error('Failed to load products');
       const prodData = await prodRes.json();
       
@@ -40,7 +41,7 @@ export function useProducts() {
         }
       }
 
-      const catRes = await fetch('http://localhost:5000/api/admin/categories', { headers });
+      const catRes = await apiFetch('/admin/categories', { headers });
       if (catRes.ok) {
         const catData = await catRes.json();
         setCategories(catData);

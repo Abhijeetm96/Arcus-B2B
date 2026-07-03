@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Category } from './types';
+import { apiFetch } from '../../lib/api';
 
 export const ExportProducts: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -19,8 +20,8 @@ export const ExportProducts: React.FC = () => {
       try {
         const token = localStorage.getItem('arcus_token');
         const [catRes, brandRes] = await Promise.all([
-          fetch('http://localhost:5000/api/admin/categories', { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch('http://localhost:5000/api/admin/brands', { headers: { 'Authorization': `Bearer ${token}` } })
+          apiFetch('/admin/categories', { headers: { 'Authorization': `Bearer ${token}` } }),
+          apiFetch('/admin/brands', { headers: { 'Authorization': `Bearer ${token}` } })
         ]);
 
         if (catRes.ok) {
@@ -52,9 +53,9 @@ export const ExportProducts: React.FC = () => {
       });
 
       // Simple browser download trigger
-      const downloadUrl = `http://localhost:5000/api/admin/catalog/export?${params.toString()}`;
+      const downloadUrl = `/api/admin/catalog/export?${params.toString()}`;
       
-      const response = await fetch(downloadUrl, {
+      const response = await apiFetch(downloadUrl, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       

@@ -181,19 +181,35 @@ export function RFQWorkspace() {
   }, [allRfqs]);
 
   // Handle detailed note posts (interactive drawer notes tab)
-  const handleAddNote = async (text: string, isInternal: boolean) => {
+  const handleAddNote = async (text: string, isInternal: boolean, parentCommentId?: string) => {
     if (!selectedRfqDetail) return;
     try {
-      const updated = await rfqService.addNote(
-        selectedRfqDetail.id,
-        'Vikram Sharma',
-        'Sales Representative',
-        text,
-        isInternal
-      );
-      setSelectedRfqDetail(updated);
+      const token = localStorage.getItem('arcus_token');
+      const res = await fetch(`http://localhost:5000/api/admin/rfqs/${selectedRfqDetail.id}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify({ text, isInternal, parentCommentId })
+      });
+      if (!res.ok) throw new Error('Failed to post comment');
+      
       triggerToast(isInternal ? 'Internal note added' : 'Customer comment posted', 'success');
+      await handleRefreshDrawer();
       loadData(); // reload dashboard activity feed
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRefreshDrawer = async () => {
+    if (!selectedRfqDetail) return;
+    try {
+      const detail = await rfqService.getRFQDetail(selectedRfqDetail.id);
+      if (detail) {
+        setSelectedRfqDetail(detail);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -342,6 +358,21 @@ export function RFQWorkspace() {
               counts={statusCounts}
             />
           }
+          workspaceDetails={
+            <RFQTable
+              data={rfqSummaries}
+              selectedRfqId={selectedRfqDetail?.id || null}
+              onSelectRFQ={handleSelectRFQ}
+              selectedRows={selectedRows}
+              onRowSelectChange={(id, checked) => setSelectedRows(prev => ({ ...prev, [id]: checked }))}
+              onSelectAllRows={(checked) => {
+                const updated: Record<string, boolean> = {};
+                rfqSummaries.forEach(r => { updated[r.id] = checked; });
+                setSelectedRows(updated);
+              }}
+              onBulkStatusChange={handleBulkStatusChange}
+            />
+          }
           toolbar={
             <RFQToolbar
               search={search}
@@ -362,21 +393,7 @@ export function RFQWorkspace() {
               hasActiveFilters={hasActiveFilters}
             />
           }
-        >
-          <RFQTable
-            data={rfqSummaries}
-            selectedRfqId={selectedRfqDetail?.id || null}
-            onSelectRFQ={handleSelectRFQ}
-            selectedRows={selectedRows}
-            onRowSelectChange={(id, checked) => setSelectedRows(prev => ({ ...prev, [id]: checked }))}
-            onSelectAllRows={(checked) => {
-              const updated: Record<string, boolean> = {};
-              rfqSummaries.forEach(r => { updated[r.id] = checked; });
-              setSelectedRows(updated);
-            }}
-            onBulkStatusChange={handleBulkStatusChange}
-          />
-        </WorkspaceLayout>
+        />
       )}
 
       {/* Details Side-Drawer / Pull Sheet overlay */}
@@ -386,8 +403,12 @@ export function RFQWorkspace() {
         onClose={() => setIsDrawerOpen(false)}
         onAddNote={handleAddNote}
         onDownloadAttachment={(fname) => triggerToast(`Mock Download: Commencing download of attachment "${fname}"`, 'success')}
-        onDownloadQuote={(qid, fname) => triggerToast(`Mock Download: Commencing download of quotation proposal ${qid} ("${fname}")`, 'success')}
+        onDownloadQuote={(qid) => {
+          const token = localStorage.getItem('arcus_token') || '';
+          window.open(`/api/admin/quotations/${qid}/pdf?token=${encodeURIComponent(token)}`, '_blank');
+        }}
         onAction={handleDrawerAction}
+        onRefresh={handleRefreshDrawer}
       />
 
       <RFQCreateDialog

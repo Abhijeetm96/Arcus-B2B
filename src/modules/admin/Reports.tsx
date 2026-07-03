@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { apiFetch } from '../../lib/api';
 
 export const Reports: React.FC = () => {
   const [exportSuccess, setExportSuccess] = useState<string | null>(null);
@@ -32,7 +33,7 @@ export const Reports: React.FC = () => {
     setError(null);
     try {
       const token = localStorage.getItem('arcus_token');
-      const res = await fetch('http://localhost:5000/api/admin/orders', {
+      const res = await apiFetch('/admin/orders', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to fetch sales orders from database.');
@@ -62,7 +63,7 @@ export const Reports: React.FC = () => {
     setError(null);
     try {
       const token = localStorage.getItem('arcus_token');
-      const res = await fetch('http://localhost:5000/api/admin/products', {
+      const res = await apiFetch('/admin/products', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to fetch product catalog from database.');
@@ -105,7 +106,7 @@ export const Reports: React.FC = () => {
     setError(null);
     try {
       const token = localStorage.getItem('arcus_token');
-      const res = await fetch('http://localhost:5000/api/rfqs', {
+      const res = await apiFetch('/rfqs', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to fetch RFQs from database.');

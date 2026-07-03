@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { Product, InventoryAdjustment } from './types';
+import { apiFetch } from '../../lib/api';
 
 
 export const InventoryManagement: React.FC = () => {
@@ -30,7 +31,7 @@ export const InventoryManagement: React.FC = () => {
       const headers = { 'Authorization': `Bearer ${token}` };
 
       // Fetch products
-      const prodRes = await fetch('http://localhost:5000/api/admin/products', { headers });
+      const prodRes = await apiFetch('/admin/products', { headers });
       if (!prodRes.ok) throw new Error('Failed to fetch product stock.');
       const prodData = await prodRes.json();
       
@@ -54,7 +55,7 @@ export const InventoryManagement: React.FC = () => {
 
       // Fetch adjustments history
       setHistoryLoading(true);
-      const adjRes = await fetch('http://localhost:5000/api/admin/inventory/adjustments', { headers });
+      const adjRes = await apiFetch('/admin/inventory/adjustments', { headers });
       if (adjRes.ok) {
         const adjData = await adjRes.json();
         setAdjustments(adjData);
@@ -88,7 +89,7 @@ export const InventoryManagement: React.FC = () => {
     setSuccess(null);
     try {
       const token = localStorage.getItem('arcus_token');
-      const res = await fetch('http://localhost:5000/api/admin/inventory/adjustments', {
+      const res = await apiFetch('/admin/inventory/adjustments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -124,7 +125,7 @@ export const InventoryManagement: React.FC = () => {
     setReorderLoading(prev => ({ ...prev, [product.id]: true }));
     try {
       const token = localStorage.getItem('arcus_token');
-      const res = await fetch('http://localhost:5000/api/admin/inventory/reorder-task', {
+      const res = await apiFetch('/admin/inventory/reorder-task', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

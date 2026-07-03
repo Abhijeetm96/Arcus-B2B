@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { MetricCard, Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/shared/Card';
 import { IndianRupee, ShoppingBag, FileText, Package, Users, UserCheck, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { apiFetch } from '../../lib/api';
 
 interface KPIData {
   revenue: { today: number; thisMonth: number; prevMonth: number; trend: number };
@@ -20,7 +21,7 @@ export const DashboardHome: React.FC = () => {
     const fetchKpis = async () => {
       try {
         const token = localStorage.getItem('arcus_token');
-        const res = await fetch('http://localhost:5000/api/admin/dashboard-kpis', {
+        const res = await apiFetch('/admin/dashboard-kpis', {
           headers: {
             'Authorization': `Bearer ${token}`
           }

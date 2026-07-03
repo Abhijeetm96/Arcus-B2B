@@ -10,16 +10,18 @@ import { QuotationTab } from './tabs/QuotationTab';
 
 interface DrawerTabsProps {
   rfq: RFQDetail;
-  onAddNote: (text: string, isInternal: boolean) => Promise<void>;
+  onAddNote: (text: string, isInternal: boolean, parentCommentId?: string) => Promise<void>;
   onDownloadAttachment: (filename: string) => void;
   onDownloadQuote: (quoteId: string, filename: string) => void;
+  onRefresh?: () => void;
 }
 
 export function DrawerTabs({
   rfq,
   onAddNote,
   onDownloadAttachment,
-  onDownloadQuote
+  onDownloadQuote,
+  onRefresh
 }: DrawerTabsProps) {
   return (
     <Tabs defaultValue="overview" className="flex-1 flex flex-col min-h-0">
@@ -53,7 +55,7 @@ export function DrawerTabs({
       {/* Tabs Content Sections */}
       <div className="flex-1 overflow-y-auto p-4 md:p-6 min-h-0 bg-surface">
         <TabsContent value="overview" className="mt-0 p-0 border-0 shadow-none bg-transparent">
-          <OverviewTab rfq={rfq} />
+          <OverviewTab rfq={rfq} onRefresh={onRefresh} />
         </TabsContent>
         
         <TabsContent value="items" className="mt-0 p-0 border-0 shadow-none bg-transparent">
@@ -65,11 +67,11 @@ export function DrawerTabs({
         </TabsContent>
 
         <TabsContent value="notes" className="mt-0 p-0 border-0 shadow-none bg-transparent">
-          <NotesTab rfq={rfq} onAddNote={onAddNote} />
+          <NotesTab rfq={rfq} onAddNote={onAddNote} onRefresh={onRefresh} />
         </TabsContent>
 
         <TabsContent value="attachments" className="mt-0 p-0 border-0 shadow-none bg-transparent">
-          <AttachmentsTab rfq={rfq} onDownload={onDownloadAttachment} />
+          <AttachmentsTab rfq={rfq} onDownload={onDownloadAttachment} onRefresh={onRefresh} />
         </TabsContent>
 
         <TabsContent value="customer" className="mt-0 p-0 border-0 shadow-none bg-transparent">

@@ -21,7 +21,12 @@ import { BulkUpdates } from './BulkUpdates';
 
 export const AdminDashboard: React.FC = () => {
   const { user, loading } = useAuth();
-  const [activeSection, setActiveSection] = useState<string>('dashboard');
+  const getInitialSection = () => {
+    const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
+    return params.get('section') || 'dashboard';
+  };
+
+  const [activeSection, setActiveSection] = useState<string>(getInitialSection);
   const [currentRole, setCurrentRole] = useState<AdminRole>('SUPER_ADMIN');
 
   useEffect(() => {
@@ -29,6 +34,31 @@ export const AdminDashboard: React.FC = () => {
       window.location.hash = '#/auth?tab=login';
     }
   }, [user, loading]);
+
+  // Synchronize section from URL hash query parameter on hash change & mount
+  useEffect(() => {
+    const handleHashChange = () => {
+      const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
+      const section = params.get('section') || 'dashboard';
+      setActiveSection(section);
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+
+    // Initialize the hash query parameter if not present
+    const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
+    if (!params.get('section')) {
+      const hashWithoutParams = window.location.hash.split('?')[0] || '#/portal/admin';
+      window.location.hash = `${hashWithoutParams}?section=${activeSection}`;
+    }
+
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  const handleSectionChange = (section: string) => {
+    const hashWithoutParams = window.location.hash.split('?')[0] || '#/portal/admin';
+    window.location.hash = `${hashWithoutParams}?section=${section}`;
+  };
 
   if (loading) {
     return (
@@ -48,7 +78,7 @@ export const AdminDashboard: React.FC = () => {
       case 'dashboard':
         return <DashboardHome />;
       case 'products':
-        return <ProductManagement />;
+        return <ProductManagement setActiveSection={setActiveSection} />;
       case 'categories':
         return <CategoryManagement />;
       case 'brands':
@@ -62,8 +92,12 @@ export const AdminDashboard: React.FC = () => {
       case 'inventory-overview':
       case 'stock-adjustments':
         return <InventoryManagement />;
-      case 'orders':
-        return <OrderManagement />;
+      case 'orders-b2b':
+        return <OrderManagement type="B2B" />;
+      case 'orders-b2c':
+        return <OrderManagement type="B2C" />;
+      case 'orders-services':
+        return <OrderManagement type="SERVICES" />;
       case 'rfqs':
         return <RFQManagement />;
       case 'customers':
@@ -86,7 +120,7 @@ export const AdminDashboard: React.FC = () => {
   return (
     <AdminLayout
       activeSection={activeSection}
-      setActiveSection={setActiveSection}
+      setActiveSection={handleSectionChange}
       currentRole={currentRole}
       setCurrentRole={setCurrentRole}
     >

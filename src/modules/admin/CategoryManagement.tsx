@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { Category } from './types';
+import { apiFetch } from '../../lib/api';
 
 
 export const CategoryManagement: React.FC = () => {
@@ -17,7 +18,7 @@ export const CategoryManagement: React.FC = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('arcus_token');
-      const res = await fetch('http://localhost:5000/api/admin/categories', {
+      const res = await apiFetch('/admin/categories', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to load categories.');
@@ -54,10 +55,10 @@ export const CategoryManagement: React.FC = () => {
       const token = localStorage.getItem('arcus_token');
       const method = editingCategory ? 'PUT' : 'POST';
       const url = editingCategory 
-        ? `http://localhost:5000/api/admin/categories/${editingCategory.id}` 
-        : 'http://localhost:5000/api/admin/categories';
+        ? `/api/admin/categories/${editingCategory.id}` 
+        : '/api/admin/categories';
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +84,7 @@ export const CategoryManagement: React.FC = () => {
     setSuccess(null);
     try {
       const token = localStorage.getItem('arcus_token');
-      const res = await fetch(`http://localhost:5000/api/admin/categories/${id}`, {
+      const res = await apiFetch(`/admin/categories/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { apiClient } from '../lib/api';
 
 export interface User {
   id: string;
@@ -76,92 +77,42 @@ const normalizeUser = (u: any): User | null => {
 
 const isDev = import.meta.env.DEV;
 
-// Helper to decode JWT payload safely without external dependencies
-const decodeJwt = (token: string) => {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    const base64Url = parts[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      window.atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
-    return JSON.parse(jsonPayload);
-  } catch (e) {
-    return null;
-  }
-};
-
-const mapHttpStatusToError = (status: number, defaultMessage: string): string => {
-  switch (status) {
-    case 401:
-      return 'Invalid email or password.';
-    case 403:
-      return 'Access denied.';
-    case 404:
-      return 'Authentication endpoint not found.';
-    case 422:
-      return 'Validation failed.';
-    case 500:
-      return 'Internal server error.';
-    default:
-      return defaultMessage;
-  }
-};
-
-const getRedirectTarget = (userObj: User | null): string => {
-  if (!userObj) return '#/';
-  const role = (userObj.role || '').toUpperCase();
-  if (role === 'ADMIN') return '#/portal/admin';
-  const customerType = (userObj.customerType || '').toUpperCase();
-  if (customerType === 'BUSINESS') return '#/dashboard/business';
-  if (customerType === 'PROFESSIONAL') return '#/dashboard/professional';
-  return '#/dashboard/individual';
-};
+// Unused helpers removed to prevent TS6133 errors
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Check token on startup
+  // Check token and backend health on startup
   useEffect(() => {
     const initAuth = async () => {
+      if (isDev) {
+        try {
+          const health = await apiClient('/health', { skipAuth: true, timeout: 3000 });
+          console.log('[AUTH CLIENT] Backend server health check succeeded:', health);
+        } catch (err: any) {
+          console.warn('[AUTH CLIENT] ⚠️ WARNING: Backend API server is offline or unreachable!', err.message);
+        }
+      }
+
       const token = localStorage.getItem('arcus_token');
       if (token) {
         if (isDev) {
           console.log('[AUTH CLIENT] Startup: Found local token, restoring session.');
         }
         try {
-          const res = await fetch('http://localhost:5000/api/auth/me', {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          
-          if (res.ok) {
-            let data: any = {};
-            const contentType = res.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-              data = await res.json();
-            }
-            const normalized = normalizeUser(data);
-            setUser(normalized);
-            if (isDev) {
-              console.log('[AUTH CLIENT] Startup: Session restored successfully.', normalized);
-            }
-          } else {
-            if (isDev) {
-              console.warn(`[AUTH CLIENT] Startup: Session restore failed with status ${res.status}. Cleared token.`);
-            }
-            // Token expired or invalid
-            localStorage.removeItem('arcus_token');
-            setUser(null);
+          const data = await apiClient('/auth/me');
+          const normalized = normalizeUser(data);
+          setUser(normalized);
+          if (isDev) {
+            console.log('[AUTH CLIENT] Startup: Session restored successfully.', normalized);
           }
-        } catch (err) {
-          console.error('[AUTH CLIENT] Failed to restore auth session:', err);
+        } catch (err: any) {
+          if (isDev) {
+            console.warn('[AUTH CLIENT] Startup: Session restore failed. Cleared token.', err.message);
+          }
+          localStorage.removeItem('arcus_token');
+          setUser(null);
         }
       } else {
         if (isDev) {
@@ -176,35 +127,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     if (isDev) {
-      console.log('[AUTH CLIENT] Outgoing request: POST http://localhost:5000/api/auth/login', {
+      console.log('[AUTH CLIENT] Outgoing request: POST /auth/login', {
         email,
         password: '[REDACTED]'
       });
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/login', {
+      const data = await apiClient('/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
+        skipAuth: true
       });
-
-      let data: any = {};
-      const contentType = res.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        data = await res.json();
-      }
-
-      if (isDev) {
-        console.log(`[AUTH CLIENT] Response received: Status ${res.status}`, data);
-      }
-
-      if (!res.ok) {
-        const errorMsg = mapHttpStatusToError(res.status, data.error || 'Login failed');
-        return { success: false, error: errorMsg };
-      }
 
       if (data.error === 'email_not_verified') {
         return { success: false, error: 'email_not_verified', email: data.email };
@@ -214,20 +148,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const normalized = normalizeUser(data.user);
       setUser(normalized);
 
-      if (isDev) {
-        const decoded = decodeJwt(data.token);
-        console.log('[AUTH CLIENT] JWT received:', data.token);
-        console.log('[AUTH CLIENT] Decoded JWT:', decoded);
-        console.log('[AUTH CLIENT] Authenticated user:', normalized);
-        console.log('[AUTH CLIENT] Redirect target:', getRedirectTarget(normalized));
-      }
-
       return { success: true };
-    } catch (err) {
+    } catch (err: any) {
       if (isDev) {
-        console.error('[AUTH CLIENT] Connection error during login:', err);
+        console.error('[AUTH CLIENT] Error during login:', err);
       }
-      return { success: false, error: 'Unable to connect to authentication server.' };
+      return { success: false, error: err.message };
     }
   };
 
@@ -238,53 +164,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     if (isDev) {
-      console.log('[AUTH CLIENT] Outgoing request: POST http://localhost:5000/api/auth/register', loggableData);
+      console.log('[AUTH CLIENT] Outgoing request: POST /auth/register', loggableData);
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/register', {
+      const data = await apiClient('/auth/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(userData)
+        body: JSON.stringify(userData),
+        skipAuth: true
       });
-
-      let data: any = {};
-      const contentType = res.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        data = await res.json();
-      }
-
-      if (isDev) {
-        console.log(`[AUTH CLIENT] Response received: Status ${res.status}`, data);
-      }
-
-      if (!res.ok) {
-        const errorMsg = mapHttpStatusToError(res.status, data.error || 'Registration failed');
-        return { success: false, error: errorMsg };
-      }
 
       if (data.token) {
         localStorage.setItem('arcus_token', data.token);
         const normalized = normalizeUser(data.user);
         setUser(normalized);
-
-        if (isDev) {
-          const decoded = decodeJwt(data.token);
-          console.log('[AUTH CLIENT] JWT received:', data.token);
-          console.log('[AUTH CLIENT] Decoded JWT:', decoded);
-          console.log('[AUTH CLIENT] Authenticated user:', normalized);
-          console.log('[AUTH CLIENT] Redirect target:', getRedirectTarget(normalized));
-        }
       }
 
       return { success: true, email: data.email, token: data.token, user: normalizeUser(data.user) || undefined };
-    } catch (err) {
+    } catch (err: any) {
       if (isDev) {
-        console.error('[AUTH CLIENT] Connection error during registration:', err);
+        console.error('[AUTH CLIENT] Error during registration:', err);
       }
-      return { success: false, error: 'Unable to connect to authentication server.' };
+      return { success: false, error: err.message };
     }
   };
 
@@ -295,26 +196,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('[AUTH CLIENT] Refreshing user session.');
       }
       try {
-        const res = await fetch('http://localhost:5000/api/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (res.ok) {
-          let data: any = {};
-          const contentType = res.headers.get('content-type');
-          if (contentType && contentType.includes('application/json')) {
-            data = await res.json();
-          }
-          const normalized = normalizeUser(data);
-          setUser(normalized);
-          if (isDev) {
-            console.log('[AUTH CLIENT] Session refreshed successfully.', normalized);
-          }
+        const data = await apiClient('/auth/me');
+        const normalized = normalizeUser(data);
+        setUser(normalized);
+        if (isDev) {
+          console.log('[AUTH CLIENT] Session refreshed successfully.', normalized);
         }
-      } catch (err) {
-        console.error('[AUTH CLIENT] Failed to refresh user:', err);
+      } catch (err: any) {
+        console.error('[AUTH CLIENT] Failed to refresh user:', err.message);
       }
     }
   };

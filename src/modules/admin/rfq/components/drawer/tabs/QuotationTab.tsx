@@ -1,7 +1,8 @@
-import { FileSignature, Download } from 'lucide-react';
+import { FileSignature, Download, Eye, Plus } from 'lucide-react';
 import type { RFQDetail } from '../../../types/rfqTypes';
 import { Button } from '../../../../../../components/ui/Button';
 import { EmptyStateContainer } from '../../shared/EmptyStateContainer';
+import { DocumentStatusBadge } from '../../../../../../components/shared/DocumentStatusBadge';
 
 interface QuotationTabProps {
   rfq: RFQDetail;
@@ -11,8 +12,28 @@ interface QuotationTabProps {
 export function QuotationTab({ rfq, onDownloadQuote }: QuotationTabProps) {
   const quotations = rfq.quotations || [];
 
+  const handleCreateNew = () => {
+    window.location.hash = `#/portal/admin/quotations/new?rfqId=${rfq.id}`;
+  };
+
+  const handleViewDetails = (quoteId: string) => {
+    window.location.hash = `#/portal/admin/quotations/${quoteId}`;
+  };
+
   return (
     <div className="space-y-4 text-left select-none animate-in fade-in duration-200">
+      <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+        <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider">Quotations list</h4>
+        <Button
+          onClick={handleCreateNew}
+          size="sm"
+          className="h-8 text-xs font-bold flex items-center gap-1.5 bg-slate-900 text-white hover:bg-slate-800"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Draft Quote
+        </Button>
+      </div>
+
       {quotations.length === 0 ? (
         <EmptyStateContainer
           title="No Proposals Drafted"
@@ -22,9 +43,11 @@ export function QuotationTab({ rfq, onDownloadQuote }: QuotationTabProps) {
       ) : (
         <div className="space-y-3">
           {quotations.map((q) => {
-            const isAccepted = q.status === 'ACCEPTED';
-            const created = new Date(q.createdAt);
-            const expires = new Date(q.validUntil);
+            const isAccepted = q.status === 'ACCEPTED' || q.status === 'APPROVED' || q.status === 'CONVERTED';
+            const createdVal = q.createdAt || q.created_at || Date.now();
+            const created = new Date(createdVal);
+            const expiresVal = q.validUntil || q.expires_at || (Date.now() + 7 * 24 * 60 * 60 * 1000);
+            const expires = new Date(expiresVal);
 
             return (
               <div
@@ -36,23 +59,16 @@ export function QuotationTab({ rfq, onDownloadQuote }: QuotationTabProps) {
                 <div className="space-y-1.5 min-w-0 text-left">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-mono font-bold text-xs text-text-primary">
-                      {q.id} ({q.version})
+                      {q.quotation_number || q.id.substring(0, 8)}
                     </span>
-                    <span
-                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${
-                        isAccepted
-                          ? 'bg-success/20 text-success border-success/35'
-                          : q.status === 'REJECTED'
-                          ? 'bg-danger/15 text-danger border-danger/30'
-                          : 'bg-blue-50 text-blue-700 border-blue-200'
-                      }`}
-                    >
-                      {q.status}
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      (Rev {q.version || 1})
                     </span>
+                    <DocumentStatusBadge status={q.status} />
                   </div>
 
                   <div className="font-extrabold text-sm text-text-primary">
-                    Offer: ₹{q.value.toLocaleString('en-IN')}
+                    Offer: ₹{Number(q.value || q.grand_total || 0).toLocaleString('en-IN')}
                   </div>
 
                   <div className="flex flex-wrap items-center gap-x-2 text-[10px] text-text-secondary font-semibold">
@@ -65,6 +81,15 @@ export function QuotationTab({ rfq, onDownloadQuote }: QuotationTabProps) {
                 </div>
 
                 <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleViewDetails(q.id)}
+                    className="h-8 text-xs font-bold flex items-center gap-1 border-border"
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                    Edit
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"

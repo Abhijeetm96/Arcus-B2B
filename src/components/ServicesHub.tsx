@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { sanitizeText } from '../../shared/validation'
+import { apiFetch } from '../lib/api';
 
 interface PopularService {
   name: string
@@ -751,7 +752,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
   const [pros, setPros] = useState<Professional[]>(professionalsList)
 
   useEffect(() => {
-    fetch('/api/professionals')
+    apiFetch('/professionals')
       .then((res) => {
         if (!res.ok) throw new Error()
         return res.json()
@@ -887,7 +888,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
         timeline: 'N/A',
         details: `Company: ${formData.companyName || 'None'}. Requirement Details: ${formData.details || 'None'}`
       }
-      const res = await fetch('/api/rfq', {
+      const res = await apiFetch('/rfq', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -2188,7 +2189,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
         date: bookForm.date,
         notes: bookForm.notes
       }
-      const res = await fetch('/api/service-bookings', {
+      const res = await apiFetch('/service-bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -2219,7 +2220,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
         timeline: directQuoteForm.timeline,
         desc: directQuoteForm.desc
       }
-      const res = await fetch('/api/contractor-quotes', {
+      const res = await apiFetch('/contractor-quotes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -2250,7 +2251,7 @@ export default function ServicesHub({ categorySlug, typeSlug, specSlug }: Servic
         timeline: hubRfqForm.timeline,
         details: `Budget: ${hubRfqForm.budget}. Description: ${hubRfqForm.desc}`
       }
-      const res = await fetch('/api/rfq', {
+      const res = await apiFetch('/rfq', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

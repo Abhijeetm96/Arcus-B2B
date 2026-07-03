@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth, type User } from '../context/AuthContext';
+import { apiFetch } from '../lib/api';
 import {
   validateEmail,
   validateIndividualRegistration,
@@ -68,9 +69,8 @@ export const AuthPage: React.FC = () => {
     if (emailOtpCountdown > 0) return;
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/resend-email-otp', {
+      const res = await apiFetch('/auth/resend-email-otp', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: verifyingEmailAddress })
       });
       const data = await res.json();
@@ -92,9 +92,8 @@ export const AuthPage: React.FC = () => {
     setEmailOtpLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/verify-email-otp', {
+      const res = await apiFetch('/auth/verify-email-otp', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: verifyingEmailAddress, otp: emailOtpCode })
       });
       const data = await res.json();
@@ -218,7 +217,7 @@ export const AuthPage: React.FC = () => {
     setGstVerifying(true);
     setGstVerified(false);
 
-    fetch(`http://localhost:5000/api/auth/verify-gst/${gstClean}`)
+    apiFetch(`/auth/verify-gst/${gstClean}`)
       .then(res => {
         if (!res.ok) {
           return res.json().then(err => {
@@ -279,9 +278,7 @@ export const AuthPage: React.FC = () => {
       redirectTimerRef.current = setTimeout(() => {
         const token = localStorage.getItem('arcus_token');
         if (token) {
-          fetch('http://localhost:5000/api/auth/me', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          })
+          apiFetch('/auth/me')
           .then(r => r.json())
           .then(data => {
             handleRoleRedirect(data);

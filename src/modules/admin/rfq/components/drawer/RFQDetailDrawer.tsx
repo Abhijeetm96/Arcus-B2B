@@ -10,10 +10,11 @@ interface RFQDetailDrawerProps {
   rfq: RFQDetail | null;
   isOpen: boolean;
   onClose: () => void;
-  onAddNote: (text: string, isInternal: boolean) => Promise<void>;
+  onAddNote: (text: string, isInternal: boolean, parentCommentId?: string) => Promise<void>;
   onDownloadAttachment: (filename: string) => void;
   onDownloadQuote: (quoteId: string, filename: string) => void;
   onAction: (actionKey: string) => void;
+  onRefresh?: () => void;
 }
 
 export function RFQDetailDrawer({
@@ -23,7 +24,8 @@ export function RFQDetailDrawer({
   onAddNote,
   onDownloadAttachment,
   onDownloadQuote,
-  onAction
+  onAction,
+  onRefresh
 }: RFQDetailDrawerProps) {
   // Responsive drawer alignment state
   const [isMobile, setIsMobile] = React.useState(false);
@@ -62,6 +64,7 @@ export function RFQDetailDrawer({
           onAddNote={onAddNote}
           onDownloadAttachment={onDownloadAttachment}
           onDownloadQuote={onDownloadQuote}
+          onRefresh={onRefresh}
         />
 
         {/* Actions panel */}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { apiFetch } from '../lib/api';
 
 interface Project {
   id: string;
@@ -103,7 +104,7 @@ export default function Projects() {
     if (!formData.name || !formData.phone || !formData.projectName) return;
 
     try {
-      const res = await fetch('http://localhost:5000/api/contractor-quotes', {
+      const res = await apiFetch('/contractor-quotes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

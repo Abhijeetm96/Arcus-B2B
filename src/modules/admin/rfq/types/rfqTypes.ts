@@ -44,6 +44,10 @@ export interface RFQQuotation {
   createdAt: string;
   validUntil: string;
   pdfUrl: string;
+  quotation_number?: string;
+  grand_total?: number;
+  created_at?: string;
+  expires_at?: string;
 }
 
 export interface RFQCustomer {

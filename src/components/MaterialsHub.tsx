@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { apiFetch } from '../lib/api';
 
 // Hierarchical types
 interface LeafCategory {
@@ -432,7 +433,7 @@ export default function MaterialsHub({ categorySlug, subcategorySlug, leafSlug }
 
   useEffect(() => {
     setLoading(true)
-    fetch('/api/products')
+    apiFetch('/products')
       .then((res) => {
         if (!res.ok) throw new Error()
         return res.json()

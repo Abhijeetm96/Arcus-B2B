@@ -1,10 +1,17 @@
 import * as React from 'react';
-import { ChevronDown, ArrowUpDown, ChevronLeft, ChevronRight, Eye, MoreHorizontal } from 'lucide-react';
+import { 
+  ChevronDown, ArrowUpDown, ChevronLeft, ChevronRight, Eye, 
+  MoreHorizontal, AlertTriangle 
+} from 'lucide-react';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../../../../components/ui/Table';
 import { Button } from '../../../../../components/ui/Button';
 import { Checkbox } from '../../../../../components/ui/Checkbox';
 import { StatusBadge } from '../../../../../components/ui/StatusBadge';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '../../../../../components/ui/DropdownMenu';
+import { 
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, 
+  DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuLabel, 
+  DropdownMenuSeparator 
+} from '../../../../../components/ui/DropdownMenu';
 import type { RFQSummary } from '../../types/rfqTypes';
 import { PRIORITY_COLORS } from '../../constants/priority';
 import { cn } from '../../../../../components/ui/utils';
@@ -52,6 +59,10 @@ export function RFQTable({
   const [currentPage, setCurrentPage] = React.useState(1);
   const itemsPerPage = 10;
 
+  // Confirmation Modal State
+  const [showConfirm, setShowConfirm] = React.useState(false);
+  const [pendingAction, setPendingAction] = React.useState<{ type: string; value: string } | null>(null);
+
   const toggleColumn = (col: keyof typeof visibleColumns) => {
     setVisibleColumns(prev => ({ ...prev, [col]: !prev[col] }));
   };
@@ -95,38 +106,33 @@ export function RFQTable({
   const isAllSelected = paginatedData.length > 0 && paginatedData.every(r => selectedRows[r.id]);
 
   React.useEffect(() => {
-    // Reset page if data length changes
     setCurrentPage(1);
   }, [data.length]);
 
-  return (
-    <div className="flex-1 flex flex-col min-h-0 bg-surface p-4 text-left select-none animate-in fade-in duration-300">
-      
-      {/* Grid Controls Header: Bulk Selection Info & Column Visibility */}
-      <div className="flex items-center justify-between gap-4 mb-4">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-text-secondary font-semibold">
-            {selectedCount} of {data.length} row(s) selected
-          </span>
-          {selectedCount > 0 && (
-            <div className="flex items-center gap-1.5 ml-2 animate-in slide-in-from-left-2 duration-200">
-              <span className="text-[10px] text-text-secondary font-bold uppercase tracking-wider">Bulk Status:</span>
-              {['Under Review', 'Negotiation', 'Approved', 'Rejected'].map(st => (
-                <Button
-                  key={st}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onBulkStatusChange(st)}
-                  className="h-7 text-[10px] font-bold py-0.5 px-2 hover:bg-slate-100 border-border"
-                >
-                  {st}
-                </Button>
-              ))}
-            </div>
-          )}
-        </div>
+  const triggerBulkAction = (type: string, value: string) => {
+    setPendingAction({ type, value });
+    setShowConfirm(true);
+  };
 
-        {/* Column Visibility Trigger */}
+  const confirmBulkAction = () => {
+    if (pendingAction) {
+      if (pendingAction.type === 'STATUS') {
+        onBulkStatusChange(pendingAction.value);
+      }
+    }
+    setShowConfirm(false);
+    setPendingAction(null);
+  };
+
+  return (
+    <div className="flex-1 flex flex-col min-h-0 bg-surface p-4 text-left select-none animate-in fade-in duration-300 relative">
+      
+      {/* Column Visibility Trigger */}
+      <div className="flex items-center justify-between gap-4 mb-4">
+        <span className="text-xs text-text-secondary font-semibold">
+          {selectedCount} of {data.length} row(s) selected
+        </span>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="h-8 text-xs font-bold flex items-center gap-1">
@@ -144,7 +150,7 @@ export function RFQTable({
                 onCheckedChange={() => toggleColumn(col as keyof typeof visibleColumns)}
                 className="text-xs font-semibold text-text-secondary capitalize"
               >
-                {col === 'rfqNumber' ? 'RFQ Number' : col === 'companyName' ? 'Company Name' : col}
+                {col === 'rfqNumber' ? 'RFQ Number' : col === 'company' ? 'Company' : col}
               </DropdownMenuCheckboxItem>
             ))}
           </DropdownMenuContent>
@@ -254,7 +260,6 @@ export function RFQTable({
                     )}
                     onClick={() => onSelectRFQ(row.id)}
                   >
-                    {/* Checkbox cell */}
                     <TableCell className="text-center p-2.5" onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={isChecked}
@@ -362,6 +367,67 @@ export function RFQTable({
           </Button>
         </div>
       </div>
+
+      {/* Sticky Bottom Bulk Actions Panel */}
+      {selectedCount > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white border border-slate-800 shadow-2xl rounded-full px-6 py-3.5 flex items-center gap-6 z-40 max-w-xl w-[90%] justify-between animate-in slide-in-from-bottom-8 duration-300">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
+            <span className="text-xs font-extrabold tracking-wider uppercase">
+              {selectedCount} RFQs Selected
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            {['UNDER_REVIEW', 'NEGOTIATION', 'APPROVED', 'REJECTED'].map(st => (
+              <button
+                key={st}
+                onClick={() => triggerBulkAction('STATUS', st)}
+                className="text-[10px] font-black uppercase px-2.5 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 active:bg-slate-650 transition-colors border border-slate-700/50 hover:border-slate-600 text-slate-200"
+              >
+                {st.replace('_', ' ')}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Custom Confirmation Dialog Modal */}
+      {showConfirm && pendingAction && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-2xl max-w-sm w-full text-center space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="mx-auto h-12 w-12 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            
+            <div className="space-y-1.5">
+              <h3 className="font-extrabold text-base text-slate-800">
+                Confirm Bulk Action
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Are you sure you want to change the status of the <span className="font-bold text-slate-700">{selectedCount} selected RFQ(s)</span> to <span className="font-extrabold text-indigo-600">{pendingAction.value}</span>?
+              </p>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => { setShowConfirm(false); setPendingAction(null); }}
+                className="flex-1 text-xs font-bold border-slate-200 text-slate-500 hover:bg-slate-50 h-10 rounded-lg"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={confirmBulkAction}
+                className="flex-1 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white h-10 rounded-lg"
+              >
+                Proceed
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

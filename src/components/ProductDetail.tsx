@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { validateQuantity } from '../../shared/validation'
+import { apiFetch } from '../lib/api';
 
 interface PriceTier {
   min: number
@@ -140,7 +141,7 @@ export default function ProductDetail() {
   const handleSyncStock = async () => {
     setSyncingStock(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/products/${productSlug}/sync-inventory`, {
+      const res = await apiFetch(`/products/${productSlug}/sync-inventory`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -369,7 +370,7 @@ export default function ProductDetail() {
 
   // Fetch B2B product details dynamically
   useEffect(() => {
-    fetch(`/api/products/${productSlug}`)
+    apiFetch(`/products/${productSlug}`)
       .then((res) => {
         if (!res.ok) throw new Error('Product not found');
         return res.json();
@@ -578,7 +579,7 @@ export default function ProductDetail() {
         attachmentUrls: []
       };
 
-      const res = await fetch('http://localhost:5000/api/rfq', {
+      const res = await apiFetch('/rfq', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -631,7 +632,7 @@ export default function ProductDetail() {
         attachmentUrls: []
       };
 
-      const res = await fetch('http://localhost:5000/api/rfq', {
+      const res = await apiFetch('/rfq', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

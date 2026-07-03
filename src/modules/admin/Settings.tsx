@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { AppSettings } from './types';
+import { apiFetch } from '../../lib/api';
 
 
 export const Settings: React.FC = () => {
@@ -12,7 +13,7 @@ export const Settings: React.FC = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/settings');
+        const res = await apiFetch('/settings');
         if (!res.ok) throw new Error('Failed to load settings.');
         const data = await res.json();
         setSettings(data);
@@ -32,7 +33,7 @@ export const Settings: React.FC = () => {
     setSuccess(null);
     try {
       const token = localStorage.getItem('arcus_token');
-      const res = await fetch('http://localhost:5000/api/admin/settings', {
+      const res = await apiFetch('/admin/settings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

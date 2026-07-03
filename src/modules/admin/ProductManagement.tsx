@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import type { Product, PriceTier, Category } from './types';
+import { apiFetch } from '../../lib/api';
 
-export const ProductManagement: React.FC = () => {
+interface ProductManagementProps {
+  setActiveSection?: (section: string) => void;
+}
+
+export const ProductManagement: React.FC<ProductManagementProps> = ({ setActiveSection }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,7 +51,7 @@ export const ProductManagement: React.FC = () => {
       const token = localStorage.getItem('arcus_token');
       
       // Fetch all products (including archived)
-      const prodRes = await fetch('http://localhost:5000/api/admin/products', {
+      const prodRes = await apiFetch('/admin/products', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!prodRes.ok) throw new Error('Failed to load products');
@@ -95,7 +100,7 @@ export const ProductManagement: React.FC = () => {
       }
 
       // Fetch categories
-      const catRes = await fetch('http://localhost:5000/api/admin/categories', {
+      const catRes = await apiFetch('/admin/categories', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (catRes.ok) {
@@ -168,7 +173,7 @@ export const ProductManagement: React.FC = () => {
     setSuccess(null);
     try {
       const token = localStorage.getItem('arcus_token');
-      const res = await fetch(`http://localhost:5000/api/admin/products/${id}`, {
+      const res = await apiFetch(`/admin/products/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -188,8 +193,8 @@ export const ProductManagement: React.FC = () => {
     try {
       const token = localStorage.getItem('arcus_token');
       const url = editingProduct
-        ? `http://localhost:5000/api/admin/products/${editingProduct.id}`
-        : 'http://localhost:5000/api/admin/products';
+        ? `/api/admin/products/${editingProduct.id}`
+        : '/api/admin/products';
       const method = editingProduct ? 'PUT' : 'POST';
 
       // Reassemble specs
@@ -217,7 +222,7 @@ export const ProductManagement: React.FC = () => {
         }
       };
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
@@ -319,7 +324,7 @@ export const ProductManagement: React.FC = () => {
     if (action === 'export') {
       try {
         const token = localStorage.getItem('arcus_token');
-        const res = await fetch(`http://localhost:5000/api/admin/catalog/export?format=xlsx`, {
+        const res = await apiFetch(`/admin/catalog/export?format=xlsx`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) throw new Error('Bulk export failed');
@@ -344,7 +349,7 @@ export const ProductManagement: React.FC = () => {
 
     try {
       const token = localStorage.getItem('arcus_token');
-      const res = await fetch('http://localhost:5000/api/admin/catalog/bulk-action', {
+      const res = await apiFetch('/admin/catalog/bulk-action', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -430,14 +435,41 @@ export const ProductManagement: React.FC = () => {
           </select>
         </div>
 
-        {/* Add Product Button */}
-        <button
-          onClick={openAddEditor}
-          className="flex items-center gap-xs bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-lg h-11 rounded font-bold text-xs transition-all shadow-sm w-full md:w-auto justify-center"
-        >
-          <span className="material-symbols-outlined text-[16px]">add</span>
-          Add New Product
-        </button>
+        <div className="flex flex-wrap items-center gap-xs w-full md:w-auto mt-2 md:mt-0">
+          {setActiveSection && (
+            <>
+              <button
+                onClick={() => setActiveSection('import-products')}
+                className="flex items-center gap-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-md h-11 rounded font-bold text-xs transition-all shadow-xs justify-center"
+              >
+                <span className="material-symbols-outlined text-[16px]">upload_file</span>
+                Import
+              </button>
+              <button
+                onClick={() => setActiveSection('export-products')}
+                className="flex items-center gap-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-md h-11 rounded font-bold text-xs transition-all shadow-xs justify-center"
+              >
+                <span className="material-symbols-outlined text-[16px]">download</span>
+                Export
+              </button>
+              <button
+                onClick={() => setActiveSection('bulk-updates')}
+                className="flex items-center gap-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-md h-11 rounded font-bold text-xs transition-all shadow-xs justify-center"
+              >
+                <span className="material-symbols-outlined text-[16px]">published_with_changes</span>
+                Bulk Updates
+              </button>
+            </>
+          )}
+          {/* Add Product Button */}
+          <button
+            onClick={openAddEditor}
+            className="flex items-center gap-xs bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-lg h-11 rounded font-bold text-xs transition-all shadow-sm w-full md:w-auto justify-center"
+          >
+            <span className="material-symbols-outlined text-[16px]">add</span>
+            Add New Product
+          </button>
+        </div>
       </div>
 
       {/* Catalog Table */}

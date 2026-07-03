@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { User } from './types';
+import { apiFetch } from '../../lib/api';
 
 
 export const CustomerManagement: React.FC = () => {
@@ -16,7 +17,7 @@ export const CustomerManagement: React.FC = () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('arcus_token');
-        const res = await fetch('http://localhost:5000/api/admin/users', {
+        const res = await apiFetch('/admin/users', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) throw new Error('Failed to load user accounts.');

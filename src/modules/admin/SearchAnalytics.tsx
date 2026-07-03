@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { apiFetch } from '../../lib/api';
 
 interface AnalyticsData {
   totalSearches: number;
@@ -18,7 +19,7 @@ export const SearchAnalytics: React.FC = () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('arcus_token');
-        const res = await fetch('http://localhost:5000/api/admin/search-analytics', {
+        const res = await apiFetch('/admin/search-analytics', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) throw new Error('Failed to load search analytics.');

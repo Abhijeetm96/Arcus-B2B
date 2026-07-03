@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
 import { getCachedSearch, setCachedSearch } from '../core/config/searchCache'
+import { apiFetch } from '../lib/api';
 
 interface Product {
   id: string
@@ -151,7 +152,7 @@ export default function SearchPage() {
       return
     }
 
-    fetch(`/api/search?q=${encodeURIComponent(query)}`)
+    apiFetch(`/search?q=${encodeURIComponent(query)}`)
       .then((res) => {
         if (!res.ok) throw new Error('Search failed. Server error.')
         return res.json()
@@ -174,7 +175,7 @@ export default function SearchPage() {
   // Click tracking
   const handleProductClick = async (product: Product) => {
     try {
-      await fetch('/api/search/click', {
+      await apiFetch('/search/click', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId: product.id, query })
@@ -271,7 +272,7 @@ export default function SearchPage() {
 
     try {
       const token = localStorage.getItem('arcus_token')
-      const response = await fetch('/api/rfq', {
+      const response = await apiFetch('/rfq', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

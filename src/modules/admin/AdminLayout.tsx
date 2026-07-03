@@ -3,6 +3,7 @@ import * as perm from '../../core/permissions/permissions';
 import { PageLayout } from '../../components/layout/PageLayout';
 import { Button } from '../../components/ui/Button';
 import * as Lucide from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 export type AdminRole = perm.AdminRole;
 
@@ -43,6 +44,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   currentRole,
   setCurrentRole
 }) => {
+  const { logout } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showRoleSelector, setShowRoleSelector] = useState(false);
 
@@ -175,10 +177,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       subItems: [
         { id: 'products', name: 'Products', icon: 'inventory_2', check: (u: any) => perm.canManageProducts(u) },
         { id: 'categories', name: 'Categories', icon: 'account_tree', check: (u: any) => perm.canManageProducts(u) },
-        { id: 'brands', name: 'Brands', icon: 'verified', check: (u: any) => perm.canManageProducts(u) },
-        { id: 'import-products', name: 'Import Products', icon: 'upload_file', check: (u: any) => perm.canManageProducts(u) },
-        { id: 'export-products', name: 'Export Products', icon: 'download', check: (u: any) => perm.canManageProducts(u) },
-        { id: 'bulk-updates', name: 'Bulk Updates', icon: 'published_with_changes', check: (u: any) => perm.canManageProducts(u) }
+        { id: 'brands', name: 'Brands', icon: 'verified', check: (u: any) => perm.canManageProducts(u) }
       ]
     },
     {
@@ -192,12 +191,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         { id: 'stock-adjustments', name: 'Stock Adjustments', icon: 'settings_backup_restore', check: (u: any) => perm.canEditInventory(u) }
       ]
     },
-    { 
-      id: 'orders', 
-      name: 'Orders', 
-      icon: 'shopping_cart', 
-      isGroup: false,
-      check: (u: any) => perm.canApproveRFQs(u) || perm.canViewInventory(u) 
+    {
+      id: 'orders-group',
+      name: 'Orders & Bookings',
+      icon: 'shopping_cart',
+      isGroup: true,
+      check: (u: any) => perm.canApproveRFQs(u) || perm.canViewInventory(u),
+      subItems: [
+        { id: 'orders-b2b', name: 'B2B Orders', icon: 'warehouse', check: (u: any) => perm.canApproveRFQs(u) || perm.canViewInventory(u) },
+        { id: 'orders-b2c', name: 'B2C Orders', icon: 'group', check: (u: any) => perm.canApproveRFQs(u) || perm.canViewInventory(u) },
+        { id: 'orders-services', name: 'Service Bookings', icon: 'settings', check: (u: any) => perm.canApproveRFQs(u) || perm.canViewInventory(u) }
+      ]
     },
     { 
       id: 'rfqs', 
@@ -419,15 +423,18 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         )}
       </div>
 
-      {/* Exit Dashboard */}
+      {/* Log Out */}
       <Button
         variant="outline"
         size="sm"
-        onClick={() => window.location.hash = '#/'}
-        className="flex items-center gap-1.5 text-slate-600 hover:text-slate-950 border-slate-200"
+        onClick={async () => {
+          await logout();
+          window.location.hash = '#/auth?tab=login';
+        }}
+        className="flex items-center gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 border-slate-200"
       >
         <Lucide.LogOut className="h-3.5 w-3.5" />
-        Exit Dashboard
+        Log Out
       </Button>
     </div>
   );

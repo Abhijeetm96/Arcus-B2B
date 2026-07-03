@@ -15,6 +15,53 @@ import { Pool } from 'pg';
 export async function runMigrations(pgPool: Pool): Promise<void> {
   console.log('🔄 Running database migrations...');
 
+  // Enable pgcrypto and uuid-ossp for UUID generation
+  await pgPool.query(`
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+  `);
+
+  // Detect and perform UUID/relational normalization for RFQ module
+  const typeCheck = await pgPool.query(`
+    SELECT data_type FROM information_schema.columns 
+    WHERE table_name = 'rfqs' AND column_name = 'id'
+  `);
+  const colCheck = await pgPool.query(`
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'rfqs' AND column_name = 'customer_json'
+  `);
+  
+  const needsRebuild = 
+    (typeCheck.rows.length > 0 && typeCheck.rows[0].data_type === 'character varying') ||
+    (colCheck.rows.length === 0);
+
+  if (needsRebuild) {
+    console.log('⚠️ Rebuilding RFQs database schema for relational UUID normalization...');
+    await pgPool.query(`
+      DROP TABLE IF EXISTS rfq_items CASCADE;
+      DROP TABLE IF EXISTS rfq_quotes CASCADE;
+      DROP TABLE IF EXISTS quotation_share_logs CASCADE;
+      DROP TABLE IF EXISTS quotation_approvals CASCADE;
+      DROP TABLE IF EXISTS quotation_versions CASCADE;
+      DROP TABLE IF EXISTS quotation_totals CASCADE;
+      DROP TABLE IF EXISTS quotation_items CASCADE;
+      DROP TABLE IF EXISTS quotations CASCADE;
+      DROP TABLE IF EXISTS approval_policies CASCADE;
+      DROP TABLE IF EXISTS attachments CASCADE;
+      DROP TABLE IF EXISTS activity_logs CASCADE;
+      DROP TABLE IF EXISTS rfq_watchers CASCADE;
+      DROP TABLE IF EXISTS rfq_assignments CASCADE;
+      DROP TABLE IF EXISTS rfq_assignment_history CASCADE;
+      DROP TABLE IF EXISTS rfq_comments CASCADE;
+      DROP TABLE IF EXISTS rfqs CASCADE;
+      DROP TYPE IF EXISTS rfq_status_enum CASCADE;
+      DROP TYPE IF EXISTS priority_level_enum CASCADE;
+      DROP TYPE IF EXISTS entity_type_enum CASCADE;
+      DROP TYPE IF EXISTS quotation_status_enum CASCADE;
+      DROP TYPE IF EXISTS share_status_enum CASCADE;
+    `);
+  }
+
   // Create new operational tables if not exist
   await pgPool.query(`
     CREATE TABLE IF NOT EXISTS brands (
@@ -69,15 +116,6 @@ export async function runMigrations(pgPool: Pool): Promise<void> {
       ADD COLUMN IF NOT EXISTS admin_role VARCHAR(100) DEFAULT 'SUPER_ADMIN';
   `);
 
-  await pgPool.query(`
-    ALTER TABLE rfqs 
-      ADD COLUMN IF NOT EXISTS buyer_id VARCHAR(50),
-      ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Submitted',
-      ADD COLUMN IF NOT EXISTS title VARCHAR(255),
-      ADD COLUMN IF NOT EXISTS budget VARCHAR(100),
-      ADD COLUMN IF NOT EXISTS attachment_urls JSONB DEFAULT '[]'::jsonb;
-  `);
-
   // Validation & data integrity constraints
   await pgPool.query(`
     DROP INDEX IF EXISTS products_link_unique;
@@ -118,7 +156,19 @@ export async function runMigrations(pgPool: Pool): Promise<void> {
             CREATE TYPE product_status_enum AS ENUM ('ACTIVE', 'OUT_OF_STOCK', 'COMING_SOON', 'DISCONTINUED', 'ARCHIVED', 'RFQ_ONLY');
         END IF;
         IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'rfq_status_enum') THEN
-            CREATE TYPE rfq_status_enum AS ENUM ('Submitted', 'Open', 'Under Review', 'Quotes Received', 'Completed', 'Cancelled', 'Expired');
+            CREATE TYPE rfq_status_enum AS ENUM ('DRAFT', 'SUBMITTED', 'ASSIGNED', 'UNDER_REVIEW', 'NEGOTIATION', 'APPROVED', 'REJECTED', 'EXPIRED', 'CONVERTED');
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'priority_level_enum') THEN
+            CREATE TYPE priority_level_enum AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL');
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'entity_type_enum') THEN
+            CREATE TYPE entity_type_enum AS ENUM ('RFQ', 'QUOTATION', 'ORDER', 'PRODUCT', 'SERVICE_BOOKING');
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'quotation_status_enum') THEN
+            CREATE TYPE quotation_status_enum AS ENUM ('DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED', 'EXPIRED', 'CONVERTED', 'SENT');
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'share_status_enum') THEN
+            CREATE TYPE share_status_enum AS ENUM ('PENDING', 'DELIVERED', 'FAILED', 'OPENED', 'CLICKED');
         END IF;
         IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'buildpoints_transaction_type_enum') THEN
             CREATE TYPE buildpoints_transaction_type_enum AS ENUM ('EARNED', 'REDEEMED', 'ADJUSTED', 'EXPIRED');
@@ -267,9 +317,43 @@ export async function runMigrations(pgPool: Pool): Promise<void> {
         CONSTRAINT chk_stock_non_negative CHECK (available_stock >= 0 AND reserved_stock >= 0)
     );
 
+    CREATE TABLE IF NOT EXISTS rfqs (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        rfq_number VARCHAR(50) UNIQUE NOT NULL,
+        version INTEGER DEFAULT 1 NOT NULL,
+        timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        name VARCHAR(100) NOT NULL,
+        phone VARCHAR(50) NOT NULL,
+        category VARCHAR(100),
+        quantity VARCHAR(100),
+        location VARCHAR(100),
+        timeline VARCHAR(100),
+        details TEXT,
+        created_by_id VARCHAR(50) REFERENCES users(id) ON DELETE SET NULL,
+        updated_by_id VARCHAR(50) REFERENCES users(id) ON DELETE SET NULL,
+        assigned_to_id VARCHAR(50) REFERENCES users(id) ON DELETE SET NULL,
+        status rfq_status_enum DEFAULT 'SUBMITTED' NOT NULL,
+        priority priority_level_enum DEFAULT 'MEDIUM' NOT NULL,
+        due_date TIMESTAMP WITH TIME ZONE,
+        reminder_date TIMESTAMP WITH TIME ZONE,
+        deleted_at TIMESTAMP WITH TIME ZONE,
+        deleted_by_id VARCHAR(50) REFERENCES users(id) ON DELETE SET NULL,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        buyer_id VARCHAR(50),
+        title VARCHAR(255),
+        budget VARCHAR(100),
+        attachment_urls JSONB DEFAULT '[]'::jsonb,
+        customer_json JSONB,
+        project_type VARCHAR(100),
+        value NUMERIC(12,2) DEFAULT 0.00,
+        is_archived BOOLEAN DEFAULT FALSE NOT NULL,
+        archived_at TIMESTAMP WITH TIME ZONE,
+        archived_by_id VARCHAR(50) REFERENCES users(id) ON DELETE SET NULL
+    );
+
     CREATE TABLE IF NOT EXISTS rfq_items (
-        id VARCHAR(50) PRIMARY KEY,
-        rfq_id VARCHAR(50) NOT NULL REFERENCES rfqs(id) ON DELETE CASCADE,
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        rfq_id UUID NOT NULL REFERENCES rfqs(id) ON DELETE CASCADE,
         product_id VARCHAR(50) REFERENCES products(id) ON DELETE SET NULL,
         item_name VARCHAR(150) NOT NULL,
         quantity VARCHAR(100) NOT NULL,
@@ -277,8 +361,8 @@ export async function runMigrations(pgPool: Pool): Promise<void> {
     );
 
     CREATE TABLE IF NOT EXISTS rfq_quotes (
-        id VARCHAR(50) PRIMARY KEY,
-        rfq_id VARCHAR(50) NOT NULL REFERENCES rfqs(id) ON DELETE CASCADE,
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        rfq_id UUID NOT NULL REFERENCES rfqs(id) ON DELETE CASCADE,
         supplier_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         quote_amount NUMERIC(12,2) NOT NULL,
         delivery_lead_time_days INTEGER NOT NULL,
@@ -286,6 +370,80 @@ export async function runMigrations(pgPool: Pool): Promise<void> {
         remarks TEXT,
         status VARCHAR(50) DEFAULT 'Submitted',
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS attachments (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        entity_type entity_type_enum NOT NULL,
+        entity_id UUID NOT NULL,
+        filename VARCHAR(255) NOT NULL,
+        storage_provider VARCHAR(50) DEFAULT 'local' NOT NULL,
+        storage_key VARCHAR(255),
+        public_url TEXT,
+        thumbnail_url TEXT,
+        mime_type VARCHAR(100) NOT NULL,
+        size BIGINT NOT NULL,
+        uploaded_by_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        version VARCHAR(20) DEFAULT 'v1.0' NOT NULL,
+        previous_version_id UUID REFERENCES attachments(id) ON DELETE SET NULL,
+        checksum VARCHAR(64)
+    );
+
+    CREATE TABLE IF NOT EXISTS activity_logs (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        entity_type entity_type_enum NOT NULL,
+        entity_id UUID NOT NULL,
+        action VARCHAR(100) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        performed_by_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        prev_value TEXT,
+        new_value TEXT,
+        metadata JSONB DEFAULT '{}'::jsonb
+    );
+
+    CREATE TABLE IF NOT EXISTS rfq_watchers (
+        rfq_id UUID NOT NULL REFERENCES rfqs(id) ON DELETE CASCADE,
+        user_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        PRIMARY KEY (rfq_id, user_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS rfq_assignments (
+        rfq_id UUID PRIMARY KEY REFERENCES rfqs(id) ON DELETE CASCADE,
+        primary_owner_id VARCHAR(50) REFERENCES users(id) ON DELETE SET NULL,
+        secondary_owner_id VARCHAR(50) REFERENCES users(id) ON DELETE SET NULL,
+        assigned_by_id VARCHAR(50) REFERENCES users(id) ON DELETE SET NULL,
+        assigned_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        notes TEXT,
+        reason TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS rfq_assignment_history (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        rfq_id UUID NOT NULL REFERENCES rfqs(id) ON DELETE CASCADE,
+        primary_owner_id VARCHAR(50) REFERENCES users(id) ON DELETE SET NULL,
+        secondary_owner_id VARCHAR(50) REFERENCES users(id) ON DELETE SET NULL,
+        assigned_by_id VARCHAR(50) REFERENCES users(id) ON DELETE SET NULL,
+        assigned_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        notes TEXT,
+        reason TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS rfq_comments (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        rfq_id UUID NOT NULL REFERENCES rfqs(id) ON DELETE CASCADE,
+        author_id VARCHAR(50) REFERENCES users(id) ON DELETE SET NULL,
+        author_name VARCHAR(100) NOT NULL,
+        author_role VARCHAR(100) NOT NULL,
+        text TEXT NOT NULL,
+        timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        is_internal BOOLEAN DEFAULT TRUE,
+        parent_comment_id UUID REFERENCES rfq_comments(id) ON DELETE SET NULL,
+        edited_at TIMESTAMP WITH TIME ZONE,
+        edited_by_id VARCHAR(50) REFERENCES users(id) ON DELETE SET NULL,
+        is_deleted BOOLEAN DEFAULT FALSE
     );
 
     CREATE TABLE IF NOT EXISTS buildpoints_wallets (
@@ -320,40 +478,100 @@ export async function runMigrations(pgPool: Pool): Promise<void> {
         CONSTRAINT chk_order_items_qty CHECK (quantity > 0)
     );
 
-    CREATE TABLE IF NOT EXISTS quotations (
-        id VARCHAR(50) PRIMARY KEY,
-        quotation_number VARCHAR(50) NOT NULL,
-        version INTEGER NOT NULL,
-        rfq_id VARCHAR(50) NOT NULL REFERENCES rfqs(id) ON DELETE CASCADE,
-        status VARCHAR(50) NOT NULL DEFAULT 'SENT',
-        subtotal NUMERIC(12,2) NOT NULL,
-        discount_type VARCHAR(50) DEFAULT 'NONE',
-        discount_value NUMERIC(12,2) DEFAULT 0.00,
-        shipping_charges NUMERIC(12,2) DEFAULT 0.00,
-        free_shipping BOOLEAN DEFAULT FALSE,
-        gst_amount NUMERIC(12,2) NOT NULL,
-        grand_total NUMERIC(12,2) NOT NULL,
-        delivery_terms TEXT,
-        payment_terms TEXT,
-        validity_date DATE,
-        notes TEXT,
-        customer_comments TEXT,
-        decline_reason TEXT,
+    CREATE TABLE IF NOT EXISTS approval_policies (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        entity_type entity_type_enum NOT NULL,
+        min_amount NUMERIC(12,2) NOT NULL,
+        max_amount NUMERIC(12,2) NOT NULL,
+        required_role VARCHAR(100) NOT NULL,
+        required_levels INTEGER DEFAULT 1 NOT NULL,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        created_by VARCHAR(100)
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS quotations (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        quotation_number VARCHAR(50) NOT NULL UNIQUE,
+        rfq_id UUID NOT NULL REFERENCES rfqs(id) ON DELETE CASCADE,
+        version INTEGER NOT NULL DEFAULT 1,
+        status quotation_status_enum NOT NULL DEFAULT 'DRAFT',
+        customer_snapshot JSONB NOT NULL,
+        public_token UUID DEFAULT gen_random_uuid() NOT NULL,
+        expires_at TIMESTAMP WITH TIME ZONE,
+        view_count INTEGER DEFAULT 0 NOT NULL,
+        last_viewed_at TIMESTAMP WITH TIME ZONE,
+        created_by_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+        approved_by_id VARCHAR(50) REFERENCES users(id) ON DELETE SET NULL,
+        sent_at TIMESTAMP WITH TIME ZONE,
+        approved_at TIMESTAMP WITH TIME ZONE,
+        rejected_at TIMESTAMP WITH TIME ZONE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        deleted_at TIMESTAMP WITH TIME ZONE
+    );
+
+    CREATE TABLE IF NOT EXISTS quotation_totals (
+        quotation_id UUID PRIMARY KEY REFERENCES quotations(id) ON DELETE CASCADE,
+        currency_code VARCHAR(10) DEFAULT 'INR' NOT NULL,
+        exchange_rate NUMERIC(12,6) DEFAULT 1.000000 NOT NULL,
+        base_currency VARCHAR(10) DEFAULT 'INR' NOT NULL,
+        exchange_timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        subtotal NUMERIC(12,2) NOT NULL,
+        discount NUMERIC(12,2) DEFAULT 0.00,
+        taxable_amount NUMERIC(12,2) NOT NULL,
+        gst_amount NUMERIC(12,2) NOT NULL,
+        shipping NUMERIC(12,2) DEFAULT 0.00,
+        other_charges NUMERIC(12,2) DEFAULT 0.00,
+        grand_total NUMERIC(12,2) NOT NULL,
+        calculation_audit JSONB NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS quotation_items (
-        id VARCHAR(50) PRIMARY KEY,
-        quotation_id VARCHAR(50) NOT NULL REFERENCES quotations(id) ON DELETE CASCADE,
-        item_name VARCHAR(150) NOT NULL,
-        description TEXT,
-        unit VARCHAR(50) NOT NULL,
-        quantity INTEGER NOT NULL,
-        unit_price NUMERIC(12,2) NOT NULL,
-        discount_percentage NUMERIC(5,2) DEFAULT 0.00,
-        gst_rate NUMERIC(5,2) DEFAULT 18.00,
-        line_total NUMERIC(12,2) NOT NULL
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        quotation_id UUID NOT NULL REFERENCES quotations(id) ON DELETE CASCADE,
+        product_id VARCHAR(50) REFERENCES products(id) ON DELETE SET NULL,
+        product_snapshot JSONB NOT NULL,
+        quantity NUMERIC(12,4) NOT NULL,
+        rate NUMERIC(12,2) NOT NULL,
+        discount_percent NUMERIC(5,2) DEFAULT 0.00,
+        discount_amount NUMERIC(12,2) DEFAULT 0.00,
+        tax_percent NUMERIC(5,2) DEFAULT 0.00,
+        tax_amount NUMERIC(12,2) DEFAULT 0.00,
+        subtotal NUMERIC(12,2) NOT NULL,
+        final_amount NUMERIC(12,2) NOT NULL,
+        remarks TEXT,
+        position INTEGER NOT NULL DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS quotation_versions (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        quotation_id UUID NOT NULL REFERENCES quotations(id) ON DELETE CASCADE,
+        version INTEGER NOT NULL,
+        created_by_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+        reason TEXT,
+        timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS quotation_approvals (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        quotation_id UUID NOT NULL REFERENCES quotations(id) ON DELETE CASCADE,
+        approver_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+        approval_level INTEGER NOT NULL DEFAULT 1,
+        timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        notes TEXT,
+        signature_hash VARCHAR(256),
+        signed_document_hash VARCHAR(256),
+        certificate_id VARCHAR(100)
+    );
+
+    CREATE TABLE IF NOT EXISTS quotation_share_logs (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        quotation_id UUID NOT NULL REFERENCES quotations(id) ON DELETE CASCADE,
+        share_channel VARCHAR(50) NOT NULL,
+        recipient VARCHAR(255),
+        share_status share_status_enum NOT NULL DEFAULT 'PENDING',
+        ip_address VARCHAR(50),
+        timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );
   `);
 
@@ -388,6 +606,7 @@ export async function runMigrations(pgPool: Pool): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_quotations_rfq ON quotations(rfq_id);
     CREATE INDEX IF NOT EXISTS idx_quotations_number ON quotations(quotation_number);
     CREATE INDEX IF NOT EXISTS idx_quotation_items_quotation ON quotation_items(quotation_id);
+    CREATE INDEX IF NOT EXISTS idx_approval_policies_entity ON approval_policies(entity_type);
     
     -- Optimized indexes recommended by query plan evaluation
     CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
@@ -396,8 +615,20 @@ export async function runMigrations(pgPool: Pool): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_products_leaf_slug ON products(leaf_slug);
     CREATE INDEX IF NOT EXISTS idx_professional_category ON professional_profiles(service_category);
     CREATE INDEX IF NOT EXISTS idx_professional_city ON professional_profiles(city);
+    
+    -- Normalized RFQ indices
     CREATE INDEX IF NOT EXISTS idx_rfqs_status ON rfqs(status);
+    CREATE INDEX IF NOT EXISTS idx_rfqs_priority ON rfqs(priority);
+    CREATE INDEX IF NOT EXISTS idx_rfqs_assigned ON rfqs(assigned_to_id);
+    CREATE INDEX IF NOT EXISTS idx_rfqs_due ON rfqs(due_date);
     CREATE INDEX IF NOT EXISTS idx_rfqs_timestamp ON rfqs(timestamp DESC);
+    CREATE INDEX IF NOT EXISTS idx_rfqs_company ON rfqs ((customer_json->>'companyName'));
+    
+    CREATE INDEX IF NOT EXISTS idx_attachments_entity ON attachments(entity_type, entity_id);
+    CREATE INDEX IF NOT EXISTS idx_activity_entity ON activity_logs(entity_type, entity_id);
+    CREATE INDEX IF NOT EXISTS idx_comments_rfq ON rfq_comments(rfq_id);
+    CREATE INDEX IF NOT EXISTS idx_watchers_rfq ON rfq_watchers(rfq_id);
+    CREATE INDEX IF NOT EXISTS idx_assignments_rfq ON rfq_assignments(rfq_id);
     
     -- Enforce uniqueness constraints
     CREATE UNIQUE INDEX IF NOT EXISTS idx_ledger_uniqueness 
@@ -408,6 +639,9 @@ export async function runMigrations(pgPool: Pool): Promise<void> {
 
     CREATE UNIQUE INDEX IF NOT EXISTS business_profiles_gst_unique 
     ON business_profiles(UPPER(gst_number));
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_approval_policies_unique 
+    ON approval_policies(entity_type, min_amount, max_amount);
   `);
 
   console.log('✅ Database migrations applied successfully.');

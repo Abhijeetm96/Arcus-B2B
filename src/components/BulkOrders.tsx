@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { sanitizeText } from '../../shared/validation';
+import { apiFetch } from '../lib/api';
 
 interface PriceTier {
   min: number;
@@ -359,7 +360,7 @@ export default function BulkOrders() {
     setGstVerified(false);
 
     try {
-      const res = await fetch(`http://localhost:5000/api/auth/verify-gst/${gstClean}`);
+      const res = await apiFetch(`/auth/verify-gst/${gstClean}`);
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error || 'Verification failed. Please check the GST number.');
@@ -447,7 +448,7 @@ export default function BulkOrders() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/products');
+        const res = await apiFetch('/products');
         if (res.ok) {
           const data = await res.json();
           // Map backend category-grouped products to our structure
@@ -628,7 +629,7 @@ export default function BulkOrders() {
       `Ordered Items:\n${itemsSummary}`;
 
     try {
-      const res = await fetch('http://localhost:5000/api/rfq', {
+      const res = await apiFetch('/rfq', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

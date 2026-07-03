@@ -1,4 +1,5 @@
 import { DashboardKPIs } from './DashboardKPIs';
+import { DashboardCharts } from './DashboardCharts';
 import { DashboardRecentActivity } from './DashboardRecentActivity';
 import { DashboardRecentRFQs } from './DashboardRecentRFQs';
 import { DashboardQuickActions } from './DashboardQuickActions';
@@ -29,6 +30,9 @@ export function RFQDashboard({
     <div className="space-y-6 text-left">
       {/* 1. KPIs Cards Section */}
       <DashboardKPIs rfqs={rfqs} />
+
+      {/* Charts Section */}
+      <DashboardCharts rfqs={rfqs} />
 
       {/* 2. Main Dashboard Layout Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

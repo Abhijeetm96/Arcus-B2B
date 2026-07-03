@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { Brand } from './types';
+import { apiFetch } from '../../lib/api';
 
 
 export const BrandManagement: React.FC = () => {
@@ -17,7 +18,7 @@ export const BrandManagement: React.FC = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('arcus_token');
-      const res = await fetch('http://localhost:5000/api/admin/brands', {
+      const res = await apiFetch('/admin/brands', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to load brands.');
@@ -54,10 +55,10 @@ export const BrandManagement: React.FC = () => {
       const token = localStorage.getItem('arcus_token');
       const method = editingBrand ? 'PUT' : 'POST';
       const url = editingBrand 
-        ? `http://localhost:5000/api/admin/brands/${editingBrand.id}` 
-        : 'http://localhost:5000/api/admin/brands';
+        ? `/api/admin/brands/${editingBrand.id}` 
+        : '/api/admin/brands';
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +84,7 @@ export const BrandManagement: React.FC = () => {
     setSuccess(null);
     try {
       const token = localStorage.getItem('arcus_token');
-      const res = await fetch(`http://localhost:5000/api/admin/brands/${id}`, {
+      const res = await apiFetch(`/admin/brands/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { validateCheckoutForm } from '../../shared/validation';
+import { apiFetch } from '../lib/api';
 
 interface RecommendedItem {
   id: string;
@@ -140,7 +141,7 @@ export const Checkout: React.FC = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/settings');
+        const res = await apiFetch('/settings');
         if (res.ok) {
           const data = await res.json();
           if (data && typeof data.b2cMinimumOrderValue === 'number') {
@@ -438,7 +439,7 @@ export const Checkout: React.FC = () => {
         try {
           const token = localStorage.getItem('arcus_token');
           if (!token) return;
-          const res = await fetch('http://localhost:5000/api/orders', {
+          const res = await apiFetch('/orders', {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (res.ok) {
@@ -761,7 +762,7 @@ export const Checkout: React.FC = () => {
 
     try {
       const token = localStorage.getItem('arcus_token');
-      const response = await fetch('http://localhost:5000/api/orders', {
+      const response = await apiFetch('/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

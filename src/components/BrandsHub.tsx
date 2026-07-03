@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
 import { sanitizeText } from '../../shared/validation'
+import { apiFetch } from '../lib/api';
 
 interface Brand {
   name: string
@@ -258,7 +259,7 @@ export default function BrandsHub({ brandSlug }: BrandsHubProps) {
 
   useEffect(() => {
     // Dynamic products synchronization with api if available
-    fetch('/api/products')
+    apiFetch('/products')
       .then((res) => {
         if (!res.ok) throw new Error()
         return res.json()

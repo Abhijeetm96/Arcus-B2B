@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
+import { apiFetch } from '../lib/api';
 
 interface Product {
   name: string
@@ -86,7 +87,7 @@ export default function Products() {
   }
 
   useEffect(() => {
-    fetch('/api/products')
+    apiFetch('/products')
       .then((res) => {
         if (!res.ok) throw new Error()
         return res.json()

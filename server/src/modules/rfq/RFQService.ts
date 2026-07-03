@@ -239,41 +239,46 @@ export async function addQuote(quote: DirectQuote): Promise<DirectQuote> {
 export async function getAllRfqs(): Promise<RFQ[]> {
   if (usePostgres && pgPool) {
     const res = await pgPool.query('SELECT * FROM rfqs ORDER BY timestamp DESC');
-    const rfqs: RFQ[] = [];
-    for (const row of res.rows) {
-      const itemsRes = await pgPool.query('SELECT * FROM rfq_items WHERE rfq_id = $1', [row.id]);
-      const items = itemsRes.rows.map((r) => {
-        const specs = typeof r.specification_requirements === 'string'
-          ? JSON.parse(r.specification_requirements)
-          : r.specification_requirements || {};
-        return {
-          id: r.id,
-          rfqId: r.rfq_id,
-          itemName: r.item_name,
-          quantity: r.quantity,
-          description: specs.description || '',
-          unit: specs.unit || 'Piece'
-        };
-      });
-      rfqs.push({
-        id: row.id,
-        timestamp: row.timestamp instanceof Date ? row.timestamp.toISOString() : new Date(row.timestamp).toISOString(),
-        name: row.name,
-        phone: row.phone,
-        category: row.category,
-        quantity: row.quantity,
-        location: row.location,
-        timeline: row.timeline,
-        details: row.details,
-        buyerId: row.buyer_id,
-        status: row.status,
-        title: row.title,
-        budget: row.budget,
-        attachmentUrls: row.attachment_urls ? (typeof row.attachment_urls === 'string' ? JSON.parse(row.attachment_urls) : row.attachment_urls) : [],
-        items
+    if (res.rows.length === 0) return [];
+    
+    // Fetch all RFQ items in a single batch query to eliminate N+1 latency
+    const itemsRes = await pgPool.query('SELECT * FROM rfq_items');
+    const itemsMap = new Map<string, any[]>();
+    for (const r of itemsRes.rows) {
+      const rfqId = r.rfq_id;
+      if (!itemsMap.has(rfqId)) {
+        itemsMap.set(rfqId, []);
+      }
+      const specs = typeof r.specification_requirements === 'string'
+        ? JSON.parse(r.specification_requirements)
+        : r.specification_requirements || {};
+      itemsMap.get(rfqId)!.push({
+        id: r.id,
+        rfqId: r.rfq_id,
+        itemName: r.item_name,
+        quantity: r.quantity,
+        description: specs.description || '',
+        unit: specs.unit || 'Piece'
       });
     }
-    return rfqs;
+
+    return res.rows.map((row) => ({
+      id: row.id,
+      timestamp: row.timestamp instanceof Date ? row.timestamp.toISOString() : new Date(row.timestamp).toISOString(),
+      name: row.name,
+      phone: row.phone,
+      category: row.category,
+      quantity: row.quantity,
+      location: row.location,
+      timeline: row.timeline,
+      details: row.details,
+      buyerId: row.buyer_id,
+      status: row.status,
+      title: row.title,
+      budget: row.budget,
+      attachmentUrls: row.attachment_urls ? (typeof row.attachment_urls === 'string' ? JSON.parse(row.attachment_urls) : row.attachment_urls) : [],
+      items: itemsMap.get(row.id) || []
+    }));
   } else {
     const db = await readJsonDb();
     const rfqs = db.rfqs || [];

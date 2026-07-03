@@ -11,8 +11,9 @@ import MaterialsHub from './components/MaterialsHub'
 import ServicesHub from './components/ServicesHub'
 import ProductDetail from './components/ProductDetail'
 import { Agentation } from 'agentation'
-import { AuthProvider } from './context/AuthContext'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
+import { NotificationProvider } from './context/NotificationContext'
 import { AuthPage } from './components/AuthPage'
 import { IndividualDashboard } from './modules/individual/IndividualDashboard'
 import { PortalResolver } from './core/auth/PortalResolver'
@@ -29,9 +30,11 @@ const Resources = lazy(() => import('./components/Resources'))
 const BusinessDashboard = lazy(() => import('./modules/business/BusinessDashboard').then(m => ({ default: m.BusinessDashboard })))
 const ProfessionalDashboard = lazy(() => import('./modules/professional/ProfessionalDashboard').then(m => ({ default: m.ProfessionalDashboard })))
 const AdminDashboard = lazy(() => import('./modules/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })))
+const QuotationBuilder = lazy(() => import('./modules/admin/QuotationBuilder').then(m => ({ default: m.QuotationBuilder })))
 
 
-function App() {
+function AppContent() {
+  const { user } = useAuth()
   const [currentHash, setCurrentHash] = useState(window.location.hash)
 
   useEffect(() => {
@@ -67,6 +70,19 @@ function App() {
     return () => window.removeEventListener('hashchange', handleHashChange)
   }, [])
 
+  // Enforce System Admin routing protection: only dashboard, not general website
+  useEffect(() => {
+    if (user && (user.role === 'Admin' || user.role === 'ADMIN')) {
+      const cleanRoute = currentHash.replace(/^#\/?/, '').split('?')[0];
+      const segments = cleanRoute.split('/');
+      const isAdminDb = segments[0] === 'portal' && segments[1] === 'admin';
+      const isResolver = (segments[0] === 'portal' && !segments[1]) || segments[0] === 'resolver';
+      if (!isAdminDb && !isResolver) {
+        window.location.hash = '#/portal/admin';
+      }
+    }
+  }, [user, currentHash]);
+
   // Basic segment router
   // e.g. #/services/plumbing-services/pipe-installation/cpvc-pipe-installation
   const cleanHash = currentHash.replace(/^#\/?/, '').split('?')[0]
@@ -93,78 +109,92 @@ function App() {
   const isDashboardRoute = isAdminDb || isBusinessDb || isIndividualDb || isProfessionalDb || isPlayground;
 
   return (
-    <AuthProvider>
-      <CartProvider>
-        {!isDashboardRoute && (
-          <ErrorBoundary fallback={<div className="p-md text-red-600 bg-red-50 border-b border-red-200">Navigation bar failed to load. Please refresh the page.</div>}>
-            <Navbar />
-          </ErrorBoundary>
-        )}
-        <main>
-          <Suspense fallback={
-            <div className="flex items-center justify-center min-h-[400px]">
-              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
-            </div>
-          }>
-            {isCheckoutSuccess ? (
-              <CheckoutSuccess />
-            ) : isCheckout ? (
-              <Checkout />
-            ) : isAuth ? (
-              <AuthPage />
-            ) : isBulkOrders ? (
-              <BulkOrders />
-            ) : isProjects ? (
-              <Projects />
-            ) : isResources ? (
-              <Resources />
-            ) : isIndividualDb ? (
-              <IndividualDashboard />
-            ) : isBusinessDb ? (
-              <BusinessDashboard />
-            ) : isProfessionalDb ? (
-              <ProfessionalDashboard />
-            ) : isAdminDb ? (
-              <AdminDashboard />
-            ) : isPlayground ? (
-              <UIPlayground />
-            ) : isResolver ? (
-              <PortalResolver />
-            ) : isSearch ? (
-              <ErrorBoundary>
-                <SearchPage />
-              </ErrorBoundary>
-            ) : isMaterialsHub ? (
-              <MaterialsHub
-                categorySlug={segments[1]}
-                subcategorySlug={segments[2]}
-                leafSlug={segments[3]}
-              />
-            ) : isServicesHub ? (
-              <ServicesHub
-                categorySlug={segments[1]}
-                typeSlug={segments[2]}
-                specSlug={segments[3]}
-              />
-            ) : isBrandsHub ? (
-              <BrandsHub brandSlug={segments[1]} />
-            ) : isProductDetail ? (
-              <ProductDetail />
+    <>
+      {!isDashboardRoute && (
+        <ErrorBoundary fallback={<div className="p-md text-red-600 bg-red-50 border-b border-red-200">Navigation bar failed to load. Please refresh the page.</div>}>
+          <Navbar />
+        </ErrorBoundary>
+      )}
+      <main>
+        <Suspense fallback={
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        }>
+          {isCheckoutSuccess ? (
+            <CheckoutSuccess />
+          ) : isCheckout ? (
+            <Checkout />
+          ) : isAuth ? (
+            <AuthPage />
+          ) : isBulkOrders ? (
+            <BulkOrders />
+          ) : isProjects ? (
+            <Projects />
+          ) : isResources ? (
+            <Resources />
+          ) : isIndividualDb ? (
+            <IndividualDashboard />
+          ) : isBusinessDb ? (
+            <BusinessDashboard />
+          ) : isProfessionalDb ? (
+            <ProfessionalDashboard />
+          ) : isAdminDb ? (
+            segments[2] === 'quotations' ? (
+              <QuotationBuilder />
             ) : (
-              <>
-                <Hero />
-                <Categories />
-                <Products />
-                <Services />
-                <RfqForm />
-                <Trust />
-              </>
-            )}
-          </Suspense>
-        </main>
-        {!isDashboardRoute && <Footer />}
-        <Agentation />
-      </CartProvider>
+              <AdminDashboard />
+            )
+          ) : isPlayground ? (
+            <UIPlayground />
+          ) : isResolver ? (
+            <PortalResolver />
+          ) : isSearch ? (
+            <ErrorBoundary>
+              <SearchPage />
+            </ErrorBoundary>
+          ) : isMaterialsHub ? (
+            <MaterialsHub
+              categorySlug={segments[1]}
+              subcategorySlug={segments[2]}
+              leafSlug={segments[3]}
+            />
+          ) : isServicesHub ? (
+            <ServicesHub
+              categorySlug={segments[1]}
+              typeSlug={segments[2]}
+              specSlug={segments[3]}
+            />
+          ) : isBrandsHub ? (
+            <BrandsHub brandSlug={segments[1]} />
+          ) : isProductDetail ? (
+            <ProductDetail />
+          ) : (
+            <>
+              <Hero />
+              <Categories />
+              <Products />
+              <Services />
+              <RfqForm />
+              <Trust />
+            </>
+          )}
+        </Suspense>
+      </main>
+      {!isDashboardRoute && <Footer />}
+      <Agentation />
+    </>
+  )
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <NotificationProvider>
+        <CartProvider>
+          <AppContent />
+        </CartProvider>
+      </NotificationProvider>
     </AuthProvider>
   )
 }

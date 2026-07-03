@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRFQs } from '../../core/hooks/useRFQs';
 import { formatDate } from '../../core/config/format';
 import { useAuth } from '../../context/AuthContext';
+import { apiFetch } from '../../lib/api';
 
 interface MaterialItem {
   itemName: string;
@@ -94,7 +95,7 @@ export const BusinessRFQs: React.FC = () => {
   // Fetch quotations for selected RFQ
   const fetchQuotations = async (rfqId: string) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/rfqs/${rfqId}/quotations`, {
+      const res = await apiFetch(`/rfqs/${rfqId}/quotations`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('arcus_token')}`
         }
@@ -145,7 +146,7 @@ export const BusinessRFQs: React.FC = () => {
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/rfq', {
+      const res = await apiFetch('/rfq', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -190,7 +191,7 @@ export const BusinessRFQs: React.FC = () => {
     setActionLoading(true);
     setErrorMessage('');
     try {
-      const res = await fetch(`http://localhost:5000/api/quotations/${selectedQuote.id}/accept`, {
+      const res = await apiFetch(`/quotations/${selectedQuote.id}/accept`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -218,7 +219,7 @@ export const BusinessRFQs: React.FC = () => {
     setActionLoading(true);
     setErrorMessage('');
     try {
-      const res = await fetch(`http://localhost:5000/api/quotations/${selectedQuote.id}/reject`, {
+      const res = await apiFetch(`/quotations/${selectedQuote.id}/reject`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -247,7 +248,7 @@ export const BusinessRFQs: React.FC = () => {
     setActionLoading(true);
     setErrorMessage('');
     try {
-      const res = await fetch(`http://localhost:5000/api/quotations/${selectedQuote.id}/renegotiate`, {
+      const res = await apiFetch(`/quotations/${selectedQuote.id}/renegotiate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

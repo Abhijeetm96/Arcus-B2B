@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { apiFetch } from '../../lib/api';
 
 interface AuditLog {
   id?: number;
@@ -27,7 +28,7 @@ export const AuditLogs: React.FC = () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('arcus_token');
-        const res = await fetch('http://localhost:5000/api/admin/audit-logs', {
+        const res = await apiFetch('/admin/audit-logs', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) throw new Error('Failed to load system audit logs.');
@@ -129,7 +130,7 @@ export const AuditLogs: React.FC = () => {
     try {
       const token = localStorage.getItem('arcus_token');
       if (type === 'product') {
-        const res = await fetch(`http://localhost:5000/api/admin/products`, {
+        const res = await apiFetch(`/admin/products`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -146,7 +147,7 @@ export const AuditLogs: React.FC = () => {
           setEntityData(found || { name: 'Unknown Product', sku: id, price: 0 });
         }
       } else if (type === 'rfq') {
-        const res = await fetch(`http://localhost:5000/api/rfqs`, {
+        const res = await apiFetch(`/rfqs`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -155,7 +156,7 @@ export const AuditLogs: React.FC = () => {
           setEntityData(found);
         }
       } else if (type === 'order') {
-        const res = await fetch(`http://localhost:5000/api/admin/orders`, {
+        const res = await apiFetch(`/admin/orders`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {

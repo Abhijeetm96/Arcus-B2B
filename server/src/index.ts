@@ -18,6 +18,11 @@ import {
 } from './db';
 import { validateEmail, validatePhone, validatePassword, validateName, validateBusinessName, validateGST, validateExperience, validateURL, normalizePhone, sanitizeText, trimAndClean, RateLimiter } from '../../shared/validation';
 import { createQuotation, getQuotationById, getQuotationsForRfq, updateQuotationStatus, convertQuotationToOrder } from './modules/rfq/QuotationService';
+import { checkAndSeedDevUsers } from './database/seedRunner';
+import adminRoutes from './routes';
+import { registerEventHandlers } from './events/registerHandlers';
+import { dashboardRepo } from './controllers/dashboard.controller';
+import { MockNotificationProvider } from './domain/shared/NotificationProvider';
 
 dotenv.config();
 
@@ -26,6 +31,10 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
+app.use('/api', adminRoutes);
+
+// Register collaborative event handlers
+registerEventHandlers(dashboardRepo, new MockNotificationProvider());
 
 app.use((req, res, next) => {
   console.log(`[REQUEST] ${req.method} ${req.url} Auth: ${req.headers.authorization || 'None'}`);
@@ -2285,6 +2294,12 @@ app.post('/api/auth/register', async (req, res) => {
 
     if (DISABLE_OTP_FOR_DEV) {
       const token = generateToken(newUser.id!);
+      if (process.env.NODE_ENV !== 'production') {
+        const target = (newUser.role === 'ADMIN' || newUser.role === 'Admin') ? '#/portal/admin' : '#/dashboard';
+        console.log(`[AUTH SUCCESS] Registration succeeded for: ${newUser.email} (Role: ${newUser.role})`);
+        console.log(`Redirect Destination: ${target}`);
+        console.log(`Token Expiry: ${new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleString()}`);
+      }
       return res.status(201).json({
         success: true,
         email: newUser.email,
@@ -2343,6 +2358,12 @@ app.post('/api/auth/verify-email-otp', async (req, res) => {
         return res.status(404).json({ error: 'User not found.' });
       }
       const token = generateToken(updatedUser.id!);
+      if (process.env.NODE_ENV !== 'production') {
+        const target = (updatedUser.role === 'ADMIN' || updatedUser.role === 'Admin') ? '#/portal/admin' : '#/dashboard';
+        console.log(`[AUTH SUCCESS] OTP verification succeeded for: ${updatedUser.email} (Role: ${updatedUser.role})`);
+        console.log(`Redirect Destination: ${target}`);
+        console.log(`Token Expiry: ${new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleString()}`);
+      }
       return res.json({
         success: true,
         token,
@@ -2540,6 +2561,67 @@ app.get('/api/auth/health', async (req, res) => {
   }
 });
 
+app.get('/api/health', async (req, res) => {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(404).json({ error: 'Endpoint not found.' });
+  }
+
+  try {
+    let dbConnected = false;
+    let devUsersCount = 0;
+    const emails = ['admin@arcus.com', 'business@arcus.com', 'professional@arcus.com', 'individual@arcus.com'];
+
+    if (usePostgres && pgPool) {
+      try {
+        await pgPool.query('SELECT 1');
+        dbConnected = true;
+        const countRes = await pgPool.query('SELECT COUNT(*)::int AS count FROM users WHERE email = ANY($1)', [emails]);
+        devUsersCount = countRes.rows[0].count;
+      } catch (err) {
+        console.error('Healthcheck DB Error:', err);
+      }
+    } else {
+      try {
+        const db = await readJsonDb();
+        dbConnected = true;
+        if (db.users) {
+          devUsersCount = db.users.filter((u: any) => emails.includes(u.email.toLowerCase())).length;
+        }
+      } catch (err) {
+        console.error('Healthcheck JSON DB Error:', err);
+      }
+    }
+
+    let jwtStatus = false;
+    try {
+      const testUserId = 'health_check_user';
+      const token = generateToken(testUserId);
+      const decodedId = verifyToken(token);
+      if (decodedId === testUserId) {
+        jwtStatus = true;
+      }
+    } catch (err) {
+      console.error('Healthcheck JWT Error:', err);
+    }
+
+    const authStatus = (dbConnected && jwtStatus && devUsersCount === 4);
+    const overallStatus = (dbConnected && jwtStatus && authStatus) ? 'healthy' : 'unhealthy';
+
+    res.json({
+      status: overallStatus,
+      database: dbConnected,
+      authentication: authStatus,
+      jwt: jwtStatus,
+      uptime: `${Math.floor(process.uptime())}s`,
+      environment: process.env.NODE_ENV || 'development'
+    });
+  } catch (err) {
+    console.error('Error in health check:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 app.post('/api/auth/login', async (req, res) => {
   try {
     // Rate limit login attempts
@@ -2592,6 +2674,13 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     const token = generateToken(user.id!);
+
+    if (process.env.NODE_ENV !== 'production') {
+      const target = (user.role === 'ADMIN' || user.role === 'Admin') ? '#/portal/admin' : '#/dashboard';
+      console.log(`[AUTH SUCCESS] Login succeeded for: ${user.email} (Role: ${user.role})`);
+      console.log(`Redirect Destination: ${target}`);
+      console.log(`Token Expiry: ${new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleString()}`);
+    }
 
     res.json({
       success: true,
@@ -2793,10 +2882,12 @@ async function adminAuthMiddleware(req: express.Request, res: express.Response, 
 
 app.get('/api/admin/dashboard-kpis', adminAuthMiddleware, async (req, res) => {
   try {
-    const orders = await getAllOrders();
-    const rfqs = await getAllRfqs();
-    const products = await getAllProducts();
-    const users = await getAllUsers();
+    const [orders, rfqs, products, users] = await Promise.all([
+      getAllOrders(),
+      getAllRfqs(),
+      getAllProducts(),
+      getAllUsers()
+    ]);
 
     const now = new Date();
     
@@ -3502,6 +3593,11 @@ app.post('/api/admin/rfqs/:id/convert-to-order', adminAuthMiddleware, async (req
   }
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`ARCUS Backend Server running on http://localhost:${PORT}`);
+  if (process.env.NODE_ENV !== 'production') {
+    await checkAndSeedDevUsers();
+  }
 });
+// Trigger nodemon reload for postgres connection check
+

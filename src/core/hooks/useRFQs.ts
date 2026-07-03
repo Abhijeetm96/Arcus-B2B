@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiFetch } from '../../lib/api';
 
 export function useRFQs() {
   const [rfqs, setRfqs] = useState<any[]>([]);
@@ -15,7 +16,7 @@ export function useRFQs() {
         setLoading(false);
         return;
       }
-      const res = await fetch('http://localhost:5000/api/rfqs', {
+      const res = await apiFetch('/rfqs', {
         headers: {
           'Authorization': `Bearer ${token}`
         }

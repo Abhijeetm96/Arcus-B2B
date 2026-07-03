@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 import { getCachedSearch, setCachedSearch } from '../core/config/searchCache'
+import { apiFetch } from '../lib/api';
 
 const materialsCategories = [
   {
@@ -146,7 +147,7 @@ export default function Navbar() {
 
     const handler = setTimeout(async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/search?q=${encodeURIComponent(searchQuery)}`)
+        const res = await apiFetch(`/search?q=${encodeURIComponent(searchQuery)}`)
         if (res.ok) {
           const data = await res.json()
           setCachedSearch(searchQuery, data)
@@ -327,7 +328,7 @@ export default function Navbar() {
                                 setShowDropdown(false);
                                 setSearchQuery('');
                                 try {
-                                  await fetch('http://localhost:5000/api/search/click', {
+                                  await apiFetch('/search/click', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ productId: p?.id, query: searchQuery })
@@ -738,7 +739,7 @@ export default function Navbar() {
                                 setSearchQuery('');
                                 setMobileMenuOpen(false);
                                 try {
-                                  await fetch('http://localhost:5000/api/search/click', {
+                                  await apiFetch('/search/click', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ productId: p?.id, query: searchQuery })

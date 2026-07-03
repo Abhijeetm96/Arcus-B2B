@@ -1,571 +1,775 @@
 import React, { useState, useEffect } from 'react';
+import { clientQuotationService } from './rfq/services/quotation.service';
+import { CustomerPanel } from './rfq/components/quotation/CustomerPanel';
+import { ItemsGrid } from './rfq/components/quotation/ItemsGrid';
+import type { QuotationItem } from './rfq/components/quotation/ItemsGrid';
+import { PricingSummary } from './rfq/components/quotation/PricingSummary';
+import { TermsPanel } from './rfq/components/quotation/TermsPanel';
+import { InternalNotes } from './rfq/components/quotation/InternalNotes';
+import { CustomerNotes } from './rfq/components/quotation/CustomerNotes';
+import { VersionHistory } from './rfq/components/quotation/VersionHistory';
+import { ApprovalTimeline } from './rfq/components/quotation/ApprovalTimeline';
+import { ActionToolbar } from './rfq/components/quotation/ActionToolbar';
+import { DocumentStatusBadge } from '../../components/shared/DocumentStatusBadge';
+import { QuotationVersionCompare } from './rfq/components/quotation/QuotationVersionCompare';
+import { apiFetch } from '../../lib/api';
 
-interface RFQItem {
-  itemName: string;
-  description?: string;
-  unit: string;
-  quantity: string;
-}
-
-interface QuotationItem {
-  itemName: string;
-  description: string;
-  unit: string;
-  quantity: number;
-  unitPrice: number;
-  discountPercentage: number;
-  gstRate: number;
-  lineTotal: number;
-}
-
-interface Quotation {
-  id: string;
-  quotationNumber: string;
-  version: number;
-  status: string;
-  subtotal: number;
-  discountType: 'FLAT' | 'PERCENT' | 'NONE';
-  discountValue: number;
-  shippingCharges: number;
-  freeShipping: boolean;
-  gstAmount: number;
-  grandTotal: number;
-  deliveryTerms?: string;
-  paymentTerms?: string;
-  validityDate?: string;
-  notes?: string;
-}
-
-interface Props {
-  rfq: {
-    id: string;
-    title?: string;
-    items?: RFQItem[];
-    category?: string;
-    quantity?: string;
-    location?: string;
-    details?: string;
-  };
-  existingQuotations: Quotation[];
-  onSuccess: () => void;
-  onCancel: () => void;
-}
-
-export const QuotationBuilder: React.FC<Props> = ({ rfq, existingQuotations, onSuccess, onCancel }) => {
-  const [loading, setLoading] = useState(false);
+export const QuotationBuilder: React.FC = () => {
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Check if we are creating V1 or revising (cloning)
-  const isRevision = existingQuotations.length > 0;
-  const latestQuote = isRevision ? existingQuotations[0] : null;
+  // Router properties
+  const hash = window.location.hash;
+  const cleanHash = hash.replace(/^#\/?/, '').split('?')[0];
+  const hashQuery = hash.split('?')[1] || '';
+  const queryParams = new URLSearchParams(hashQuery);
+  
+  const segments = cleanHash.split('/');
+  const isNew = segments[3] === 'new';
+  const quotationId = isNew ? null : segments[3];
+  const queryRfqId = queryParams.get('rfqId');
 
-  // Quotation header states
-  const [quotationNumber, setQuotationNumber] = useState(latestQuote ? latestQuote.quotationNumber : '');
-  const version = latestQuote ? latestQuote.version + 1 : 1;
-  const [discountType, setDiscountType] = useState<'FLAT' | 'PERCENT' | 'NONE'>(latestQuote ? latestQuote.discountType : 'NONE');
-  const [discountValue, setDiscountValue] = useState(latestQuote ? String(latestQuote.discountValue) : '0');
-  const [shippingCharges, setShippingCharges] = useState(latestQuote ? String(latestQuote.shippingCharges) : '0');
-  const [freeShipping, setFreeShipping] = useState(latestQuote ? latestQuote.freeShipping : false);
-  const [deliveryTerms, setDeliveryTerms] = useState(latestQuote ? latestQuote.deliveryTerms || '' : 'Free On Road (F.O.R) Site Delivery');
-  const [paymentTerms, setPaymentTerms] = useState(latestQuote ? latestQuote.paymentTerms || '' : 'B2B Credit / Net 30 Days');
-  const [validityDate, setValidityDate] = useState(latestQuote ? latestQuote.validityDate || '' : '');
-  const [notes, setNotes] = useState(latestQuote ? latestQuote.notes || '' : '');
+  // Document states
+  const [quoteId, _setQuoteId] = useState<string | null>(quotationId);
+  const [rfqId, setRfqId] = useState<string>(queryRfqId || '');
+  const [_rfqDetails, setRfqDetails] = useState<any>(null);
+  const [quotationNumber, setQuotationNumber] = useState('');
+  const [version, setVersion] = useState(1);
+  const [status, setStatus] = useState('DRAFT');
+  const [customer, setCustomer] = useState<any>({
+    company: '',
+    GSTIN: '',
+    billing_address: '',
+    shipping_address: '',
+    contact_person: '',
+    phone: '',
+    email: '',
+    state: 'Karnataka',
+    country: 'India'
+  });
 
-  // Line items state
-  const [items, setItems] = useState<QuotationItem[]>([]);
-
-  // Initialize items from latest quote or original RFQ items list
-  useEffect(() => {
-    if (isRevision && latestQuote) {
-      // Fetch details of latest quote to get its items
-      fetch(`http://localhost:5000/api/quotations/${latestQuote.id}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('arcus_token')}` }
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data && data.items) {
-            setItems(data.items);
-          }
-        })
-        .catch(err => console.error('Error fetching quote items:', err));
-    } else {
-      // Map from RFQ items
-      if (rfq.items && rfq.items.length > 0) {
-        const initial = rfq.items.map(item => ({
-          itemName: item.itemName,
-          description: item.description || '',
-          unit: item.unit || 'Nos',
-          quantity: parseInt(item.quantity) || 1,
-          unitPrice: 0,
-          discountPercentage: 0,
-          gstRate: 18,
-          lineTotal: 0
-        }));
-        setItems(initial);
-      } else {
-        // Fallback single row
-        setItems([{
-          itemName: rfq.title || rfq.category || 'Construction Materials',
-          description: rfq.details || '',
-          unit: 'Nos',
-          quantity: parseInt(rfq.quantity || '1') || 1,
-          unitPrice: 0,
-          discountPercentage: 0,
-          gstRate: 18,
-          lineTotal: 0
-        }]);
-      }
-    }
-  }, [rfq, isRevision, latestQuote]);
-
-  const handleAddItem = () => {
-    setItems([...items, {
-      itemName: '',
-      description: '',
-      unit: 'Nos',
+  // Items
+  const [items, setItems] = useState<QuotationItem[]>([
+    {
+      product_snapshot: { name: '', brand: '', sku: '', unit: 'Nos', hsn_code: '2523', gst: 18 },
       quantity: 1,
-      unitPrice: 0,
-      discountPercentage: 0,
-      gstRate: 18,
-      lineTotal: 0
-    }]);
-  };
-
-  const handleRemoveItem = (index: number) => {
-    if (items.length === 1) return;
-    setItems(items.filter((_, idx) => idx !== index));
-  };
-
-  const handleItemChange = (index: number, field: keyof QuotationItem, value: any) => {
-    const updated = [...items];
-    if (field === 'quantity' || field === 'unitPrice' || field === 'discountPercentage' || field === 'gstRate') {
-      updated[index][field] = Number(value) || 0;
-    } else {
-      (updated[index] as any)[field] = value;
+      rate: 0,
+      discount_percent: 0,
+      tax_percent: 18,
+      final_amount: 0
     }
+  ]);
 
-    // Recalculate line total (net after item discount)
-    const qty = updated[index].quantity;
-    const price = updated[index].unitPrice;
-    const disc = updated[index].discountPercentage;
-    updated[index].lineTotal = qty * price * (1 - disc / 100);
+  // Financial metadata
+  const [globalDiscountType, setGlobalDiscountType] = useState<'FLAT' | 'PERCENT' | 'NONE'>('NONE');
+  const [globalDiscountValue, setGlobalDiscountValue] = useState(0);
+  const [shipping, setShipping] = useState(0);
+  const [otherCharges, setOtherCharges] = useState(0);
+  const [currencyCode, setCurrencyCode] = useState('INR');
+  const [exchangeRate, setExchangeRate] = useState(1.0);
+  const [isInterstate, setIsInterstate] = useState(false);
 
-    setItems(updated);
-  };
+  // Notes
+  const [internalNotes, setInternalNotes] = useState('');
+  const [customerNotes, setCustomerNotes] = useState('');
 
-  // Calculations
-  const calculatedSubtotal = items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0);
-  const totalItemDiscount = items.reduce((acc, item) => acc + (item.quantity * item.unitPrice * (item.discountPercentage / 100)), 0);
-  const subtotalAfterItemDiscounts = calculatedSubtotal - totalItemDiscount;
+  // Commercial terms
+  const [deliveryTerms, setDeliveryTerms] = useState('F.O.R Site Delivery');
+  const [paymentTerms, setPaymentTerms] = useState('Net 30 standard credit');
+  const [validityDate, setValidityDate] = useState('');
 
+  // Timeline / Revision logs
+  const [versions, setVersions] = useState<any[]>([]);
+  const [approvals, setApprovals] = useState<any[]>([]);
+  const [_shareLogs, setShareLogs] = useState<any[]>([]);
+  const [requiredRole] = useState<string | null>('SALES_MANAGER');
+  const [requiredLevels] = useState(1);
+
+  // Version Comparison
+  const [compareV1, setCompareV1] = useState<any>(null);
+  const [compareV2, setCompareV2] = useState<any>(null);
+  const [showCompare, setShowCompare] = useState(false);
+
+  // Dialog overlays
+  const [showApprovalDialog, setShowApprovalDialog] = useState(false);
+  const [approvalNotes, setApprovalNotes] = useState('');
+  const [signatureHash, setSignatureHash] = useState('');
+  
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [rejectNotes, setRejectNotes] = useState('');
+
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [shareChannel, setShareChannel] = useState<'EMAIL' | 'SMS' | 'WHATSAPP'>('EMAIL');
+  const [shareRecipient, setShareRecipient] = useState('');
+
+  // Initial load
+  useEffect(() => {
+    const init = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        if (isNew && queryRfqId) {
+          // Fetch RFQ context to pre-populate customer snapshot and items
+          const res = await apiFetch(`/admin/rfqs/${queryRfqId}`);
+          const json = await res.json();
+          const rfq = json.rfq || json.data;
+          if (rfq) {
+            setRfqDetails(rfq);
+            
+            // Map customer snapshot
+            const custJson = rfq.customer_json || {};
+            setCustomer({
+              company: custJson.companyName || rfq.name || '',
+              GSTIN: custJson.gstNumber || '',
+              billing_address: custJson.billingAddress || rfq.location || '',
+              shipping_address: custJson.deliveryAddress || rfq.location || '',
+              contact_person: rfq.name || '',
+              phone: rfq.phone || '',
+              email: custJson.email || '',
+              state: custJson.state || 'Karnataka',
+              country: 'India'
+            });
+
+            // Map items if exists
+            const rfqItems = rfq.items || json.items || [];
+            if (rfqItems && rfqItems.length > 0) {
+              const mapped = rfqItems.map((it: any) => ({
+                product_id: it.product_id || null,
+                product_snapshot: {
+                  name: it.item_name || it.itemName,
+                  brand: it.brand || '',
+                  sku: it.sku || '',
+                  unit: it.unit || 'Nos',
+                  hsn_code: '2523',
+                  gst: 18
+                },
+                quantity: Number(it.quantity) || 1,
+                rate: 0,
+                discount_percent: 0,
+                tax_percent: 18,
+                final_amount: 0
+              }));
+              setItems(mapped);
+            }
+          }
+          setLoading(false);
+        } else if (quotationId) {
+          // Fetch existing quotation
+          const quote = await clientQuotationService.getQuotationDetail(quotationId);
+          if (quote) {
+            setRfqId(quote.rfq_id);
+            setQuotationNumber(quote.quotation_number);
+            setVersion(quote.version);
+            setStatus(quote.status);
+            setCustomer(quote.customer_snapshot);
+            setInternalNotes(quote.internal_notes || '');
+            setCustomerNotes(quote.customer_notes || '');
+            
+            // Financials
+            setCurrencyCode(quote.currency_code || 'INR');
+            setExchangeRate(Number(quote.exchange_rate) || 1.0);
+            setShipping(Number(quote.shipping) || 0);
+            setOtherCharges(Number(quote.other_charges) || 0);
+            
+            // Map items
+            if (quote.items) {
+              setItems(quote.items);
+            }
+            
+            // Set summaries
+            setVersions(quote.versions || []);
+            setApprovals(quote.approvals || []);
+            setShareLogs(quote.shareLogs || []);
+
+            // Set tax strategy interstate flag
+            const audit = quote.calculation_audit || {};
+            setIsInterstate(audit.igstTotal > 0);
+          }
+          setLoading(false);
+        }
+      } catch (err: any) {
+        console.error('Error loading quotation builder context:', err);
+        setError('Failed to load quotation context. Please verify the URL or database connection.');
+        setLoading(false);
+      }
+    };
+    init();
+  }, [quotationId, isNew, queryRfqId]);
+
+  // Recalculate financial summary fields in real-time
+  const subtotal = items.reduce((sum, it) => sum + (it.quantity * it.rate), 0);
+  const itemDiscounts = items.reduce((sum, it) => sum + (it.quantity * it.rate * (it.discount_percent / 100)), 0);
+  
+  const subtotalAfterItemDiscounts = subtotal - itemDiscounts;
   let globalDiscountAmount = 0;
-  const globalDiscVal = Number(discountValue) || 0;
-  if (discountType === 'FLAT') {
-    globalDiscountAmount = globalDiscVal;
-  } else if (discountType === 'PERCENT') {
-    globalDiscountAmount = subtotalAfterItemDiscounts * (globalDiscVal / 100);
+  if (globalDiscountType === 'FLAT') {
+    globalDiscountAmount = globalDiscountValue;
+  } else if (globalDiscountType === 'PERCENT') {
+    globalDiscountAmount = subtotalAfterItemDiscounts * (globalDiscountValue / 100);
   }
 
-  const netTaxableValue = Math.max(0, subtotalAfterItemDiscounts - globalDiscountAmount);
+  const taxableAmount = Math.max(0, subtotalAfterItemDiscounts - globalDiscountAmount);
 
-  // Pro-rate GST from net taxable value based on items GST rates
-  const baseGstSum = items.reduce((acc, item) => acc + (item.lineTotal * (item.gstRate / 100)), 0);
-  const totalNetItemValue = items.reduce((acc, item) => acc + item.lineTotal, 0);
-  
-  // Pro-rated GST calculation
-  const calculatedGst = totalNetItemValue > 0
-    ? baseGstSum * (netTaxableValue / totalNetItemValue)
-    : 0;
+  // Compute GST based on strategy
+  const gstAmount = items.reduce((sum, it) => {
+    const itemSub = it.quantity * it.rate;
+    const itemDisc = itemSub * (it.discount_percent / 100);
+    const itemTaxable = itemSub - itemDisc;
+    // Pro-rate global discount
+    const proRatedTaxable = subtotalAfterItemDiscounts > 0 
+      ? itemTaxable * (taxableAmount / subtotalAfterItemDiscounts)
+      : 0;
+    return sum + (proRatedTaxable * (it.tax_percent / 100));
+  }, 0);
 
-  const shipCharges = freeShipping ? 0 : (Number(shippingCharges) || 0);
-  const calculatedGrandTotal = netTaxableValue + calculatedGst + shipCharges;
+  const rawGrandTotal = taxableAmount + gstAmount + shipping + otherCharges;
+  const grandTotal = Math.round(rawGrandTotal);
+  const roundOff = grandTotal - rawGrandTotal;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
+  // Local user approval eligibility (mock checks based on system admin roles)
+  const canApprove = status === 'PENDING_APPROVAL';
 
-    const invalidItem = items.some(item => !item.itemName.trim() || item.quantity <= 0 || item.unitPrice <= 0);
-    if (invalidItem) {
-      setError('Please fill in Item Name, Quantity, and Unit Price (> 0) for all items.');
-      setLoading(false);
-      return;
-    }
-
-    const quotePayload = {
-      quoteData: {
-        quotationNumber: quotationNumber || undefined,
-        version: version,
-        discountType,
-        discountValue: globalDiscountAmount,
-        shippingCharges: shipCharges,
-        freeShipping,
-        subtotal: calculatedSubtotal,
-        gstAmount: calculatedGst,
-        grandTotal: calculatedGrandTotal,
-        deliveryTerms,
-        paymentTerms,
-        validityDate: validityDate || undefined,
-        notes,
-        status: 'SENT'
-      },
-      items: items.map(i => ({
-        itemName: i.itemName,
-        description: i.description,
-        unit: i.unit,
-        quantity: i.quantity,
-        unitPrice: i.unitPrice,
-        discountPercentage: i.discountPercentage,
-        gstRate: i.gstRate,
-        lineTotal: i.lineTotal
-      }))
-    };
-
+  // Handlers
+  const handleSaveDraft = async () => {
     try {
-      const token = localStorage.getItem('arcus_token');
-      const res = await fetch(`http://localhost:5000/api/rfqs/${rfq.id}/quotations`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(quotePayload)
-      });
+      setSubmitting(true);
+      setError(null);
 
-      if (res.ok) {
-        onSuccess();
-      } else {
-        const data = await res.json();
-        setError(data.error || 'Failed to submit quotation.');
+      const quoteData = {
+        status: 'DRAFT',
+        customer_snapshot: customer,
+        customer_notes: customerNotes,
+        internal_notes: internalNotes,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days validity
+      };
+
+      const totalsData = {
+        currency_code: currencyCode,
+        exchange_rate: exchangeRate,
+        base_currency: 'INR',
+        subtotal,
+        discount: itemDiscounts + globalDiscountAmount,
+        taxable_amount: taxableAmount,
+        gst_amount: gstAmount,
+        shipping,
+        other_charges: otherCharges,
+        grand_total: grandTotal,
+        calculation_audit: {
+          cgstTotal: isInterstate ? 0 : gstAmount / 2,
+          sgstTotal: isInterstate ? 0 : gstAmount / 2,
+          igstTotal: isInterstate ? gstAmount : 0,
+          exemptTotal: 0,
+          rawGrandTotal
+        }
+      };
+
+      if (isNew) {
+        const saved = await clientQuotationService.createQuotation(rfqId, quoteData, totalsData, items);
+        window.location.hash = `#/portal/admin/quotations/${saved.id}`;
+      } else if (quoteId) {
+        const saved = await clientQuotationService.updateQuotation(quoteId, quoteData, totalsData, items);
+        setStatus(saved.status);
+        setVersion(saved.version);
       }
-    } catch {
-      setError('Network error. Failed to save quotation.');
-    } finally {
-      setLoading(false);
+      setSubmitting(false);
+    } catch (err: any) {
+      setError(err.message || 'Failed to save quotation draft.');
+      setSubmitting(false);
     }
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded p-6 shadow-sm space-y-6 text-xs text-slate-800">
+  const handleRequestApproval = async () => {
+    try {
+      setSubmitting(true);
+      setError(null);
+
+      // Save draft first
+      const quoteData = {
+        status: 'PENDING_APPROVAL',
+        customer_snapshot: customer,
+        customer_notes: customerNotes,
+        internal_notes: internalNotes
+      };
+
+      const totalsData = {
+        currency_code: currencyCode,
+        exchange_rate: exchangeRate,
+        base_currency: 'INR',
+        subtotal,
+        discount: itemDiscounts + globalDiscountAmount,
+        taxable_amount: taxableAmount,
+        gst_amount: gstAmount,
+        shipping,
+        other_charges: otherCharges,
+        grand_total: grandTotal,
+        calculation_audit: {
+          cgstTotal: isInterstate ? 0 : gstAmount / 2,
+          sgstTotal: isInterstate ? 0 : gstAmount / 2,
+          igstTotal: isInterstate ? gstAmount : 0,
+          exemptTotal: 0,
+          rawGrandTotal
+        }
+      };
+
+      if (isNew) {
+        const saved = await clientQuotationService.createQuotation(rfqId, quoteData, totalsData, items);
+        window.location.hash = `#/portal/admin/quotations/${saved.id}`;
+      } else if (quoteId) {
+        const saved = await clientQuotationService.updateQuotation(quoteId, quoteData, totalsData, items);
+        setStatus(saved.status);
+        setVersion(saved.version);
+      }
+      setSubmitting(false);
+    } catch (err: any) {
+      setError(err.message || 'Failed to submit proposal for approval.');
+      setSubmitting(false);
+    }
+  };
+
+  const handleApproveAndSign = async () => {
+    if (!quoteId) return;
+    try {
+      setSubmitting(true);
+      const sigData = {
+        signature_hash: signatureHash || 'sig_hash_mock_4c59a0f7e1b9',
+        signed_document_hash: 'doc_hash_mock_3f890ad25b098',
+        certificate_id: 'CERT-2026-94301'
+      };
+      const updated = await clientQuotationService.approveQuotation(quoteId, approvalNotes, sigData);
+      setStatus(updated.status);
+      setApprovals(updated.approvals || []);
+      setShowApprovalDialog(false);
+      setSubmitting(false);
+    } catch (err: any) {
+      setError(err.message || 'Failed to approve proposal.');
+      setSubmitting(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!quoteId) return;
+    try {
+      setSubmitting(true);
+      const updated = await clientQuotationService.rejectQuotation(quoteId, rejectNotes);
+      setStatus(updated.status);
+      setShowRejectDialog(false);
+      setSubmitting(false);
+    } catch (err: any) {
+      setError(err.message || 'Failed to reject proposal.');
+      setSubmitting(false);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!quoteId) return;
+    try {
+      setSubmitting(true);
+      const updated = await clientQuotationService.sendQuotation(quoteId, shareChannel, shareRecipient);
+      setStatus(updated.status);
+      setShareLogs(updated.shareLogs || []);
+      setShowShareDialog(false);
+      setSubmitting(false);
+    } catch (err: any) {
+      setError(err.message || 'Failed to share quotation.');
+      setSubmitting(false);
+    }
+  };
+
+  const handleConvertToOrder = async () => {
+    if (!quoteId) return;
+    try {
+      setSubmitting(true);
+      const updated = await clientQuotationService.convertToOrder(quoteId);
+      setStatus(updated.status);
+      setSubmitting(false);
+    } catch (err: any) {
+      setError(err.message || 'Failed to convert quotation to order contract.');
+      setSubmitting(false);
+    }
+  };
+
+  const handleCreateRevision = async () => {
+    if (!quoteId) return;
+    const reason = prompt('Please enter the reason for creating this revision (e.g. Rate revision or quantity change):');
+    if (reason === null) return;
+    try {
+      setSubmitting(true);
+      const quoteData = {
+        customer_snapshot: customer,
+        customer_notes: customerNotes,
+        internal_notes: internalNotes
+      };
+      const totalsData = {
+        currency_code: currencyCode,
+        exchange_rate: exchangeRate,
+        base_currency: 'INR',
+        subtotal,
+        discount: itemDiscounts + globalDiscountAmount,
+        taxable_amount: taxableAmount,
+        gst_amount: gstAmount,
+        shipping,
+        other_charges: otherCharges,
+        grand_total: grandTotal,
+        calculation_audit: {
+          cgstTotal: isInterstate ? 0 : gstAmount / 2,
+          sgstTotal: isInterstate ? 0 : gstAmount / 2,
+          igstTotal: isInterstate ? gstAmount : 0,
+          exemptTotal: 0,
+          rawGrandTotal
+        }
+      };
+      const revised = await clientQuotationService.createRevision(quoteId, quoteData, totalsData, items, reason);
+      window.location.hash = `#/portal/admin/quotations/${revised.id}`;
+    } catch (err: any) {
+      setError(err.message || 'Failed to create new revision.');
+      setSubmitting(false);
+    }
+  };
+
+  const handlePrintPdf = () => {
+    if (!quoteId) return;
+    const token = localStorage.getItem('arcus_token') || '';
+    window.open(`/api/admin/quotations/${quoteId}/pdf?token=${encodeURIComponent(token)}`, '_blank');
+  };
+
+  const handleCompareVersions = async (v1Num: number, v2Num: number) => {
+    try {
+      setSubmitting(true);
+      setError(null);
       
-      {/* Title */}
-      <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-        <div>
-          <h4 className="font-bold text-slate-800 text-sm">
-            {isRevision ? `Revise Proposal (Create Version ${version})` : 'Create Custom Quotation V1'}
-          </h4>
-          <p className="text-gray-400 text-[10px] mt-0.5">RFQ Title: {rfq.title || 'Inquiry'} | RFQ ID: <strong className="font-mono text-slate-700">{rfq.id}</strong></p>
+      const ver1Obj = versions.find(v => v.version === v1Num);
+      const ver2Obj = versions.find(v => v.version === v2Num);
+
+      if (!ver1Obj || !ver2Obj) {
+        throw new Error('Version records could not be resolved from history.');
+      }
+
+      const detail1 = await clientQuotationService.getQuotationDetail(ver1Obj.id);
+      const detail2 = await clientQuotationService.getQuotationDetail(ver2Obj.id);
+
+      setCompareV1(detail1);
+      setCompareV2(detail2);
+      setShowCompare(true);
+      setSubmitting(false);
+    } catch (err: any) {
+      setError(err.message || 'Failed to compare versions.');
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-50">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50/50 p-6 space-y-6 max-w-7xl mx-auto pb-24">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider font-bold text-slate-400">
+        <span>Portal</span>
+        <span className="material-symbols-outlined text-[12px]">chevron_right</span>
+        <span>Admin</span>
+        <span className="material-symbols-outlined text-[12px]">chevron_right</span>
+        <a href="#/portal/admin" className="hover:text-slate-650 transition-colors">RFQ Workspace</a>
+        <span className="material-symbols-outlined text-[12px]">chevron_right</span>
+        <span className="text-slate-600">Quotation Builder</span>
+      </div>
+
+      {/* Header */}
+      <div className="flex justify-between items-center bg-white border border-slate-200 rounded-lg p-5 shadow-sm">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-lg font-black text-slate-800 tracking-tight">
+              {isNew ? 'New Quotation Draft' : `Proposal ${quotationNumber}`}
+            </h1>
+            {!isNew && (
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 font-mono">
+                Rev {version}
+              </span>
+            )}
+            <DocumentStatusBadge status={status} />
+          </div>
+          <p className="text-[10px] text-slate-400">
+            Linked RFQ ID: <strong className="font-mono text-slate-600">{rfqId}</strong>
+          </p>
         </div>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded font-bold uppercase tracking-wider border-0"
-        >
-          Cancel
-        </button>
+
+        <div className="flex items-center gap-2">
+          {status !== 'DRAFT' && status !== 'PENDING_APPROVAL' && (
+            <button
+              type="button"
+              onClick={handleCreateRevision}
+              className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3.5 py-2 rounded text-[10px] uppercase border-0 transition-colors"
+            >
+              <span className="material-symbols-outlined text-[13px]">add_moderator</span> Revise (Create V{version + 1})
+            </button>
+          )}
+          <a
+            href="#/portal/admin"
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold uppercase rounded text-[10px] border border-slate-200/60 transition-colors"
+          >
+            Back to RFQs
+          </a>
+        </div>
       </div>
 
       {error && (
-        <div className="bg-red-50 border-l-4 border-red-500 p-3 text-red-700 text-xs rounded">
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 text-red-700 text-xs rounded-lg shadow-sm font-semibold">
           {error}
         </div>
       )}
 
-      {/* Row 1: Quote Identifiers */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded border border-slate-100">
-        <div className="flex flex-col gap-1">
-          <label className="font-bold text-gray-500 uppercase tracking-wider text-[9px]">Quotation Number</label>
-          <input
-            type="text"
-            readOnly={isRevision}
-            placeholder="e.g. QT-101 (Auto-generated if empty)"
-            value={quotationNumber}
-            onChange={e => setQuotationNumber(e.target.value)}
-            className={`h-9 px-3 border border-gray-300 rounded font-semibold ${isRevision ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+      {/* Main Notion-Style Stack */}
+      <div className="space-y-6">
+        {showCompare && compareV1 && compareV2 && (
+          <QuotationVersionCompare
+            v1={compareV1}
+            v2={compareV2}
+            onClose={() => {
+              setShowCompare(false);
+              setCompareV1(null);
+              setCompareV2(null);
+            }}
+          />
+        )}
+
+        <CustomerPanel
+          customer={customer}
+          onChange={setCustomer}
+          isReadOnly={status !== 'DRAFT' && status !== 'PENDING_APPROVAL'}
+        />
+
+        <ItemsGrid
+          items={items}
+          onChange={setItems}
+          isReadOnly={status !== 'DRAFT' && status !== 'PENDING_APPROVAL'}
+        />
+
+        <PricingSummary
+          subtotal={subtotal}
+          itemDiscounts={itemDiscounts}
+          globalDiscountType={globalDiscountType}
+          globalDiscountValue={globalDiscountValue}
+          shipping={shipping}
+          otherCharges={otherCharges}
+          gstAmount={gstAmount}
+          grandTotal={grandTotal}
+          roundOff={roundOff}
+          isInterstate={isInterstate}
+          onShippingChange={setShipping}
+          onOtherChargesChange={setOtherCharges}
+          onGlobalDiscountTypeChange={setGlobalDiscountType}
+          onGlobalDiscountValueChange={setGlobalDiscountValue}
+          onInterstateToggle={setIsInterstate}
+          isReadOnly={status !== 'DRAFT' && status !== 'PENDING_APPROVAL'}
+          auditTrail={{
+            cgstTotal: isInterstate ? 0 : gstAmount / 2,
+            sgstTotal: isInterstate ? 0 : gstAmount / 2,
+            igstTotal: isInterstate ? gstAmount : 0,
+            exemptTotal: 0,
+            rawGrandTotal
+          }}
+        />
+
+        <TermsPanel
+          deliveryTerms={deliveryTerms || 'F.O.R Site Delivery'}
+          paymentTerms={paymentTerms || 'Net 30 standard credit'}
+          validityDate={validityDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+          currencyCode={currencyCode}
+          exchangeRate={exchangeRate}
+          onDeliveryTermsChange={setDeliveryTerms}
+          onPaymentTermsChange={setPaymentTerms}
+          onValidityDateChange={setValidityDate}
+          onCurrencyCodeChange={setCurrencyCode}
+          onExchangeRateChange={setExchangeRate}
+          isReadOnly={status !== 'DRAFT' && status !== 'PENDING_APPROVAL'}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CustomerNotes
+            notes={customerNotes}
+            onChange={setCustomerNotes}
+            isReadOnly={status !== 'DRAFT' && status !== 'PENDING_APPROVAL'}
+          />
+          <InternalNotes
+            notes={internalNotes}
+            onChange={setInternalNotes}
+            isReadOnly={status !== 'DRAFT' && status !== 'PENDING_APPROVAL'}
           />
         </div>
-        <div className="flex flex-col gap-1">
-          <label className="font-bold text-gray-500 uppercase tracking-wider text-[9px]">Proposal Version</label>
-          <input
-            type="number"
-            readOnly
-            value={version}
-            className="h-9 px-3 border border-gray-300 rounded bg-gray-100 cursor-not-allowed font-semibold"
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="font-bold text-gray-500 uppercase tracking-wider text-[9px]">Quote Validity Date</label>
-          <input
-            type="date"
-            value={validityDate}
-            onChange={e => setValidityDate(e.target.value)}
-            className="h-9 px-3 border border-gray-300 rounded font-semibold bg-white"
-          />
-        </div>
+
+        {!isNew && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ApprovalTimeline
+              approvals={approvals}
+              status={status}
+              requiredRole={requiredRole}
+              requiredLevels={requiredLevels}
+            />
+            <VersionHistory
+              versions={versions}
+              activeVersion={version}
+              onSelectVersion={async (ver) => {
+                window.location.hash = `#/portal/admin/quotations/${ver.id}`;
+              }}
+              onCompareVersions={handleCompareVersions}
+            />
+          </div>
+        )}
       </div>
 
-      {/* Line items Section */}
-      <div className="space-y-3">
-        <div className="flex justify-between items-center">
-          <h5 className="font-bold uppercase tracking-wider text-gray-600">Quotation Line Items</h5>
-          <button
-            type="button"
-            onClick={handleAddItem}
-            className="flex items-center gap-1 bg-slate-900 text-white font-bold px-3 py-1 rounded hover:bg-slate-800 border-0"
-          >
-            <span className="material-symbols-outlined text-[14px]">add</span> Add Line
-          </button>
-        </div>
-
-        <div className="border border-slate-150 rounded overflow-hidden shadow-sm">
-          <table className="w-full text-xs text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50 text-slate-500 font-bold uppercase text-[9px] border-b border-slate-200">
-                <th className="p-3 w-1/4">Material Name *</th>
-                <th className="p-3 w-1/4">Description / Brand</th>
-                <th className="p-3 w-1/12">Unit</th>
-                <th className="p-3 w-1/12 text-right">Qty *</th>
-                <th className="p-3 w-1/12 text-right">Unit Rate (₹) *</th>
-                <th className="p-3 w-1/12 text-right">Disc %</th>
-                <th className="p-3 w-1/12 text-right">GST %</th>
-                <th className="p-3 w-1/12 text-right">Total (₹)</th>
-                <th className="p-3 text-center"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item, idx) => (
-                <tr key={idx} className="border-b border-slate-100 bg-white hover:bg-slate-50/50">
-                  <td className="p-2">
-                    <input
-                      required
-                      type="text"
-                      value={item.itemName}
-                      onChange={e => handleItemChange(idx, 'itemName', e.target.value)}
-                      placeholder="Astral CPVC Pipe"
-                      className="w-full border border-gray-200 rounded px-2 py-1 text-xs text-slate-850"
-                    />
-                  </td>
-                  <td className="p-2">
-                    <input
-                      type="text"
-                      value={item.description}
-                      onChange={e => handleItemChange(idx, 'description', e.target.value)}
-                      placeholder="SDR11 1 Inch"
-                      className="w-full border border-gray-200 rounded px-2 py-1 text-xs text-slate-850"
-                    />
-                  </td>
-                  <td className="p-2">
-                    <input
-                      type="text"
-                      value={item.unit}
-                      onChange={e => handleItemChange(idx, 'unit', e.target.value)}
-                      placeholder="Nos"
-                      className="w-full border border-gray-200 rounded px-1 py-1 text-xs text-slate-850"
-                    />
-                  </td>
-                  <td className="p-2">
-                    <input
-                      required
-                      type="number"
-                      min="1"
-                      value={item.quantity}
-                      onChange={e => handleItemChange(idx, 'quantity', e.target.value)}
-                      className="w-full border border-gray-200 rounded px-1.5 py-1 text-xs text-right text-slate-850"
-                    />
-                  </td>
-                  <td className="p-2">
-                    <input
-                      required
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={item.unitPrice}
-                      onChange={e => handleItemChange(idx, 'unitPrice', e.target.value)}
-                      className="w-full border border-gray-200 rounded px-1.5 py-1 text-xs text-right text-slate-850 font-bold"
-                    />
-                  </td>
-                  <td className="p-2">
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={item.discountPercentage}
-                      onChange={e => handleItemChange(idx, 'discountPercentage', e.target.value)}
-                      className="w-full border border-gray-200 rounded px-1.5 py-1 text-xs text-right text-green-600 font-bold"
-                    />
-                  </td>
-                  <td className="p-2">
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={item.gstRate}
-                      onChange={e => handleItemChange(idx, 'gstRate', e.target.value)}
-                      className="w-full border border-gray-200 rounded px-1 py-1 text-xs text-right text-slate-500"
-                    />
-                  </td>
-                  <td className="p-2 text-right font-mono font-bold">
-                    ₹{item.lineTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </td>
-                  <td className="p-2 text-center">
-                    <button
-                      type="button"
-                      disabled={items.length === 1}
-                      onClick={() => handleRemoveItem(idx)}
-                      className="text-red-500 hover:text-red-700 disabled:text-gray-300"
-                    >
-                      <span className="material-symbols-outlined text-[16px]">delete</span>
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {/* Floating Action Toolbar */}
+      <div className="fixed bottom-6 left-6 right-6 max-w-7xl mx-auto z-45">
+        <ActionToolbar
+          status={status}
+          isSaving={submitting}
+          onSave={handleSaveDraft}
+          onSubmitApproval={handleRequestApproval}
+          onApprove={() => setShowApprovalDialog(true)}
+          onDecline={() => setShowRejectDialog(true)}
+          onShare={() => setShowShareDialog(true)}
+          onDownloadPDF={handlePrintPdf}
+          onConvertToOrder={handleConvertToOrder}
+          canApprove={canApprove}
+        />
       </div>
 
-      {/* Row 3: Discounts, Terms & Calculations */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-        {/* Logistics & Delivery terms */}
-        <div className="space-y-4">
-          <div className="flex flex-col gap-1">
-            <label className="font-bold text-gray-500 uppercase tracking-wider text-[9px]">Delivery Terms</label>
-            <input
-              type="text"
-              value={deliveryTerms}
-              onChange={e => setDeliveryTerms(e.target.value)}
-              className="h-9 px-3 border border-gray-300 rounded font-semibold bg-white"
-              placeholder="e.g. Free On Road (F.O.R) Site Delivery"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="font-bold text-gray-500 uppercase tracking-wider text-[9px]">Payment Terms</label>
-            <input
-              type="text"
-              value={paymentTerms}
-              onChange={e => setPaymentTerms(e.target.value)}
-              className="h-9 px-3 border border-gray-300 rounded font-semibold bg-white"
-              placeholder="e.g. Credit / Net 30 Days"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="font-bold text-gray-500 uppercase tracking-wider text-[9px]">Commercial Remarks / Notes</label>
-            <textarea
-              rows={3}
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-              className="p-3 border border-gray-300 rounded font-semibold bg-white resize-none"
-              placeholder="Validity criteria, logistics exclusions, or discount rationale..."
-            />
-          </div>
-        </div>
-
-        {/* Global Commercial Calculations */}
-        <div className="bg-slate-50 border border-slate-100 rounded p-5 space-y-4">
-          <h5 className="font-bold text-slate-700 uppercase tracking-wider text-[10px] border-b pb-2">Grand Summary</h5>
-          
-          {/* Discounts controls */}
-          <div className="grid grid-cols-3 gap-2 items-center text-[10px]">
-            <span className="font-bold text-gray-500 uppercase">Global Discount:</span>
-            <select
-              value={discountType}
-              onChange={e => setDiscountType(e.target.value as any)}
-              className="border rounded px-2 py-1 bg-white focus:outline-none"
-            >
-              <option value="NONE">NONE</option>
-              <option value="FLAT">FLAT (INR)</option>
-              <option value="PERCENT">PERCENT (%)</option>
-            </select>
-            <input
-              type="number"
-              disabled={discountType === 'NONE'}
-              value={discountValue}
-              onChange={e => setDiscountValue(e.target.value)}
-              className={`w-full border rounded px-2 py-1 text-right focus:outline-none ${discountType === 'NONE' ? 'bg-gray-100 cursor-not-allowed' : 'bg-white font-bold'}`}
-              placeholder="Value"
-            />
-          </div>
-
-          {/* Shipping controls */}
-          <div className="grid grid-cols-3 gap-2 items-center text-[10px]">
-            <span className="font-bold text-gray-500 uppercase">Freight Charges:</span>
-            <div className="flex items-center gap-1 col-span-2">
-              <label className="flex items-center gap-1 font-bold text-gray-700">
-                <input
-                  type="checkbox"
-                  checked={freeShipping}
-                  onChange={e => setFreeShipping(e.target.checked)}
-                  className="rounded text-amber-500 border-gray-300 focus:ring-0"
+      {/* Modals Overlay */}
+      {showApprovalDialog && (
+        <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-2xl p-6 w-full max-w-md space-y-4 text-xs">
+            <h3 className="font-bold text-slate-800 text-sm uppercase">Sign &amp; Approve Proposal</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block font-bold text-slate-500 mb-1 uppercase text-[9px]">Approval Comments</label>
+                <textarea
+                  rows={3}
+                  value={approvalNotes}
+                  onChange={e => setApprovalNotes(e.target.value)}
+                  className="w-full border rounded p-2.5 resize-none bg-slate-50/50"
+                  placeholder="Approve with Net-30 credit release..."
                 />
-                Free Shipping
-              </label>
-              <input
-                type="number"
-                disabled={freeShipping}
-                value={shippingCharges}
-                onChange={e => setShippingCharges(e.target.value)}
-                className={`w-28 border rounded px-2 py-1 text-right focus:outline-none ml-auto ${freeShipping ? 'bg-gray-100 cursor-not-allowed text-gray-400' : 'bg-white font-bold'}`}
-                placeholder="Charges (INR)"
+              </div>
+              <div>
+                <label className="block font-bold text-slate-500 mb-1 uppercase text-[9px]">Private Signature Hash (Mock Verification)</label>
+                <input
+                  type="text"
+                  value={signatureHash}
+                  onChange={e => setSignatureHash(e.target.value)}
+                  className="w-full border h-8 px-2 font-mono"
+                  placeholder="sig_hash_4f7e..."
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowApprovalDialog(false)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded uppercase text-[10px] border-0"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleApproveAndSign}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded uppercase text-[10px] border-0 shadow"
+              >
+                Sign Off
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showRejectDialog && (
+        <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-2xl p-6 w-full max-w-md space-y-4 text-xs">
+            <h3 className="font-bold text-slate-800 text-sm uppercase">Decline Proposal</h3>
+            <div>
+              <label className="block font-bold text-slate-500 mb-1 uppercase text-[9px]">Rejection Reason *</label>
+              <textarea
+                rows={3}
+                value={rejectNotes}
+                onChange={e => setRejectNotes(e.target.value)}
+                className="w-full border rounded p-2.5 resize-none bg-slate-50/50"
+                placeholder="Rate is too low or client profile is high risk..."
               />
             </div>
-          </div>
-
-          <hr />
-
-          {/* Mathematical breakdowns */}
-          <div className="space-y-2 font-mono text-right text-[11px]">
-            <div className="flex justify-between">
-              <span className="text-gray-500">Gross Item Value (Before Disc):</span>
-              <span className="font-semibold">₹{calculatedSubtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </div>
-            {totalItemDiscount > 0 && (
-              <div className="flex justify-between text-green-600">
-                <span>(-) Item Level Discounts Sum:</span>
-                <span>-₹{totalItemDiscount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              </div>
-            )}
-            {globalDiscountAmount > 0 && (
-              <div className="flex justify-between text-green-600 font-bold">
-                <span>(-) Global Commercial Discount:</span>
-                <span>-₹{globalDiscountAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              </div>
-            )}
-            <div className="flex justify-between font-bold text-slate-700 border-b pb-1.5">
-              <span>Net Taxable Base Value:</span>
-              <span>₹{netTaxableValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Pro-Rated GST Amount:</span>
-              <span>₹{calculatedGst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Freight &amp; Delivery Logistics:</span>
-              <span>{freeShipping ? 'FREE' : `₹${shipCharges.toLocaleString('en-IN')}`}</span>
-            </div>
-            <div className="flex justify-between border-t border-slate-300 pt-2 text-xs text-slate-900 font-black">
-              <span>PROPOSED GRAND TOTAL (INR):</span>
-              <span className="text-sm">₹{calculatedGrandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowRejectDialog(false)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded uppercase text-[10px] border-0"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!rejectNotes.trim()}
+                onClick={handleReject}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded uppercase text-[10px] border-0 shadow disabled:opacity-40"
+              >
+                Reject Document
+              </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold uppercase rounded border-0"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold uppercase rounded border-0 shadow-md flex items-center gap-1"
-        >
-          {loading ? 'Saving...' : 'Send Quotation to Buyer'}
-        </button>
-      </div>
-    </form>
+      {showShareDialog && (
+        <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-2xl p-6 w-full max-w-md space-y-4 text-xs">
+            <h3 className="font-bold text-slate-800 text-sm uppercase">Dispatch Proposal to Buyer</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block font-bold text-slate-500 mb-1 uppercase text-[9px]">Channel</label>
+                <select
+                  value={shareChannel}
+                  onChange={e => setShareChannel(e.target.value as any)}
+                  className="w-full border h-8 px-2 bg-white"
+                >
+                  <option value="EMAIL">EMAIL</option>
+                  <option value="SMS">SMS / TEXT MESSAGE</option>
+                  <option value="WHATSAPP">WHATSAPP DIRECT</option>
+                </select>
+              </div>
+              <div>
+                <label className="block font-bold text-slate-500 mb-1 uppercase text-[9px]">Recipient Detail (Email or Phone)</label>
+                <input
+                  type="text"
+                  value={shareRecipient}
+                  onChange={e => setShareRecipient(e.target.value)}
+                  className="w-full border h-8 px-2"
+                  placeholder="e.g. buyer@client.com or +91 99000 12345"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowShareDialog(false)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded uppercase text-[10px] border-0"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!shareRecipient.trim()}
+                onClick={handleShare}
+                className="px-4 py-2 bg-indigo-650 hover:bg-indigo-750 text-white font-bold rounded uppercase text-[10px] border-0 shadow disabled:opacity-40"
+              >
+                Send Proposal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
+export default QuotationBuilder;

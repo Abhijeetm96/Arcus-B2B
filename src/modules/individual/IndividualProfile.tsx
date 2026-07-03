@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { apiFetch } from '../../lib/api';
 
 export const IndividualProfile: React.FC = () => {
   const { user, refreshUser } = useAuth();
@@ -44,7 +45,7 @@ export const IndividualProfile: React.FC = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('arcus_token');
-      const res = await fetch('http://localhost:5000/api/users/update-profile', {
+      const res = await apiFetch('/users/update-profile', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
