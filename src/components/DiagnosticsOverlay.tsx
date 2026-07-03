@@ -14,6 +14,13 @@ export function DiagnosticsOverlay() {
   const [queueLength, setQueueLength] = useState(RecoveryManager.getQueueLength());
   const [logs, setLogs] = useState<RecoveryLogEntry[]>([]);
 
+  // Expanded stats
+  const [healthLatency, setHealthLatency] = useState(RecoveryManager.getHealthLatency());
+  const [apiVersion, setApiVersion] = useState(RecoveryManager.getApiVersion());
+  const [dbLatency, setDbLatency] = useState(RecoveryManager.getDbLatency());
+  const [memoryRss, setMemoryRss] = useState(RecoveryManager.getMemoryRss());
+  const [buildHash, setBuildHash] = useState(RecoveryManager.getBuildHash());
+
   useEffect(() => {
     // Sync states and subscribe to changes
     const updateStates = () => {
@@ -21,6 +28,11 @@ export function DiagnosticsOverlay() {
       setCircuitState(RecoveryManager.getCircuitState());
       setQueueLength(RecoveryManager.getQueueLength());
       setLogs([...RecoveryManager.getLogs()]);
+      setHealthLatency(RecoveryManager.getHealthLatency());
+      setApiVersion(RecoveryManager.getApiVersion());
+      setDbLatency(RecoveryManager.getDbLatency());
+      setMemoryRss(RecoveryManager.getMemoryRss());
+      setBuildHash(RecoveryManager.getBuildHash());
     };
 
     updateStates();
@@ -46,7 +58,7 @@ export function DiagnosticsOverlay() {
           <span className="font-bold tracking-wider text-[10px] uppercase font-mono">Resilience Console</span>
         </button>
       ) : (
-        <div className="w-80 bg-slate-950 text-slate-100 rounded-[14px] shadow-2xl border border-slate-800 overflow-hidden flex flex-col max-h-[380px] animate-in slide-in-from-bottom-4 duration-200">
+        <div className="w-80 bg-slate-950 text-slate-100 rounded-[14px] shadow-2xl border border-slate-800 overflow-hidden flex flex-col max-h-[480px] animate-in slide-in-from-bottom-4 duration-200">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-slate-900 border-b border-slate-800">
             <div className="flex items-center gap-2">
@@ -62,36 +74,64 @@ export function DiagnosticsOverlay() {
           </div>
 
           {/* Stats Grid */}
-          <div className="p-4 grid grid-cols-2 gap-3 border-b border-slate-900/60 bg-slate-950">
-            <div className="bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/40">
-              <div className="text-slate-500 text-[9px] uppercase tracking-wider mb-0.5">Connection</div>
-              <div className={`font-bold font-mono text-[10px] ${
+          <div className="p-4 grid grid-cols-2 gap-3 border-b border-slate-900/60 bg-slate-950 text-[10px]">
+            <div className="bg-slate-900/50 p-2 rounded border border-slate-800/40">
+              <div className="text-slate-500 text-[8px] uppercase tracking-wider mb-0.5 font-semibold">Connection</div>
+              <div className={`font-bold font-mono ${
                 connState === 'ONLINE' ? 'text-emerald-400' : connState === 'MAINTENANCE' ? 'text-amber-400' : 'text-red-400'
               }`}>
                 {connState}
               </div>
             </div>
             
-            <div className="bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/40">
-              <div className="text-slate-500 text-[9px] uppercase tracking-wider mb-0.5">Circuit Breaker</div>
-              <div className={`font-bold font-mono text-[10px] ${
+            <div className="bg-slate-900/50 p-2 rounded border border-slate-800/40">
+              <div className="text-slate-500 text-[8px] uppercase tracking-wider mb-0.5 font-semibold">Circuit Breaker</div>
+              <div className={`font-bold font-mono ${
                 circuitState === 'CLOSED' ? 'text-emerald-400' : 'text-red-400 animate-pulse'
               }`}>
                 {circuitState}
               </div>
             </div>
 
-            <div className="bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/40">
-              <div className="text-slate-500 text-[9px] uppercase tracking-wider mb-0.5">Buffered Queue</div>
-              <div className="font-bold font-mono text-[10px] text-slate-200">
+            <div className="bg-slate-900/50 p-2 rounded border border-slate-800/40">
+              <div className="text-slate-500 text-[8px] uppercase tracking-wider mb-0.5 font-semibold">Buffered Queue</div>
+              <div className="font-bold font-mono text-slate-200">
                 {queueLength} requests
               </div>
             </div>
 
-            <div className="bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/40">
-              <div className="text-slate-500 text-[9px] uppercase tracking-wider mb-0.5">API Base</div>
-              <div className="font-mono text-[9px] text-slate-400 truncate">
-                http://localhost:5000
+            <div className="bg-slate-900/50 p-2 rounded border border-slate-800/40">
+              <div className="text-slate-500 text-[8px] uppercase tracking-wider mb-0.5 font-semibold">Health Latency</div>
+              <div className="font-bold font-mono text-slate-200">
+                {healthLatency}ms
+              </div>
+            </div>
+
+            <div className="bg-slate-900/50 p-2 rounded border border-slate-800/40">
+              <div className="text-slate-500 text-[8px] uppercase tracking-wider mb-0.5 font-semibold">DB Latency</div>
+              <div className="font-bold font-mono text-slate-200">
+                {dbLatency}
+              </div>
+            </div>
+
+            <div className="bg-slate-900/50 p-2 rounded border border-slate-800/40">
+              <div className="text-slate-500 text-[8px] uppercase tracking-wider mb-0.5 font-semibold">Memory RSS</div>
+              <div className="font-bold font-mono text-slate-200">
+                {memoryRss}
+              </div>
+            </div>
+
+            <div className="bg-slate-900/50 p-2 rounded border border-slate-800/40">
+              <div className="text-slate-500 text-[8px] uppercase tracking-wider mb-0.5 font-semibold">API Version</div>
+              <div className="font-mono text-slate-300">
+                v{apiVersion}
+              </div>
+            </div>
+
+            <div className="bg-slate-900/50 p-2 rounded border border-slate-800/40">
+              <div className="text-slate-500 text-[8px] uppercase tracking-wider mb-0.5 font-semibold">Build Hash</div>
+              <div className="font-mono text-slate-300 truncate" title={buildHash}>
+                {buildHash}
               </div>
             </div>
           </div>
@@ -119,7 +159,7 @@ export function DiagnosticsOverlay() {
 
           {/* Quick Manual Actions */}
           <div className="px-4 py-2 bg-slate-900/80 flex justify-between items-center text-[10px]">
-            <span className="text-slate-500 font-mono">v2.0 (Self-Healing)</span>
+            <span className="text-slate-500 font-mono">v{apiVersion} ({buildHash})</span>
             <button
               onClick={() => RecoveryManager.checkHealthNow()}
               className="px-2 py-0.5 bg-slate-850 hover:bg-slate-750 text-slate-200 rounded border border-slate-700 transition-colors font-mono"

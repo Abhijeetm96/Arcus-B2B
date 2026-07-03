@@ -10,6 +10,7 @@ export function StartupGuard({ children }: StartupGuardProps) {
   const [isReady, setIsReady] = useState(RecoveryManager.isReady());
   const [connState, setConnState] = useState<ConnectionState>(RecoveryManager.getConnectionState());
   const [logs, setLogs] = useState(RecoveryManager.getLogs());
+  const [hasTimeout, setHasTimeout] = useState(false);
 
   useEffect(() => {
     // Subscribe to state updates in the recovery manager
@@ -22,8 +23,26 @@ export function StartupGuard({ children }: StartupGuardProps) {
     // Run health check on mount
     RecoveryManager.checkHealthNow();
 
-    return () => unsubscribe();
+    // 15 seconds connection timeout
+    const timer = setTimeout(() => {
+      setHasTimeout(true);
+    }, 15000);
+
+    return () => {
+      unsubscribe();
+      clearTimeout(timer);
+    };
   }, []);
+
+  const handleForceLoad = () => {
+    RecoveryManager.log('Developer forced startup override', 'warn');
+    setIsReady(true);
+  };
+
+  const handleRetry = () => {
+    setHasTimeout(false);
+    RecoveryManager.checkHealthNow();
+  };
 
   if (isReady) {
     return <>{children}</>;
@@ -100,6 +119,33 @@ export function StartupGuard({ children }: StartupGuardProps) {
             <span className="font-semibold text-text-primary">Preparing health endpoint...</span>
           </div>
         </div>
+
+        {/* Timeout Action Prompt */}
+        {hasTimeout && (
+          <div className="w-full bg-amber-50 border border-amber-200 rounded-[12px] p-4 text-xs text-amber-800 text-left space-y-3">
+            <div className="font-semibold flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[18px]">warning</span>
+              Startup is taking longer than expected
+            </div>
+            <p className="text-[11px] leading-relaxed text-amber-700">
+              The backend or database may be offline or performing heavy initial migrations.
+            </p>
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={handleRetry}
+                className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded font-bold uppercase tracking-wider text-[10px] transition-colors"
+              >
+                Retry Check
+              </button>
+              <button
+                onClick={handleForceLoad}
+                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded font-bold uppercase tracking-wider text-[10px] transition-colors"
+              >
+                Skip & Force Load
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Live log feed summary */}
         {logs.length > 0 && (

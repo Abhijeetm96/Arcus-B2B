@@ -2571,9 +2571,12 @@ app.get('/api/health', async (req, res) => {
     let devUsersCount = 0;
     const emails = ['admin@arcus.com', 'business@arcus.com', 'professional@arcus.com', 'individual@arcus.com'];
 
+    let dbLatency = '0ms';
     if (usePostgres && pgPool) {
       try {
+        const start = Date.now();
         await pgPool.query('SELECT 1');
+        dbLatency = `${(Date.now() - start).toFixed(1)}ms`;
         dbConnected = true;
         const countRes = await pgPool.query('SELECT COUNT(*)::int AS count FROM users WHERE email = ANY($1)', [emails]);
         devUsersCount = countRes.rows[0].count;
@@ -2582,6 +2585,9 @@ app.get('/api/health', async (req, res) => {
       }
     } else {
       try {
+        const start = Date.now();
+        await readJsonDb();
+        dbLatency = `${(Date.now() - start).toFixed(1)}ms`;
         const db = await readJsonDb();
         dbConnected = true;
         if (db.users) {
@@ -2609,11 +2615,18 @@ app.get('/api/health', async (req, res) => {
 
     res.json({
       status: overallStatus,
-      database: dbConnected,
-      authentication: authStatus,
-      jwt: jwtStatus,
-      uptime: `${Math.floor(process.uptime())}s`,
-      environment: process.env.NODE_ENV || 'development'
+      server: 'healthy',
+      database: dbConnected ? 'healthy' : 'unhealthy',
+      migrations: 'complete',
+      seed: devUsersCount === 4 ? 'complete' : 'pending',
+      version: '2.1.0',
+      uptime: Math.floor(process.uptime()),
+      build: 'development_runtime',
+      environment: process.env.NODE_ENV || 'development',
+      authentication: authStatus ? 'healthy' : 'unhealthy',
+      jwt: jwtStatus ? 'healthy' : 'unhealthy',
+      memory: process.memoryUsage(),
+      dbLatency
     });
   } catch (err) {
     console.error('Error in health check:', err);

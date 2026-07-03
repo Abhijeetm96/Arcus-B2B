@@ -4,6 +4,9 @@ import { ConfirmDialog } from '../components/feedback/ConfirmDialog/ConfirmDialo
 import { OfflineIndicator } from '../components/feedback/OfflineIndicator/OfflineIndicator';
 import { Banner } from '../components/feedback/Banner/Banner';
 
+import { RecoveryManager } from '../lib/recoveryManager';
+import type { ConnectionState } from '../lib/recoveryManager';
+
 interface ConfirmOptions {
   title: string;
   description: string;
@@ -25,12 +28,26 @@ interface NotificationContextType {
 export const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
-  const [isBackendDown, setIsBackendDown] = useState(false);
+  const [connState, setConnState] = useState<ConnectionState>(RecoveryManager.getConnectionState());
   const [isDbDown, setIsDbDown] = useState(false);
-  const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
-  const [isReconnecting, setIsReconnecting] = useState(false);
-  const [wasDown, setWasDown] = useState(false);
+
+  useEffect(() => {
+    const syncState = () => {
+      setConnState(RecoveryManager.getConnectionState());
+      // Sync DB down state from log checks or backend status
+      const lastLogs = RecoveryManager.getLogs();
+      const hasDbErr = lastLogs.length > 0 && lastLogs[0].message.toLowerCase().includes('database ready: false');
+      setIsDbDown(hasDbErr);
+    };
+    
+    syncState();
+    const unsubscribe = RecoveryManager.subscribe(syncState);
+    return () => unsubscribe();
+  }, []);
+
+  const isOffline = connState === 'OFFLINE';
+  const isBackendDown = connState === 'RECONNECTING' || connState === 'CIRCUIT_OPEN';
+  const isMaintenanceMode = connState === 'MAINTENANCE';
 
   // Confirmation dialog state
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -69,70 +86,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     });
   }, []);
 
-  // Poll server health check
-  const checkHealth = async () => {
-    if (!navigator.onLine) {
-      setIsOffline(true);
-      return;
-    }
-
-    setIsReconnecting(true);
-    try {
-      const res = await fetch('/api/health');
-      if (res.status === 503) {
-        setIsMaintenanceMode(true);
-        setIsBackendDown(false);
-        setIsDbDown(false);
-        setWasDown(true);
-      } else if (res.ok) {
-        const data = await res.json();
-        setIsOffline(false);
-        setIsBackendDown(false);
-        setIsMaintenanceMode(false);
-        setIsDbDown(!data.database); // Set dbDown if postgres database health check returned false
-
-        if (wasDown) {
-          // Dispatch reconnection event to trigger dashboard reloads
-          window.dispatchEvent(new CustomEvent('arcus-reconnected'));
-          setWasDown(false);
-        }
-      } else {
-        setIsBackendDown(true);
-        setWasDown(true);
-      }
-    } catch {
-      setIsBackendDown(true);
-      setWasDown(true);
-    } finally {
-      setIsReconnecting(false);
-    }
+  const triggerVerification = () => {
+    RecoveryManager.checkHealthNow();
   };
-
-  useEffect(() => {
-    const handleOnline = () => {
-      setIsOffline(false);
-      checkHealth();
-    };
-
-    const handleOffline = () => {
-      setIsOffline(true);
-    };
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    // Initial check
-    checkHealth();
-
-    // 15 seconds polling interval
-    const interval = setInterval(checkHealth, 15000);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-      clearInterval(interval);
-    };
-  }, []);
 
   return (
     <NotificationContext.Provider
@@ -159,7 +115,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             type="error"
             iconType="offline"
             actionLabel="Retry Now"
-            onActionClick={checkHealth}
+            onActionClick={triggerVerification}
           />
         )}
         {!isOffline && !isBackendDown && isDbDown && (
@@ -168,7 +124,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             type="warning"
             iconType="database"
             actionLabel="Refresh Connection"
-            onActionClick={checkHealth}
+            onActionClick={triggerVerification}
           />
         )}
         {!isOffline && !isBackendDown && !isDbDown && isMaintenanceMode && (
@@ -199,7 +155,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       />
 
       {/* Floating Offline Recovery Indicator */}
-      <OfflineIndicator isOffline={isOffline} isReconnecting={isReconnecting} />
+      <OfflineIndicator isOffline={isOffline} isReconnecting={connState === 'RECONNECTING'} />
 
       {/* Global Toast Mount */}
       <Toaster 

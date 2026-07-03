@@ -235,6 +235,28 @@ export function RFQWorkspace() {
   // Handle detailed note posts (interactive drawer notes tab)
   const handleAddNote = async (text: string, isInternal: boolean, parentCommentId?: string) => {
     if (!selectedRfqDetail) return;
+
+    // Construct optimistic note payload
+    const optimisticNote = {
+      id: `opt_${Date.now()}`,
+      text,
+      isInternal,
+      parentCommentId: parentCommentId || undefined,
+      timestamp: new Date().toISOString(),
+      author: 'You (Syncing...)',
+      authorRole: 'OPERATOR',
+      isOptimistic: true
+    };
+
+    // Optimistically update comments list
+    setSelectedRfqDetail(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        notes: [...(prev.notes || []), optimisticNote]
+      };
+    });
+
     try {
       const res = await apiFetch(`/admin/rfqs/${selectedRfqDetail.id}/comments`, {
         method: 'POST',
@@ -247,6 +269,8 @@ export function RFQWorkspace() {
       loadData(); // reload dashboard activity feed
     } catch (err) {
       console.error(err);
+      // Revert optimistic note on hard validation error
+      handleRefreshDrawer();
     }
   };
 

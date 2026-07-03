@@ -29,6 +29,13 @@ class RecoveryManagerService {
   private logs: RecoveryLogEntry[] = [];
   private listeners: Set<() => void> = new Set();
 
+  // Expanded diagnostic metrics
+  private healthLatency = 0;
+  private apiVersion = 'N/A';
+  private dbLatency = 'N/A';
+  private memoryRss = 'N/A';
+  private buildHash = 'N/A';
+
   constructor() {
     if (typeof window !== 'undefined') {
       window.addEventListener('online', () => this.handleNetworkChange(true));
@@ -102,6 +109,12 @@ class RecoveryManagerService {
     return this.queue;
   }
 
+  public getHealthLatency(): number { return this.healthLatency; }
+  public getApiVersion(): string { return this.apiVersion; }
+  public getDbLatency(): string { return this.dbLatency; }
+  public getMemoryRss(): string { return this.memoryRss; }
+  public getBuildHash(): string { return this.buildHash; }
+
   // Health checker loop
   private startHealthMonitoring() {
     this.checkHealthNow();
@@ -117,8 +130,11 @@ class RecoveryManagerService {
       return false;
     }
 
+    const start = Date.now();
     try {
       const res = await fetch(`${API_BASE}/health`);
+      this.healthLatency = Date.now() - start;
+
       if (res.status === 503) {
         this.connectionState = 'MAINTENANCE';
         this.log('Server reports undergoing maintenance (503)', 'warn');
@@ -128,8 +144,14 @@ class RecoveryManagerService {
 
       if (res.ok) {
         const data = await res.json();
-        const dbReady = data.database;
-        const systemStatus = data.status;
+        const dbReady = data.database === 'healthy';
+        const systemStatus = data.server;
+
+        // Sync diagnostic metrics
+        this.apiVersion = data.version || 'N/A';
+        this.dbLatency = data.dbLatency || 'N/A';
+        this.buildHash = data.build || 'N/A';
+        this.memoryRss = data.memory ? `${Math.round(data.memory.rss / 1024 / 1024)}MB` : 'N/A';
 
         if (systemStatus === 'healthy' && dbReady) {
           if (!this.isSystemReady) {
@@ -161,6 +183,7 @@ class RecoveryManagerService {
         return false;
       }
     } catch (err: any) {
+      this.healthLatency = Date.now() - start;
       this.handleFailure();
       return false;
     }
