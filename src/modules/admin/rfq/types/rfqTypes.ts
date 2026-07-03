@@ -48,6 +48,7 @@ export interface RFQQuotation {
   grand_total?: number;
   created_at?: string;
   expires_at?: string;
+  isPersisted?: boolean;
 }
 
 export interface RFQCustomer {

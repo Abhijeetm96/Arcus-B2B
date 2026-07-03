@@ -4,13 +4,16 @@ export const clientQuotationService = {
   async getQuotationsForRfq(rfqId: string): Promise<any[]> {
     const res = await apiFetch(`/admin/quotations/rfq/${rfqId}`);
     const json = await res.json();
-    return json.data || [];
+    const list = json.data || [];
+    return list.map((q: any) => ({ ...q, isPersisted: true }));
   },
 
   async getQuotationDetail(id: string): Promise<any> {
     const res = await apiFetch(`/admin/quotations/${id}`);
     const json = await res.json();
-    return json.data;
+    const data = json.data;
+    if (data) data.isPersisted = true;
+    return data;
   },
 
   async createQuotation(

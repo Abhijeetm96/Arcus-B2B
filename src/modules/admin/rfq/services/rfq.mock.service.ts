@@ -338,7 +338,8 @@ export function initializeMockData() {
         status: 'REJECTED',
         createdAt: new Date(createdDate.getTime() + 24 * 60 * 60 * 1000).toISOString(),
         validUntil: new Date(createdDate.getTime() + 54 * 60 * 60 * 1000).toISOString(),
-        pdfUrl: `/exports/quotes/quo-${rfqIdStr}-001.pdf`
+        pdfUrl: `/exports/quotes/quo-${rfqIdStr}-001.pdf`,
+        isPersisted: false
       });
 
       quotations.push({
@@ -348,7 +349,8 @@ export function initializeMockData() {
         status: status === RFQStatus.NEGOTIATION ? 'SENT' : 'ACCEPTED',
         createdAt: new Date(createdDate.getTime() + 42 * 60 * 60 * 1000).toISOString(),
         validUntil: new Date(createdDate.getTime() + 72 * 60 * 60 * 1000).toISOString(),
-        pdfUrl: `/exports/quotes/quo-${rfqIdStr}-002.pdf`
+        pdfUrl: `/exports/quotes/quo-${rfqIdStr}-002.pdf`,
+        isPersisted: false
       });
     }
 
