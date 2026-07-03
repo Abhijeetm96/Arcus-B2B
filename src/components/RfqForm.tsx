@@ -351,7 +351,7 @@ export default function RfqForm() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Contact Person *</label>
+                      <label className="text-overline text-gray-500">Contact Person *</label>
                       <input
                         id="assisted-name"
                         type="text"
@@ -363,11 +363,11 @@ export default function RfqForm() {
                         placeholder="Full Name"
                       />
                       {formErrors.name && (
-                        <p className="text-red-500 text-[10px] font-semibold mt-0.5">{formErrors.name}</p>
+                        <p className="text-red-500 text-caption font-semibold mt-0.5">{formErrors.name}</p>
                       )}
                     </div>
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Mobile Number *</label>
+                      <label className="text-overline text-gray-500">Mobile Number *</label>
                       <input
                         id="assisted-phone"
                         type="tel"
@@ -379,11 +379,11 @@ export default function RfqForm() {
                         placeholder="+91 XXXXX XXXXX"
                       />
                       {formErrors.phone && (
-                        <p className="text-red-500 text-[10px] font-semibold mt-0.5">{formErrors.phone}</p>
+                        <p className="text-red-500 text-caption font-semibold mt-0.5">{formErrors.phone}</p>
                       )}
                     </div>
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Email Address</label>
+                      <label className="text-overline text-gray-500">Email Address</label>
                       <input
                         type="email"
                         value={assistedData.email}
@@ -393,7 +393,7 @@ export default function RfqForm() {
                       />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Company Name (Optional)</label>
+                      <label className="text-overline text-gray-500">Company Name (Optional)</label>
                       <input
                         type="text"
                         value={assistedData.companyName}
@@ -403,7 +403,7 @@ export default function RfqForm() {
                       />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">City *</label>
+                      <label className="text-overline text-gray-500">City *</label>
                       <input
                         required
                         type="text"
@@ -414,7 +414,7 @@ export default function RfqForm() {
                       />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Project Location / Address</label>
+                      <label className="text-overline text-gray-500">Project Location / Address</label>
                       <input
                         id="assisted-location"
                         type="text"
@@ -426,13 +426,13 @@ export default function RfqForm() {
                         placeholder="Project Site Area"
                       />
                       {formErrors.location && (
-                        <p className="text-red-500 text-[10px] font-semibold mt-0.5">{formErrors.location}</p>
+                        <p className="text-red-500 text-caption font-semibold mt-0.5">{formErrors.location}</p>
                       )}
                     </div>
                   </div>
 
                   <div className="flex flex-col gap-1 mt-2">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Requirement Details *</label>
+                    <label className="text-overline text-gray-500">Requirement Details *</label>
                     <textarea
                       id="assisted-details"
                       rows={4}
@@ -444,18 +444,18 @@ export default function RfqForm() {
                       placeholder='Write your items and counts. Example: "We need 50 CPVC pipes, 3 overhead tanks and 1 motor for our apartment project."'
                     />
                     {formErrors.details && (
-                      <p className="text-red-500 text-[10px] font-semibold mt-0.5">{formErrors.details}</p>
+                      <p className="text-red-500 text-caption font-semibold mt-0.5">{formErrors.details}</p>
                     )}
                   </div>
 
                   <div className="flex flex-col gap-1 mt-2">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Upload BOQ / Drawings (Optional)</label>
+                    <label className="text-overline text-gray-500">Upload BOQ / Drawings (Optional)</label>
                     <input
                       type="file"
                       disabled
                       className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 cursor-not-allowed"
                     />
-                    <p className="text-[10px] text-gray-400">File uploads simulated. Document verification occurs during requirement review.</p>
+                    <p className="text-caption text-gray-400">File uploads simulated. Document verification occurs during requirement review.</p>
                   </div>
 
                   <button
@@ -502,7 +502,7 @@ export default function RfqForm() {
                         <h5 className="text-xs font-bold uppercase tracking-wider text-gray-700 mb-3">1. Business Information</h5>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Company Name *</label>
+                            <label className="text-overline text-gray-500">Company Name *</label>
                             <input
                               id="detailed-companyName"
                               type="text"
@@ -514,11 +514,11 @@ export default function RfqForm() {
                               placeholder="Registered Entity Name"
                             />
                             {formErrors.companyName && (
-                              <p className="text-red-500 text-[10px] font-semibold mt-0.5">{formErrors.companyName}</p>
+                              <p className="text-red-500 text-caption font-semibold mt-0.5">{formErrors.companyName}</p>
                             )}
                           </div>
                           <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">GSTIN *</label>
+                            <label className="text-overline text-gray-500">GSTIN *</label>
                             <input
                               id="detailed-gstNumber"
                               type="text"
@@ -530,11 +530,11 @@ export default function RfqForm() {
                               placeholder="29AAAAA0000A1Z5"
                             />
                             {formErrors.gstNumber && (
-                              <p className="text-red-500 text-[10px] font-semibold mt-0.5">{formErrors.gstNumber}</p>
+                              <p className="text-red-500 text-caption font-semibold mt-0.5">{formErrors.gstNumber}</p>
                             )}
                           </div>
                           <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Contact Person *</label>
+                            <label className="text-overline text-gray-500">Contact Person *</label>
                             <input
                               type="text"
                               value={detailedData.contactPerson}
@@ -543,7 +543,7 @@ export default function RfqForm() {
                             />
                           </div>
                           <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Mobile Number *</label>
+                            <label className="text-overline text-gray-500">Mobile Number *</label>
                             <input
                               type="tel"
                               value={detailedData.phone}
@@ -559,7 +559,7 @@ export default function RfqForm() {
                         <h5 className="text-xs font-bold uppercase tracking-wider text-gray-700 mb-3">2. Project & Logistical Info</h5>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Project Name (Optional)</label>
+                            <label className="text-overline text-gray-500">Project Name (Optional)</label>
                             <input
                               type="text"
                               value={detailedData.projectName}
@@ -569,7 +569,7 @@ export default function RfqForm() {
                             />
                           </div>
                           <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Required Delivery Date</label>
+                            <label className="text-overline text-gray-500">Required Delivery Date</label>
                             <input
                               type="date"
                               value={detailedData.deliveryDate}
@@ -578,7 +578,7 @@ export default function RfqForm() {
                             />
                           </div>
                           <div className="flex flex-col gap-1 md:col-span-2">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Site Delivery Address *</label>
+                            <label className="text-overline text-gray-500">Site Delivery Address *</label>
                             <textarea
                               id="detailed-deliveryAddress"
                               rows={2}
@@ -590,7 +590,7 @@ export default function RfqForm() {
                               placeholder="Full address where materials should be dispatched"
                             />
                             {formErrors.deliveryAddress && (
-                              <p className="text-red-500 text-[10px] font-semibold mt-0.5">{formErrors.deliveryAddress}</p>
+                              <p className="text-red-500 text-caption font-semibold mt-0.5">{formErrors.deliveryAddress}</p>
                             )}
                           </div>
                         </div>
