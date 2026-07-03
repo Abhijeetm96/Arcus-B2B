@@ -85,11 +85,11 @@ export default {
       },
       fontSize: {
         // ARCUS Typography System Semantic scale (Hybrid Enterprise Scale)
-        "display-xl": ["60px", { "lineHeight": "110%", "letterSpacing": "-0.02em", "fontWeight": "700" }],
-        "display": ["48px", { "lineHeight": "110%", "letterSpacing": "-0.02em", "fontWeight": "700" }],
-        "h1": ["36px", { "lineHeight": "120%", "fontWeight": "700" }],
-        "h2": ["30px", { "lineHeight": "120%", "fontWeight": "600" }],
-        "h3": ["24px", { "lineHeight": "120%", "fontWeight": "600" }],
+        "display-xl": ["clamp(2.75rem, 2rem + 2vw, 3.75rem)", { "lineHeight": "110%", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+        "display": ["clamp(2.375rem, 1.9rem + 1.6vw, 3rem)", { "lineHeight": "110%", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+        "h1": ["clamp(1.875rem, 1.6rem + 1vw, 2.25rem)", { "lineHeight": "120%", "fontWeight": "700" }],
+        "h2": ["clamp(1.625rem, 1.45rem + 0.7vw, 1.875rem)", { "lineHeight": "120%", "fontWeight": "600" }],
+        "h3": ["clamp(1.375rem, 1.3rem + 0.4vw, 1.5rem)", { "lineHeight": "120%", "fontWeight": "600" }],
         "h4": ["20px", { "lineHeight": "120%", "fontWeight": "600" }],
         "section-title": ["18px", { "lineHeight": "120%", "fontWeight": "600" }],
         "card-title": ["16px", { "lineHeight": "120%", "fontWeight": "600" }],
@@ -105,11 +105,11 @@ export default {
 
         // Legacy Compatibility Keys (Standardized to Hybrid Scale values)
         "body-md": ["16px", { "lineHeight": "150%", "fontWeight": "400" }],
-        "headline-h2": ["30px", { "lineHeight": "120%", "fontWeight": "600" }],
-        "headline-h1-mobile": ["28px", { "lineHeight": "120%", "fontWeight": "700" }],
-        "headline-h1": ["60px", { "lineHeight": "110%", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+        "headline-h2": ["clamp(1.625rem, 1.45rem + 0.7vw, 1.875rem)", { "lineHeight": "120%", "fontWeight": "600" }],
+        "headline-h1-mobile": ["clamp(1.875rem, 1.6rem + 1vw, 2.25rem)", { "lineHeight": "120%", "fontWeight": "700" }],
+        "headline-h1": ["clamp(2.75rem, 2rem + 2vw, 3.75rem)", { "lineHeight": "110%", "letterSpacing": "-0.02em", "fontWeight": "700" }],
         "label-caps": ["11px", { "lineHeight": "140%", "letterSpacing": "0.05em", "fontWeight": "600" }],
-        "headline-h3": ["24px", { "lineHeight": "120%", "fontWeight": "600" }]
+        "headline-h3": ["clamp(1.375rem, 1.3rem + 0.4vw, 1.5rem)", { "lineHeight": "120%", "fontWeight": "600" }]
       }
     }
   },

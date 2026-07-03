@@ -79,27 +79,32 @@ To preserve structural legibility and establish a premium enterprise-grade visua
 * **Display & Headings**: `Poppins` (Weights: `700` Bold for Display/H1, `600` Semibold for H2/H3/H4). Bold headings reflect a strong industrial profile.
 * **Body & UI Elements**: `Inter` (Weights: `400` Regular for body/captions, `500` Medium for labels/metadata, `600` Semibold for buttons/card titles).
 
-### B. Enterprise Hybrid Type Scale & Responsive Scaling
+### B. Typography Role Classifications
 
-| Token | Desktop Size | Tablet Size | Mobile Size | Weight | Line Height | Tracking |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Display XL** | `60px` | `48px` | `36px` | 700 | 110% | -0.02em |
-| **Display** | `48px` | `36px` | `30px` | 700 | 110% | -0.02em |
-| **H1** | `36px` | `32px` | `28px` | 700 | 120% | normal |
-| **H2** | `30px` | `26px` | `24px` | 600 | 120% | normal |
-| **H3** | `24px` | `22px` | `20px` | 600 | 120% | normal |
-| **H4** | `20px` | `18px` | `16px` | 600 | 120% | normal |
-| **Section** | `18px` | `16px` | `16px` | 600 | 120% | normal |
-| **Card Title** | `16px` | `16px` | `14px` | 600 | 120% | normal |
-| **Metric Value**| `30px` | `24px` | `20px` | 700 | 120% | normal |
-| **Metric Label**| `12px` | `12px` | `12px` | 500 | 140% | normal |
-| **Body Large** | `18px` | `16px` | `16px` | 400 | 150% | normal |
-| **Body** | `16px` | `15px` | `14px` | 400 | 150% | normal |
-| **Body Small** | `14px` | `13px` | `13px` | 400 | 150% | normal |
-| **Label** | `14px` | `13px` | `13px` | 500 | 150% | normal |
-| **Button** | `14px` | `13px` | `13px` | 600 | 100% | 0.02em |
-| **Caption** | `12px` | `11px` | `11px` | 400 | 140% | 0.01em |
-| **Overline** | `11px` | `10px` | `10px` | 600 | 140% | 0.05em |
+#### Category A — Fluid Typography (Using CSS clamp())
+These tokens interpolate smoothly between mobile and desktop limits to ensure highly polished responsiveness:
+* **Display XL**: `clamp(2.75rem, 2rem + 2vw, 3.75rem)` (Mobile: 44px, Desktop: 60px)
+* **Display**: `clamp(2.375rem, 1.9rem + 1.6vw, 3rem)` (Mobile: 38px, Desktop: 48px)
+* **H1**: `clamp(1.875rem, 1.6rem + 1vw, 2.25rem)` (Mobile: 30px, Desktop: 36px)
+* **H2**: `clamp(1.625rem, 1.45rem + 0.7vw, 1.875rem)` (Mobile: 26px, Desktop: 30px)
+* **H3**: `clamp(1.375rem, 1.3rem + 0.4vw, 1.5rem)` (Mobile: 22px, Desktop: 24px)
+
+#### Category B — Fixed Typography (Never use clamp())
+These tokens are locked to static sizes across all viewports to preserve dense enterprise portal information layouts:
+* **H4**: Fixed at `20px`
+* **Section**: Fixed at `18px`
+* **Card Title**: Fixed at `16px`
+* **Metric Value**: Fixed at `30px`
+* **Metric Label**: Fixed at `12px`
+* **Body Large**: Fixed at `18px`
+* **Body**: Fixed at `16px`
+* **Body Small**: Fixed at `14px`
+* **Label**: Fixed at `14px`
+* **Button**: Fixed at `14px`
+* **Caption**: Fixed at `12px`
+* **Overline**: Fixed at `11px`
+
+This hybrid approach guarantees that core tabular, form, navigation, and workspace elements are completely stable while top-level view headings benefit from smooth scaling.
 
 ---
 
