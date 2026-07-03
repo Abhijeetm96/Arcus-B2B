@@ -2,6 +2,7 @@ import React from 'react';
 import { useOrders } from '../../core/hooks/useOrders';
 import { formatCurrency, formatDate } from '../../core/config/format';
 import { useAuth } from '../../context/AuthContext';
+import { EmptyState } from '../../components/feedback/EmptyState/EmptyState';
 
 export const BusinessInvoices: React.FC = () => {
   const { user } = useAuth();
@@ -51,7 +52,12 @@ export const BusinessInvoices: React.FC = () => {
         </div>
 
         {completedOrders.length === 0 ? (
-          <p className="p-xl text-center text-slate-500 text-xs">No delivered orders found. Tax invoices will generate once orders are delivered.</p>
+          <div className="p-xl">
+            <EmptyState
+              title="No tax invoices available"
+              description="Official GST-compliant tax invoices will automatically generate here once your orders are successfully delivered."
+            />
+          </div>
         ) : (
           <div className="overflow-x-auto text-xs">
             <table className="w-full text-left border-collapse">

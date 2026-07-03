@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import { useNotification } from '../hooks/useNotification';
 
 export interface CartItem {
   id: string;
@@ -48,6 +49,7 @@ const parsePrice = (priceStr: string | number): number => {
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
+  const { success, warning } = useNotification();
   const customerType = user?.customerType || (user?.role && ['Business', 'Contractor', 'Supplier'].includes(user.role) ? 'BUSINESS' : 'INDIVIDUAL');
 
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
@@ -74,6 +76,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const addToCart = (product: any, qty: number = 1) => {
+    success(`Added ${product.name} to cart.`);
     setCartItems((prevItems) => {
       const existingItemIndex = prevItems.findIndex((item) => item.id === product.id);
       const basePrice = parsePrice(product.price);
@@ -91,25 +94,25 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         // Enforce stock limit
         if (newQty > stock) {
-          alert(`Cannot add more items. Only ${stock} units are available in stock.`);
+          warning(`Cannot add more items. Only ${stock} units are available in stock.`);
           newQty = stock;
         }
 
         // Validate B2B MOQ and multiple rules if B2B
         if (customerType === 'BUSINESS') {
           if (newQty < moq) {
-            alert(`Business orders require a minimum of ${moq} ${minUnit}. Setting quantity to ${moq}.`);
+            warning(`Business orders require a minimum of ${moq} ${minUnit}. Setting quantity to ${moq}.`);
             newQty = moq;
           }
           if (mult > 1 && newQty % mult !== 0) {
             const remainder = newQty % mult;
             const adjustedQty = newQty + (mult - remainder);
             if (adjustedQty <= stock) {
-              alert(`Quantity must be a multiple of ${mult} for this product. Adjusting to ${adjustedQty}.`);
+              warning(`Quantity must be a multiple of ${mult} for this product. Adjusting to ${adjustedQty}.`);
               newQty = adjustedQty;
             } else {
               const adjustedDown = newQty - remainder;
-              alert(`Quantity must be a multiple of ${mult} for this product. Adjusting to ${adjustedDown}.`);
+              warning(`Quantity must be a multiple of ${mult} for this product. Adjusting to ${adjustedDown}.`);
               newQty = adjustedDown;
             }
           }
@@ -135,25 +138,25 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Enforce B2B MOQ and multiple rules if B2B
         if (customerType === 'BUSINESS') {
           if (finalQty < moq) {
-            alert(`Business orders require a minimum of ${moq} ${minUnit}. Setting quantity to ${moq}.`);
+            warning(`Business orders require a minimum of ${moq} ${minUnit}. Setting quantity to ${moq}.`);
             finalQty = moq;
           }
           if (mult > 1 && finalQty % mult !== 0) {
             const remainder = finalQty % mult;
             const adjustedQty = finalQty + (mult - remainder);
             if (adjustedQty <= stock) {
-              alert(`Quantity must be a multiple of ${mult} for this product. Adjusting to ${adjustedQty}.`);
+              warning(`Quantity must be a multiple of ${mult} for this product. Adjusting to ${adjustedQty}.`);
               finalQty = adjustedQty;
             } else {
               const adjustedDown = finalQty - remainder;
-              alert(`Quantity must be a multiple of ${mult} for this product. Adjusting to ${adjustedDown}.`);
+              warning(`Quantity must be a multiple of ${mult} for this product. Adjusting to ${adjustedDown}.`);
               finalQty = adjustedDown;
             }
           }
         }
 
         if (finalQty > stock) {
-          alert(`Cannot add more items. Only ${stock} units are available in stock.`);
+          warning(`Cannot add more items. Only ${stock} units are available in stock.`);
           finalQty = stock;
         }
 
@@ -201,25 +204,25 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Check if B2B
           if (customerType === 'BUSINESS') {
             if (finalQty < moq) {
-              alert(`Business orders require a minimum of ${moq} ${minUnit}.`);
+              warning(`Business orders require a minimum of ${moq} ${minUnit}.`);
               finalQty = moq;
             }
             if (mult > 1 && finalQty % mult !== 0) {
               const remainder = finalQty % mult;
               const adjustedQty = finalQty + (mult - remainder);
               if (adjustedQty <= stock) {
-                alert(`Quantity must be a multiple of ${mult}. Adjusting to ${adjustedQty}.`);
+                warning(`Quantity must be a multiple of ${mult}. Adjusting to ${adjustedQty}.`);
                 finalQty = adjustedQty;
               } else {
                 const adjustedDown = finalQty - remainder;
-                alert(`Quantity must be a multiple of ${mult}. Adjusting to ${adjustedDown}.`);
+                warning(`Quantity must be a multiple of ${mult}. Adjusting to ${adjustedDown}.`);
                 finalQty = adjustedDown;
               }
             }
           }
 
           if (finalQty > stock) {
-            alert(`Cannot update quantity. Only ${stock} units are available in stock.`);
+            warning(`Cannot update quantity. Only ${stock} units are available in stock.`);
             finalQty = stock;
           }
           const newPrice = getPriceForQty(item.priceTiers, item.basePrice, finalQty);

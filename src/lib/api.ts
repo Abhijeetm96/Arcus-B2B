@@ -1,4 +1,5 @@
 import { API_BASE } from '../config/api';
+import { notification } from './notification';
 
 export interface ApiRequestOptions extends RequestInit {
   timeout?: number;
@@ -26,13 +27,19 @@ export const mapHttpStatusToErrorMessage = (status: number, customMessage?: stri
     case 401:
       return 'Invalid email or password.';
     case 403:
-      return 'Access denied.';
+      return "You don't have permission to perform this action.";
     case 404:
-      return 'Authentication service unavailable.';
+      return "We couldn't find what you're looking for.";
+    case 409:
+      return 'This record already exists.';
     case 422:
-      return 'Validation failed.';
+      return 'Please correct the highlighted fields.';
+    case 429:
+      return 'Too many requests. Please wait a moment and try again.';
     case 500:
-      return 'Internal server error.';
+      return 'Something went wrong on our side. Please try again shortly.';
+    case 503:
+      return 'The service is temporarily unavailable.';
     default:
       return customMessage || 'An unexpected error occurred.';
   }
@@ -133,10 +140,17 @@ export async function apiClient<T = any>(
       }
 
       if (!response.ok) {
+        const correlationId = response.headers.get('x-correlation-id') || undefined;
         const mappedMsg = mapHttpStatusToErrorMessage(
           response.status,
           data?.error || data?.message
         );
+        notification.error(mappedMsg, {
+          url,
+          status: response.status,
+          endpoint: endpoint.split('?')[0],
+          correlationId
+        });
         throw new ApiError(mappedMsg, response.status, data);
       }
 
@@ -144,13 +158,19 @@ export async function apiClient<T = any>(
     } catch (error: any) {
       clearTimeout(id);
 
+      if (error instanceof ApiError) {
+        throw error;
+      }
+
       // Handle aborted/timed-out requests
       if (error.name === 'AbortError') {
         if (attempt < retries) {
           console.warn(`[API CLIENT] Timeout on ${url}. Retrying attempt ${attempt + 1}...`);
           continue;
         }
-        throw new ApiError('Unable to connect to the server (Request Timed Out).', 0);
+        const msg = 'Unable to connect to the server (Request Timed Out).';
+        notification.error(msg, { url, status: 0, endpoint: endpoint.split('?')[0] });
+        throw new ApiError(msg, 0);
       }
 
       // Handle connection refusal/network offline errors
@@ -159,7 +179,9 @@ export async function apiClient<T = any>(
           console.warn(`[API CLIENT] Network error on ${url}. Retrying attempt ${attempt + 1}...`);
           continue;
         }
-        throw new ApiError('Unable to connect to the server.', 0, error);
+        const msg = 'No internet connection.';
+        notification.error(msg, { url, status: 0, endpoint: endpoint.split('?')[0] });
+        throw new ApiError(msg, 0, error);
       }
 
       throw error;

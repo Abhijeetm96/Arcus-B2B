@@ -71,6 +71,9 @@ export default {
         "xs": "4px"
       },
       fontFamily: {
+        sans: ["Inter", "sans-serif"],
+        display: ["Poppins", "sans-serif"],
+        // Compatibility Aliases
         "body-sm": ["Inter", "sans-serif"],
         "headline-h2": ["Poppins", "sans-serif"],
         "body-md": ["Inter", "sans-serif"],
@@ -81,14 +84,32 @@ export default {
         "headline-h3": ["Poppins", "sans-serif"]
       },
       fontSize: {
-        "body-sm": ["14px", { "lineHeight": "140%", "fontWeight": "500" }],
-        "headline-h2": ["48px", { "lineHeight": "120%", "fontWeight": "700" }],
+        // ARCUS Typography System Semantic scale (Hybrid Enterprise Scale)
+        "display-xl": ["60px", { "lineHeight": "110%", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+        "display": ["48px", { "lineHeight": "110%", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+        "h1": ["36px", { "lineHeight": "120%", "fontWeight": "700" }],
+        "h2": ["30px", { "lineHeight": "120%", "fontWeight": "600" }],
+        "h3": ["24px", { "lineHeight": "120%", "fontWeight": "600" }],
+        "h4": ["20px", { "lineHeight": "120%", "fontWeight": "600" }],
+        "section-title": ["18px", { "lineHeight": "120%", "fontWeight": "600" }],
+        "card-title": ["16px", { "lineHeight": "120%", "fontWeight": "600" }],
+        "metric-value": ["30px", { "lineHeight": "120%", "fontWeight": "700" }],
+        "metric-label": ["12px", { "lineHeight": "140%", "fontWeight": "500" }],
+        "body-lg": ["18px", { "lineHeight": "150%", "fontWeight": "400" }],
+        "body": ["16px", { "lineHeight": "150%", "fontWeight": "400" }],
+        "body-sm": ["14px", { "lineHeight": "150%", "fontWeight": "400" }],
+        "label": ["14px", { "lineHeight": "150%", "fontWeight": "500" }],
+        "button": ["14px", { "lineHeight": "100%", "letterSpacing": "0.02em", "fontWeight": "600" }],
+        "caption": ["12px", { "lineHeight": "140%", "letterSpacing": "0.01em", "fontWeight": "400" }],
+        "overline": ["11px", { "lineHeight": "140%", "letterSpacing": "0.05em", "fontWeight": "600" }],
+
+        // Legacy Compatibility Keys (Standardized to Hybrid Scale values)
         "body-md": ["16px", { "lineHeight": "150%", "fontWeight": "400" }],
-        "body-lg": ["18px", { "lineHeight": "160%", "fontWeight": "400" }],
-        "headline-h1-mobile": ["40px", { "lineHeight": "110%", "fontWeight": "800" }],
-        "headline-h1": ["64px", { "lineHeight": "110%", "letterSpacing": "-0.02em", "fontWeight": "800" }],
-        "label-caps": ["12px", { "lineHeight": "100%", "letterSpacing": "0.05em", "fontWeight": "600" }],
-        "headline-h3": ["32px", { "lineHeight": "120%", "fontWeight": "700" }]
+        "headline-h2": ["30px", { "lineHeight": "120%", "fontWeight": "600" }],
+        "headline-h1-mobile": ["28px", { "lineHeight": "120%", "fontWeight": "700" }],
+        "headline-h1": ["60px", { "lineHeight": "110%", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+        "label-caps": ["11px", { "lineHeight": "140%", "letterSpacing": "0.05em", "fontWeight": "600" }],
+        "headline-h3": ["24px", { "lineHeight": "120%", "fontWeight": "600" }]
       }
     }
   },

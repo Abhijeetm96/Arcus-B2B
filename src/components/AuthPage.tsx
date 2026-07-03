@@ -42,6 +42,7 @@ export const AuthPage: React.FC = () => {
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [loginErrors, setLoginErrors] = useState<Record<string, string>>({});
   const [loginLoading, setLoginLoading] = useState(false);
 
   // Email OTP Verification States
@@ -261,10 +262,30 @@ export const AuthPage: React.FC = () => {
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
+    setLoginErrors({});
 
     const emailV = validateEmail(loginEmail);
     if (!emailV.valid) {
-      setLoginError(emailV.error!);
+      setLoginErrors({ email: emailV.error! });
+      setTimeout(() => {
+        const input = document.getElementById('login-email');
+        if (input) {
+          input.focus();
+          input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
+      return;
+    }
+
+    if (!loginPassword) {
+      setLoginErrors({ password: 'Password is required.' });
+      setTimeout(() => {
+        const input = document.getElementById('login-password');
+        if (input) {
+          input.focus();
+          input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
       return;
     }
 
@@ -929,7 +950,7 @@ export const AuthPage: React.FC = () => {
 
                   {/* LOGIN SECTION */}
                   {activeTab === 'login' && (
-                    <form onSubmit={handleLoginSubmit} className="space-y-md text-left">
+                    <form onSubmit={handleLoginSubmit} noValidate className="space-y-md text-left">
                       <div className="space-y-xs">
                         <h2 className="font-headline-h2 text-[32px] text-[#0A0A0A] font-bold font-sans">Welcome Back</h2>
                         <p className="text-secondary text-xs">Sign in to continue to ARCUS.</p>
@@ -945,13 +966,18 @@ export const AuthPage: React.FC = () => {
                       <div className="flex flex-col gap-xs">
                         <label className="text-[10px] font-bold uppercase tracking-wider text-secondary font-label-caps">Email Address</label>
                         <input
+                          id="login-email"
                           type="email"
                           value={loginEmail}
                           onChange={(e) => setLoginEmail(e.target.value)}
-                          className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
+                          className={`bg-white border rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0 ${
+                            loginErrors.email ? 'border-red-500 ring-1 ring-red-500' : 'border-[#E9ECEF]'
+                          }`}
                           placeholder="e.g. name@company.com"
-                          required
                         />
+                        {loginErrors.email && (
+                          <p className="text-red-500 text-[10px] font-semibold mt-0.5">{loginErrors.email}</p>
+                        )}
                       </div>
 
                       <div className="flex flex-col gap-xs">
@@ -967,13 +993,18 @@ export const AuthPage: React.FC = () => {
                           </button>
                         </div>
                         <input
+                          id="login-password"
                           type={showLoginPassword ? 'text' : 'password'}
                           value={loginPassword}
                           onChange={(e) => setLoginPassword(e.target.value)}
-                          className="bg-white border border-[#E9ECEF] rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0"
+                          className={`bg-white border rounded h-11 px-md text-body-sm outline-none focus:border-2 focus:border-primary focus:ring-0 ${
+                            loginErrors.password ? 'border-red-500 ring-1 ring-red-500' : 'border-[#E9ECEF]'
+                          }`}
                           placeholder="Enter password"
-                          required
                         />
+                        {loginErrors.password && (
+                          <p className="text-red-500 text-[10px] font-semibold mt-0.5">{loginErrors.password}</p>
+                        )}
                       </div>
 
                       {/* Options Row */}

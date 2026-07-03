@@ -41,6 +41,25 @@
     --sidebar-foreground: #f8fafc;
     --hover: #f1f5f9;
     --selected: #fabd00;
+
+    /* Typography System Tokens (Hybrid Enterprise Scale) */
+    --font-display-xl: 700 60px/1.1 Poppins, sans-serif;
+    --font-display: 700 48px/1.1 Poppins, sans-serif;
+    --font-h1: 700 36px/1.2 Poppins, sans-serif;
+    --font-h2: 600 30px/1.2 Poppins, sans-serif;
+    --font-h3: 600 24px/1.2 Poppins, sans-serif;
+    --font-h4: 600 20px/1.2 Poppins, sans-serif;
+    --font-section: 600 18px/1.2 Inter, sans-serif;
+    --font-card: 600 16px/1.2 Inter, sans-serif;
+    --font-card-title: 600 16px/1.2 Inter, sans-serif;
+    --font-metric: 700 30px/1.2 Inter, sans-serif;
+    --font-body-lg: 400 18px/1.5 Inter, sans-serif;
+    --font-body: 400 16px/1.5 Inter, sans-serif;
+    --font-body-sm: 400 14px/1.5 Inter, sans-serif;
+    --font-label: 500 14px/1.5 Inter, sans-serif;
+    --font-button: 600 14px/1.0 Inter, sans-serif;
+    --font-caption: 400 12px/1.4 Inter, sans-serif;
+    --font-overline: 600 11px/1.4 Inter, sans-serif;
   }
 
   .dark {

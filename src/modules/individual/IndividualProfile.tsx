@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useNotification } from '../../hooks/useNotification';
 import { apiFetch } from '../../lib/api';
 
 export const IndividualProfile: React.FC = () => {
   const { user, refreshUser } = useAuth();
+  const { success, error } = useNotification();
   
   const [settingsForm, setSettingsForm] = useState({
     name: '',
@@ -16,7 +18,6 @@ export const IndividualProfile: React.FC = () => {
   });
 
   const [emailVerified, setEmailVerified] = useState(false);
-  const [settingsToast, setSettingsToast] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -59,26 +60,19 @@ export const IndividualProfile: React.FC = () => {
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || 'Failed to update profile.');
+        error(data.error || 'Failed to update profile.');
         return;
       }
       localStorage.setItem(`arcus-user-profile-data-${user?.id}`, JSON.stringify(settingsForm));
       await refreshUser();
-      setSettingsToast('Profile settings saved successfully!');
-      setTimeout(() => setSettingsToast(null), 3000);
+      success('Profile settings saved successfully!');
     } catch {
-      alert('Network error. Failed to save profile.');
+      error('Network error. Failed to save profile.');
     }
   };
 
   return (
     <div className="space-y-md text-left">
-      {settingsToast && (
-        <div className="bg-green-50 border border-green-200 text-green-800 text-xs p-sm rounded font-bold flex items-center gap-xs shadow-sm">
-          <span className="material-symbols-outlined text-[18px]">check_circle</span>
-          {settingsToast}
-        </div>
-      )}
 
       <form onSubmit={handleSaveProfile} className="bg-white border border-slate-200 rounded p-lg shadow-sm space-y-md">
         <h3 className="font-bold text-md text-slate-800 border-b border-slate-100 pb-xs">Account Settings</h3>

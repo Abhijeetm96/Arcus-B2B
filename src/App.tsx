@@ -13,7 +13,8 @@ import ProductDetail from './components/ProductDetail'
 import { Agentation } from 'agentation'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
-import { NotificationProvider } from './context/NotificationContext'
+import { NotificationProvider as InboxNotificationProvider } from './context/NotificationContext'
+import { NotificationProvider } from './providers/NotificationProvider'
 import { AuthPage } from './components/AuthPage'
 import { IndividualDashboard } from './modules/individual/IndividualDashboard'
 import { PortalResolver } from './core/auth/PortalResolver'
@@ -190,11 +191,13 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <NotificationProvider>
-        <CartProvider>
-          <AppContent />
-        </CartProvider>
-      </NotificationProvider>
+      <InboxNotificationProvider>
+        <NotificationProvider>
+          <CartProvider>
+            <AppContent />
+          </CartProvider>
+        </NotificationProvider>
+      </InboxNotificationProvider>
     </AuthProvider>
   )
 }

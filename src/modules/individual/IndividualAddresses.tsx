@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useNotification } from '../../hooks/useNotification';
 
 export const IndividualAddresses: React.FC = () => {
   const { user } = useAuth();
+  const { success, warning, confirm } = useNotification();
   const [addresses, setAddresses] = useState<string[]>([]);
 
   useEffect(() => {
@@ -24,12 +26,13 @@ export const IndividualAddresses: React.FC = () => {
 
   const handleAddAddress = () => {
     if (addresses.length >= 10) {
-      alert('You can store up to 10 addresses.');
+      warning('You can store up to 10 addresses.');
       return;
     }
     const newAddr = prompt('Enter new delivery address:');
     if (newAddr && newAddr.trim()) {
       saveAddresses([...addresses, newAddr.trim()]);
+      success('New address added successfully!');
     }
   };
 
@@ -39,17 +42,26 @@ export const IndividualAddresses: React.FC = () => {
       const copy = [...addresses];
       copy[idx] = updated.trim();
       saveAddresses(copy);
+      success('Address updated successfully!');
     }
   };
 
   const handleDeleteAddress = (idx: number) => {
     if (addresses.length <= 1) {
-      alert('At least one default address is required.');
+      warning('At least one default address is required.');
       return;
     }
-    if (confirm('Are you sure you want to delete this address?')) {
-      saveAddresses(addresses.filter((_, i) => i !== idx));
-    }
+    confirm({
+      title: 'Delete Delivery Address',
+      description: 'Are you sure you want to delete this address from your saved delivery locations?',
+      confirmLabel: 'Delete Address',
+      cancelLabel: 'Cancel',
+      type: 'danger',
+      onConfirm: () => {
+        saveAddresses(addresses.filter((_, i) => i !== idx));
+        success('Address deleted successfully!');
+      }
+    });
   };
 
   return (

@@ -14,6 +14,7 @@ import {
 } from '../../../../../components/ui/DropdownMenu';
 import type { RFQSummary } from '../../types/rfqTypes';
 import { PRIORITY_COLORS } from '../../constants/priority';
+import { EmptyState } from '../../../../../components/feedback/EmptyState/EmptyState';
 import { cn } from '../../../../../components/ui/utils';
 
 interface RFQTableProps {
@@ -242,8 +243,11 @@ export function RFQTable({
           <TableBody className="divide-y divide-border">
             {paginatedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={11} className="py-12 text-center text-text-secondary font-medium">
-                  No records match the applied workspace filters.
+                <TableCell colSpan={11} className="py-8">
+                  <EmptyState
+                    title="No RFQs match your current filters"
+                    description="Try changing your status criteria, ownership filters, or search query in the sidebar."
+                  />
                 </TableCell>
               </TableRow>
             ) : (

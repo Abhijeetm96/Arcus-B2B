@@ -15,6 +15,7 @@ export default function RfqForm() {
   const [rfqType, setRfqType] = useState<'assisted' | 'detailed'>('assisted');
   const [submitted, setSubmitted] = useState(false);
   const [rfqError, setRfqError] = useState('');
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   
   // Assisted RFQ Form State
   const [assistedData, setAssistedData] = useState({
@@ -96,6 +97,7 @@ export default function RfqForm() {
   const handleSubmitAssisted = async (e: React.FormEvent) => {
     e.preventDefault();
     setRfqError('');
+    setFormErrors({});
 
     const validationErrors = validateRfqForm({
       name: assistedData.name,
@@ -105,9 +107,17 @@ export default function RfqForm() {
       details: assistedData.details
     });
 
-    const firstError = Object.values(validationErrors)[0];
-    if (firstError) {
-      setRfqError(firstError);
+    const errorKeys = Object.keys(validationErrors);
+    if (errorKeys.length > 0) {
+      setFormErrors(validationErrors);
+      const firstKey = errorKeys[0];
+      setTimeout(() => {
+        const firstErrField = document.getElementById(`assisted-${firstKey}`);
+        if (firstErrField) {
+          firstErrField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          firstErrField.focus();
+        }
+      }, 50);
       return;
     }
 
@@ -148,16 +158,36 @@ export default function RfqForm() {
   const handleSubmitDetailed = async (e: React.FormEvent) => {
     e.preventDefault();
     setRfqError('');
+    setFormErrors({});
 
     // Validations
-    if (!detailedData.companyName.trim()) return setRfqError('Company name is required.');
-    if (!detailedData.gstNumber.trim()) return setRfqError('GST number is required.');
-    if (!detailedData.deliveryAddress.trim()) return setRfqError('Delivery address is required.');
+    const errors: Record<string, string> = {};
+    if (!detailedData.companyName.trim()) errors.companyName = 'Company name is required.';
+    if (!detailedData.gstNumber.trim()) errors.gstNumber = 'GST number is required.';
+    if (!detailedData.deliveryAddress.trim()) errors.deliveryAddress = 'Delivery address is required.';
     
     // Check material items
-    const invalidItem = materialItems.some(item => !item.itemName.trim() || !item.quantity.trim());
-    if (invalidItem) {
-      return setRfqError('Please fill in Item Name and Quantity for all materials.');
+    materialItems.forEach((item, index) => {
+      if (!item.itemName.trim()) {
+        errors[`item-name-${index}`] = 'Material description is required.';
+      }
+      if (!item.quantity.trim() || Number(item.quantity) <= 0) {
+        errors[`item-qty-${index}`] = 'Valid quantity is required.';
+      }
+    });
+
+    const errorKeys = Object.keys(errors);
+    if (errorKeys.length > 0) {
+      setFormErrors(errors);
+      const firstKey = errorKeys[0];
+      setTimeout(() => {
+        const firstErrField = document.getElementById(`detailed-${firstKey}`);
+        if (firstErrField) {
+          firstErrField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          firstErrField.focus();
+        }
+      }, 50);
+      return;
     }
 
     try {
@@ -311,7 +341,7 @@ export default function RfqForm() {
 
               {/* Assisted Inquiry Form */}
               {rfqType === 'assisted' && (
-                <form onSubmit={handleSubmitAssisted} className="flex flex-col gap-4">
+                <form onSubmit={handleSubmitAssisted} noValidate className="flex flex-col gap-4">
                   <div className="text-left mb-2">
                     <h4 className="text-lg font-bold text-gray-900">Assisted Procurement Inquiry</h4>
                     <p className="text-xs text-gray-500 mt-1">
@@ -323,24 +353,34 @@ export default function RfqForm() {
                     <div className="flex flex-col gap-1">
                       <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Contact Person *</label>
                       <input
-                        required
+                        id="assisted-name"
                         type="text"
                         value={assistedData.name}
                         onChange={(e) => setAssistedData({ ...assistedData, name: e.target.value })}
-                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-gray-900"
+                        className={`w-full border rounded px-3 py-2 text-sm text-gray-900 focus:outline-none ${
+                          formErrors.name ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-300 focus:border-gray-900'
+                        }`}
                         placeholder="Full Name"
                       />
+                      {formErrors.name && (
+                        <p className="text-red-500 text-[10px] font-semibold mt-0.5">{formErrors.name}</p>
+                      )}
                     </div>
                     <div className="flex flex-col gap-1">
                       <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Mobile Number *</label>
                       <input
-                        required
+                        id="assisted-phone"
                         type="tel"
                         value={assistedData.phone}
                         onChange={(e) => setAssistedData({ ...assistedData, phone: e.target.value })}
-                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-gray-900"
+                        className={`w-full border rounded px-3 py-2 text-sm text-gray-900 focus:outline-none ${
+                          formErrors.phone ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-300 focus:border-gray-900'
+                        }`}
                         placeholder="+91 XXXXX XXXXX"
                       />
+                      {formErrors.phone && (
+                        <p className="text-red-500 text-[10px] font-semibold mt-0.5">{formErrors.phone}</p>
+                      )}
                     </div>
                     <div className="flex flex-col gap-1">
                       <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Email Address</label>
@@ -376,25 +416,36 @@ export default function RfqForm() {
                     <div className="flex flex-col gap-1">
                       <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Project Location / Address</label>
                       <input
+                        id="assisted-location"
                         type="text"
                         value={assistedData.location}
                         onChange={(e) => setAssistedData({ ...assistedData, location: e.target.value })}
-                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-gray-900"
+                        className={`w-full border rounded px-3 py-2 text-sm text-gray-900 focus:outline-none ${
+                          formErrors.location ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-300 focus:border-gray-900'
+                        }`}
                         placeholder="Project Site Area"
                       />
+                      {formErrors.location && (
+                        <p className="text-red-500 text-[10px] font-semibold mt-0.5">{formErrors.location}</p>
+                      )}
                     </div>
                   </div>
 
                   <div className="flex flex-col gap-1 mt-2">
                     <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Requirement Details *</label>
                     <textarea
-                      required
+                      id="assisted-details"
                       rows={4}
                       value={assistedData.details}
                       onChange={(e) => setAssistedData({ ...assistedData, details: e.target.value })}
-                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-gray-900 resize-none"
+                      className={`w-full border rounded px-3 py-2 text-sm text-gray-900 focus:outline-none resize-none ${
+                        formErrors.details ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-300 focus:border-gray-900'
+                      }`}
                       placeholder='Write your items and counts. Example: "We need 50 CPVC pipes, 3 overhead tanks and 1 motor for our apartment project."'
                     />
+                    {formErrors.details && (
+                      <p className="text-red-500 text-[10px] font-semibold mt-0.5">{formErrors.details}</p>
+                    )}
                   </div>
 
                   <div className="flex flex-col gap-1 mt-2">
@@ -438,7 +489,7 @@ export default function RfqForm() {
                       </div>
                     </div>
                   ) : (
-                    <form onSubmit={handleSubmitDetailed} className="flex flex-col gap-4">
+                    <form onSubmit={handleSubmitDetailed} noValidate className="flex flex-col gap-4">
                       <div className="text-left mb-2">
                         <h4 className="text-lg font-bold text-gray-900">Detailed B2B RFQ Specification</h4>
                         <p className="text-xs text-gray-500 mt-1">
@@ -447,35 +498,44 @@ export default function RfqForm() {
                       </div>
 
                       {/* Section 1: Company Details */}
-                      <div className="border border-gray-200 rounded p-4 bg-gray-50">
+                      <div className="border border-gray-200 rounded p-4 bg-gray-55">
                         <h5 className="text-xs font-bold uppercase tracking-wider text-gray-700 mb-3">1. Business Information</h5>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="flex flex-col gap-1">
                             <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Company Name *</label>
                             <input
-                              required
+                              id="detailed-companyName"
                               type="text"
                               value={detailedData.companyName}
                               onChange={(e) => setDetailedData({ ...detailedData, companyName: e.target.value })}
-                              className="w-full border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-900 focus:outline-none focus:border-gray-900 bg-white"
+                              className={`w-full border rounded px-3 py-1.5 text-xs text-gray-900 focus:outline-none bg-white ${
+                                formErrors.companyName ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-300 focus:border-gray-900'
+                              }`}
                               placeholder="Registered Entity Name"
                             />
+                            {formErrors.companyName && (
+                              <p className="text-red-500 text-[10px] font-semibold mt-0.5">{formErrors.companyName}</p>
+                            )}
                           </div>
                           <div className="flex flex-col gap-1">
                             <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">GSTIN *</label>
                             <input
-                              required
+                              id="detailed-gstNumber"
                               type="text"
                               value={detailedData.gstNumber}
                               onChange={(e) => setDetailedData({ ...detailedData, gstNumber: e.target.value.toUpperCase() })}
-                              className="w-full border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-900 focus:outline-none focus:border-gray-900 bg-white"
+                              className={`w-full border rounded px-3 py-1.5 text-xs text-gray-900 focus:outline-none bg-white ${
+                                formErrors.gstNumber ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-300 focus:border-gray-900'
+                              }`}
                               placeholder="29AAAAA0000A1Z5"
                             />
+                            {formErrors.gstNumber && (
+                              <p className="text-red-500 text-[10px] font-semibold mt-0.5">{formErrors.gstNumber}</p>
+                            )}
                           </div>
                           <div className="flex flex-col gap-1">
                             <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Contact Person *</label>
                             <input
-                              required
                               type="text"
                               value={detailedData.contactPerson}
                               onChange={(e) => setDetailedData({ ...detailedData, contactPerson: e.target.value })}
@@ -485,7 +545,6 @@ export default function RfqForm() {
                           <div className="flex flex-col gap-1">
                             <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Mobile Number *</label>
                             <input
-                              required
                               type="tel"
                               value={detailedData.phone}
                               onChange={(e) => setDetailedData({ ...detailedData, phone: e.target.value })}
@@ -496,7 +555,7 @@ export default function RfqForm() {
                       </div>
 
                       {/* Section 2: Project Details */}
-                      <div className="border border-gray-200 rounded p-4 bg-gray-50">
+                      <div className="border border-gray-200 rounded p-4 bg-gray-55">
                         <h5 className="text-xs font-bold uppercase tracking-wider text-gray-700 mb-3">2. Project & Logistical Info</h5>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="flex flex-col gap-1">
@@ -521,13 +580,18 @@ export default function RfqForm() {
                           <div className="flex flex-col gap-1 md:col-span-2">
                             <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Site Delivery Address *</label>
                             <textarea
-                              required
+                              id="detailed-deliveryAddress"
                               rows={2}
                               value={detailedData.deliveryAddress}
                               onChange={(e) => setDetailedData({ ...detailedData, deliveryAddress: e.target.value })}
-                              className="w-full border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-900 focus:outline-none focus:border-gray-900 resize-none bg-white"
+                              className={`w-full border rounded px-3 py-1.5 text-xs text-gray-900 focus:outline-none resize-none bg-white ${
+                                formErrors.deliveryAddress ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-300 focus:border-gray-900'
+                              }`}
                               placeholder="Full address where materials should be dispatched"
                             />
+                            {formErrors.deliveryAddress && (
+                              <p className="text-red-500 text-[10px] font-semibold mt-0.5">{formErrors.deliveryAddress}</p>
+                            )}
                           </div>
                         </div>
                       </div>
