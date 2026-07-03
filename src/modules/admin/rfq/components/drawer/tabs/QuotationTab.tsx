@@ -90,15 +90,24 @@ export function QuotationTab({ rfq, onDownloadQuote }: QuotationTabProps) {
                     <Eye className="h-3.5 w-3.5" />
                     Edit
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onDownloadQuote(q.id, `${q.id}.pdf`)}
-                    className="h-8 text-xs font-bold flex items-center gap-1 border-border"
-                  >
-                    <Download className="h-3.5 w-3.5" />
-                    PDF
-                  </Button>
+                  {q.isPersisted !== false ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onDownloadQuote(q.id, `${q.id}.pdf`)}
+                      className="h-8 text-xs font-bold flex items-center gap-1 border-border"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      PDF
+                    </Button>
+                  ) : (
+                    <span 
+                      title="This proposal is mock data. Create and save a real quotation to compile and download its PDF document."
+                      className="text-[10px] text-slate-400 bg-slate-100 font-semibold px-2.5 py-1.5 rounded cursor-not-allowed select-none"
+                    >
+                      Document available after saving
+                    </span>
+                  )}
                 </div>
               </div>
             );

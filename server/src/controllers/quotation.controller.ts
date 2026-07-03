@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { pgPool } from '../database/db';
 import { QuotationService } from '../services/quotation.service';
-import { QuotationPDF } from '../domain/shared/pdf/QuotationPDF';
 import { PermissionEngine } from '../domain/shared/PermissionEngine';
 
 const pool = pgPool!;
@@ -156,25 +155,13 @@ export class QuotationController {
   }
 
   public async getPdf(req: any, res: Response) {
-    try {
-      const { id } = req.params;
-      const quote = await quoteService.getQuotation(id);
-      if (!quote) {
-        return res.status(404).json({ error: 'Quotation not found' });
-      }
-
-      const generator = new QuotationPDF();
-      const generated = await generator.generate({
-        quotation: quote,
-        totals: quote,
-        items: quote.items
-      });
-
-      res.setHeader('Content-Type', generated.mimeType);
-      res.send(generated.content);
-    } catch (err: any) {
-      console.error('[QuotationController] getPdf error:', err);
-      res.status(500).json({ error: 'Internal server error rendering document' });
+    const { id } = req.params;
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    if (!isUuid) {
+      console.error(`[QuotationController] getPdf Fail: Invalid UUID format "${id}"`);
+      return res.status(400).json({ error: 'Invalid quotation ID format. UUID is required.' });
     }
+    const token = req.query.token ? `&token=${encodeURIComponent(req.query.token as string)}` : '';
+    res.redirect(`/api/documents/${id}?format=pdf${token}`);
   }
 }

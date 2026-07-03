@@ -1,4 +1,11 @@
-import { DocumentGenerator, GeneratedDocument } from './DocumentGenerator';
+import { DocumentRenderer } from '../DocumentRenderer';
+import { corporateTheme } from '../../shared/styles/corporate-theme';
+
+export interface QuotationModel {
+  quotation: any;
+  totals: any;
+  items: any[];
+}
 
 function numberToIndianWords(num: number): string {
   const a = [
@@ -76,11 +83,11 @@ const stateCodes: Record<string, string> = {
   'Jammu & Kashmir': '01', 'Ladakh': '38'
 };
 
-export class QuotationPDF implements DocumentGenerator {
-  public async generate(data: any): Promise<GeneratedDocument> {
-    const quote = data.quotation;
-    const totals = data.totals;
-    const items = data.items || [];
+export class QuotationRenderer implements DocumentRenderer<QuotationModel> {
+  public async render(model: QuotationModel): Promise<string> {
+    const quote = model.quotation;
+    const totals = model.totals;
+    const items = model.items || [];
     const customer = quote.customer_snapshot || {};
     const audit = totals.calculation_audit || {};
 
@@ -132,205 +139,14 @@ export class QuotationPDF implements DocumentGenerator {
     const formattedRoundoff = Number(totals.round_off).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const totalInWords = numberToIndianWords(Number(totals.grand_total));
 
-    const htmlContent = `
+    return `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="utf-8">
         <title>Quotation ${quote.quotation_number}</title>
         <style>
-          @page {
-            size: A4;
-            margin: 15mm;
-          }
-          body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            color: #1e293b;
-            margin: 0;
-            padding: 0;
-            font-size: 11px;
-            line-height: 1.4;
-            background-color: #ffffff;
-          }
-          .container {
-            width: 100%;
-            position: relative;
-            background-color: #ffffff;
-          }
-          .header-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-          }
-          .logo-cell {
-            width: 35%;
-            vertical-align: top;
-          }
-          .address-cell {
-            width: 40%;
-            vertical-align: top;
-            font-size: 11px;
-            color: #334155;
-            line-height: 1.4;
-          }
-          .title-cell {
-            width: 25%;
-            vertical-align: bottom;
-            text-align: right;
-          }
-          .quote-title {
-            font-size: 32px;
-            font-weight: 300;
-            color: #1e293b;
-            margin: 0;
-            letter-spacing: 0.5px;
-          }
-          .logo-box {
-            display: inline-block;
-            text-align: center;
-          }
-          .logo-icon {
-            width: 50px;
-            height: 50px;
-            border: 3px solid #1e3a8a;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            font-weight: 900;
-            color: #1e3a8a;
-            margin-bottom: 4px;
-            line-height: 44px;
-            text-align: center;
-          }
-          .logo-text {
-            font-size: 12px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            color: #1e293b;
-            text-transform: uppercase;
-          }
-          .metadata-bar {
-            width: 100%;
-            border-top: 1px solid #cbd5e1;
-            border-bottom: 1px solid #cbd5e1;
-            background-color: #f8fafc;
-            padding: 8px 10px;
-            margin-bottom: 20px;
-            font-size: 11px;
-          }
-          .metadata-table {
-            width: 100%;
-            border-collapse: collapse;
-          }
-          .metadata-table td {
-            padding: 3px 0;
-          }
-          .address-grid {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            border: 1px solid #e2e8f0;
-          }
-          .address-header {
-            background-color: #f1f5f9;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 10px;
-            color: #475569;
-            border-bottom: 1px solid #e2e8f0;
-          }
-          .address-header td {
-            padding: 6px 10px;
-          }
-          .address-body td {
-            padding: 10px;
-            width: 50%;
-            vertical-align: top;
-            line-height: 1.5;
-          }
-          .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            border: 1px solid #cbd5e1;
-          }
-          .items-table th {
-            background-color: #f1f5f9;
-            color: #1e293b;
-            font-weight: bold;
-            font-size: 10px;
-            padding: 6px;
-            border-bottom: 1px solid #cbd5e1;
-            border-right: 1px solid #cbd5e1;
-            text-align: center;
-            text-transform: uppercase;
-          }
-          .items-table th:last-child {
-            border-right: 0;
-          }
-          .footer-section {
-            width: 100%;
-            margin-top: 10px;
-          }
-          .footer-table {
-            width: 100%;
-            border-collapse: collapse;
-          }
-          .left-footer {
-            width: 55%;
-            vertical-align: top;
-            padding-right: 20px;
-          }
-          .right-footer {
-            width: 45%;
-            vertical-align: top;
-          }
-          .totals-table {
-            width: 100%;
-            border-collapse: collapse;
-          }
-          .totals-table td {
-            padding: 5px 8px;
-            font-size: 11px;
-          }
-          .totals-table tr.grand-total {
-            font-weight: bold;
-            font-size: 13px;
-            border-top: 1.5px solid #1e293b;
-            border-bottom: 1.5px solid #1e293b;
-            background-color: #f8fafc;
-          }
-          .sig-box {
-            border: 1px solid #cbd5e1;
-            height: 80px;
-            margin-top: 15px;
-            border-radius: 4px;
-            position: relative;
-          }
-          .sig-label {
-            position: absolute;
-            bottom: 6px;
-            left: 0;
-            right: 0;
-            text-align: center;
-            font-size: 10px;
-            color: #64748b;
-          }
-          .branding-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 6px;
-            font-size: 8px;
-            color: #94a3b8;
-          }
+          ${corporateTheme}
         </style>
       </head>
       <body>
@@ -351,77 +167,87 @@ export class QuotationPDF implements DocumentGenerator {
                 </div>
               </td>
               <td class="address-cell">
-                <strong>Arcus Groups</strong><br>
-                2ND FLOOR, 204/93, RISHIKA, 7th Main Road, Benelli<br>
-                Showroom Whitefield<br>
-                B Narayanapura<br>
-                Bengaluru Urban Karnataka 560016<br>
-                India<br>
-                GSTIN 29CBWPR3706D1Z7<br>
-                arcusgroups.blr@gmail.com
+                <div style="font-weight: 900; font-size: 12px; color: #1e293b; margin-bottom: 2px;">ARCUS INFRASTRUCTURE PRIVATE LIMITED</div>
+                <div>Regd Office: Ground Floor, Block A, Prestige Tech Park,</div>
+                <div>Outer Ring Road, Kadubeesanahalli, Bengaluru, Karnataka - 560103</div>
+                <div>GSTIN: 29AAICA2940J1ZX | Phone: +91 80 4910 2000</div>
               </td>
               <td class="title-cell">
-                <h1 class="quote-title">Quote</h1>
+                <h1 class="doc-title">QUOTATION</h1>
               </td>
             </tr>
           </table>
 
-          <!-- Metadata Bar -->
+          <!-- Metadata Ribbon Table -->
           <div class="metadata-bar">
             <table class="metadata-table">
               <tr>
-                <td style="width: 15%; font-weight: bold; color: #475569;">#</td>
-                <td style="width: 35%; font-weight: bold;">: ${quote.quotation_number}</td>
-                <td style="width: 20%; font-weight: bold; color: #475569; text-align: right;">Place Of Supply</td>
-                <td style="width: 30%; font-weight: bold; text-align: right;">: ${placeOfSupply}</td>
+                <td style="width: 15%; color: #64748b; font-weight: bold;">Quotation #</td>
+                <td style="width: 35%; font-weight: bold; color: #1e3a8a;">${quote.quotation_number}</td>
+                <td style="width: 15%; color: #64748b; font-weight: bold;">Quote Date</td>
+                <td style="width: 35%; font-family: monospace;">${new Date(quote.created_at || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
               </tr>
               <tr>
-                <td style="font-weight: bold; color: #475569;">Quote Date</td>
-                <td style="font-weight: bold;">: ${new Date(quote.created_at).toLocaleDateString('en-GB')}</td>
-                <td></td>
-                <td></td>
+                <td style="color: #64748b; font-weight: bold;">RFQ Reference</td>
+                <td style="font-family: monospace;">${quote.rfq_number || 'RFQ-2026-001'}</td>
+                <td style="color: #64748b; font-weight: bold;">Valid Until</td>
+                <td style="font-family: monospace;">${new Date(quote.expires_at || (Date.now() + 7 * 24 * 60 * 60 * 1000)).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+              </tr>
+              <tr>
+                <td style="color: #64748b; font-weight: bold;">Place Of Supply</td>
+                <td colspan="3" style="font-weight: bold;">${placeOfSupply}</td>
               </tr>
             </table>
           </div>
 
-          <!-- Bill To / Ship To Grid -->
+          <!-- Billing & Shipping side-by-side -->
           <table class="address-grid">
             <tr class="address-header">
-              <td style="border-right: 1px solid #e2e8f0; width: 50%;">Bill To</td>
-              <td style="width: 50%;">Ship To</td>
+              <td style="border-right: 1px solid #e2e8f0;">Bill To</td>
+              <td>Ship To</td>
             </tr>
             <tr class="address-body">
               <td style="border-right: 1px solid #e2e8f0;">
-                <strong>${customer.company || 'N/A'}</strong><br>
-                ${customer.billing_address || 'N/A'}<br>
-                GSTIN ${customer.GSTIN || 'Unregistered'}
+                <div style="font-weight: bold; color: #1e293b; font-size: 12px; margin-bottom: 4px;">${customer.company || 'Customer Entity'}</div>
+                <div style="white-space: pre-wrap; font-size: 11px; color: #475569;">${customer.billing_address || 'No Billing Address'}</div>
+                <div style="margin-top: 6px; font-size: 10px;">
+                  <strong>GSTIN:</strong> <span style="font-family: monospace;">${customer.GSTIN || 'URD (Unregistered)'}</span>
+                </div>
+                <div style="font-size: 10px;">
+                  <strong>Contact Person:</strong> ${customer.contact_person || 'N/A'} | <strong>Phone:</strong> ${customer.phone || 'N/A'}
+                </div>
               </td>
               <td>
-                <strong>${customer.company || 'N/A'}</strong><br>
-                ${customer.shipping_address || 'N/A'}<br>
-                GSTIN ${customer.GSTIN || 'Unregistered'}
+                <div style="font-weight: bold; color: #1e293b; font-size: 12px; margin-bottom: 4px;">${customer.company || 'Customer Entity'}</div>
+                <div style="white-space: pre-wrap; font-size: 11px; color: #475569;">${customer.shipping_address || 'No Shipping Address'}</div>
+                <div style="margin-top: 6px; font-size: 10px;">
+                  <strong>GSTIN:</strong> <span style="font-family: monospace;">${customer.GSTIN || 'URD (Unregistered)'}</span>
+                </div>
+                <div style="font-size: 10px;">
+                  <strong>Contact Person:</strong> ${customer.contact_person || 'N/A'} | <strong>Phone:</strong> ${customer.phone || 'N/A'}
+                </div>
               </td>
             </tr>
           </table>
 
-          <!-- Items Table -->
+          <!-- Items polymorphic table with nested CGST/SGST columns -->
           <table class="items-table">
             <thead>
               <tr>
                 <th rowspan="2" style="width: 4%;">#</th>
-                <th rowspan="2" style="width: 32%; text-align: left;">Item & Description</th>
-                <th rowspan="2" style="width: 8%;">HSN<br>/SAC</th>
-                <th rowspan="2" style="width: 8%;">Qty</th>
-                <th rowspan="2" style="width: 10%; text-align: right;">Rate</th>
-                <th rowspan="2" style="width: 8%; text-align: right;">Discount</th>
+                <th rowspan="2" style="width: 32%; text-align: left;">Product / Service Description</th>
+                <th rowspan="2" style="width: 10%;">HSN/SAC</th>
+                <th rowspan="2" style="width: 10%;">Qty</th>
+                <th rowspan="2" style="width: 12%;">Rate</th>
+                <th rowspan="2" style="width: 8%;">Disc</th>
                 <th colspan="2" style="width: 12%; border-bottom: 1px solid #cbd5e1;">CGST</th>
                 <th colspan="2" style="width: 12%; border-bottom: 1px solid #cbd5e1;">SGST</th>
-                <th rowspan="2" style="width: 12%; text-align: right;">Amount</th>
+                <th rowspan="2" style="width: 12%;">Amount</th>
               </tr>
               <tr>
-                <th style="font-size: 8px; padding: 3px; border-right: 1px solid #cbd5e1;">%</th>
+                <th style="font-size: 8px; padding: 3px; border-right: 1px solid #cbd5e1;">Rate</th>
                 <th style="font-size: 8px; padding: 3px; border-right: 1px solid #cbd5e1;">Amt</th>
-                <th style="font-size: 8px; padding: 3px; border-right: 1px solid #cbd5e1;">%</th>
+                <th style="font-size: 8px; padding: 3px; border-right: 1px solid #cbd5e1;">Rate</th>
                 <th style="font-size: 8px; padding: 3px; border-right: 1px solid #cbd5e1;">Amt</th>
               </tr>
             </thead>
@@ -430,42 +256,67 @@ export class QuotationPDF implements DocumentGenerator {
             </tbody>
           </table>
 
-          <!-- Footer Summary -->
+          <!-- Footer Summary calculations and T&C -->
           <div class="footer-section">
             <table class="footer-table">
               <tr>
+                <!-- Left footer: Bank Details & Commercial Terms -->
                 <td class="left-footer">
-                  <div style="margin-bottom: 12px;">
-                    <div style="font-weight: bold; color: #475569; margin-bottom: 3px;">Total In Words</div>
-                    <div style="font-style: italic; font-weight: bold; color: #1e293b;">${totalInWords}</div>
-                  </div>
-                  
-                  <div style="margin-bottom: 12px;">
-                    <div style="font-weight: bold; color: #475569; margin-bottom: 3px;">Notes</div>
-                    <div style="color: #334155;">Looking forward for your business.</div>
-                  </div>
+                  <div style="font-weight: bold; color: #475569; font-size: 10px; margin-bottom: 4px; text-transform: uppercase;">Bank Account Details (For Payments)</div>
+                  <table style="width: 100%; border-collapse: collapse; font-size: 10px; color: #334155; line-height: 1.5; margin-bottom: 15px;">
+                    <tr>
+                      <td style="width: 30%; font-weight: bold;">Account Name</td>
+                      <td>ARCUS INFRASTRUCTURE PRIVATE LIMITED</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight: bold;">Bank Name</td>
+                      <td>HDFC Bank Limited</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight: bold;">Account Number</td>
+                      <td style="font-family: monospace; font-weight: bold; color: #1e3a8a;">50200067394012</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight: bold;">IFSC Code</td>
+                      <td style="font-family: monospace; font-weight: bold; color: #1e3a8a;">HDFC0000094</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight: bold;">Branch Details</td>
+                      <td>Prestige Tech Park Branch, Bangalore</td>
+                    </tr>
+                  </table>
 
-                  <div>
-                    <strong>A/c Name:</strong> Arcus Groups<br>
-                    <strong>Bank Name:</strong> HDFC Bank<br>
-                    <strong>A/c No:</strong> 50200086161342<br>
-                    <strong>IFSC:</strong> HDFC0004210
-                  </div>
+                  <div style="font-weight: bold; color: #475569; font-size: 10px; margin-bottom: 4px; text-transform: uppercase;">Terms & Conditions</div>
+                  <ul style="margin: 0; padding-left: 15px; font-size: 10px; color: #475569; line-height: 1.5;">
+                    <li><strong>Delivery terms:</strong> F.O.R Site Delivery as specified in project order.</li>
+                    <li><strong>Payment terms:</strong> Net 30 standard commercial credit limit.</li>
+                    <li>Interest @ 18% per annum will be charged for payments delayed beyond due date.</li>
+                    <li>Goods once dispatched cannot be returned or cancelled.</li>
+                  </ul>
                 </td>
-                
+
+                <!-- Right footer: Price totals split & signature box -->
                 <td class="right-footer">
                   <table class="totals-table">
                     <tr>
-                      <td style="color: #475569; text-align: right; width: 60%;">Sub Total</td>
-                      <td style="font-family: monospace; text-align: right; width: 40%; font-weight: bold;">${formattedSubtotal}</td>
+                      <td style="width: 55%; color: #475569; text-align: right;">Subtotal</td>
+                      <td style="font-family: monospace; text-align: right; width: 45%;">${formattedSubtotal}</td>
                     </tr>
                     <tr>
-                      <td style="color: #475569; text-align: right;">CGST (${(quote.items?.[0]?.tax_percent || 18) / 2}%)</td>
-                      <td style="font-family: monospace; text-align: right; font-weight: bold;">${formattedCgst}</td>
+                      <td style="color: #475569; text-align: right;">Discount</td>
+                      <td style="font-family: monospace; text-align: right; color: #dc2626;">-${Number(totals.discount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     </tr>
                     <tr>
-                      <td style="color: #475569; text-align: right;">SGST (${(quote.items?.[0]?.tax_percent || 18) / 2}%)</td>
-                      <td style="font-family: monospace; text-align: right; font-weight: bold;">${formattedSgst}</td>
+                      <td style="color: #475569; text-align: right; font-weight: bold;">Taxable Amount</td>
+                      <td style="font-family: monospace; text-align: right; font-weight: bold;">${Number(totals.taxable_amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    </tr>
+                    <tr>
+                      <td style="color: #475569; text-align: right;">CGST Total</td>
+                      <td style="font-family: monospace; text-align: right;">${formattedCgst}</td>
+                    </tr>
+                    <tr>
+                      <td style="color: #475569; text-align: right;">SGST Total</td>
+                      <td style="font-family: monospace; text-align: right;">${formattedSgst}</td>
                     </tr>
                     <tr>
                       <td style="color: #475569; text-align: right;">Rounding</td>
@@ -477,6 +328,11 @@ export class QuotationPDF implements DocumentGenerator {
                     </tr>
                   </table>
                   
+                  <div style="font-size: 10px; font-weight: bold; color: #334155; margin-top: 10px; line-height: 1.4; text-align: right; text-transform: uppercase;">
+                    Amount in words:<br>
+                    <span style="font-size: 9px; color: #4b5563; font-style: italic; text-transform: none;">${totalInWords}</span>
+                  </div>
+
                   <div class="sig-box">
                     <div class="sig-label">Authorized Signature</div>
                   </div>
@@ -498,11 +354,5 @@ export class QuotationPDF implements DocumentGenerator {
       </body>
       </html>
     `;
-
-    return {
-      filename: `${quote.quotation_number}_v${quote.version}.html`,
-      mimeType: 'text/html',
-      content: htmlContent
-    };
   }
 }

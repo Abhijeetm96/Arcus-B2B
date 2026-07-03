@@ -633,7 +633,7 @@ export const QuotationBuilder: React.FC = () => {
           onApprove={() => setShowApprovalDialog(true)}
           onDecline={() => setShowRejectDialog(true)}
           onShare={() => setShowShareDialog(true)}
-          onDownloadPDF={handlePrintPdf}
+          onDownloadPDF={isNew ? undefined : handlePrintPdf}
           onConvertToOrder={handleConvertToOrder}
           canApprove={canApprove}
         />
