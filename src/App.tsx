@@ -135,17 +135,25 @@ function AppContent() {
           ) : isResources ? (
             <Resources />
           ) : isIndividualDb ? (
-            <IndividualDashboard />
+            <ErrorBoundary>
+              <IndividualDashboard />
+            </ErrorBoundary>
           ) : isBusinessDb ? (
-            <BusinessDashboard />
+            <ErrorBoundary>
+              <BusinessDashboard />
+            </ErrorBoundary>
           ) : isProfessionalDb ? (
-            <ProfessionalDashboard />
+            <ErrorBoundary>
+              <ProfessionalDashboard />
+            </ErrorBoundary>
           ) : isAdminDb ? (
-            segments[2] === 'quotations' ? (
-              <QuotationBuilder />
-            ) : (
-              <AdminDashboard />
-            )
+            <ErrorBoundary>
+              {segments[2] === 'quotations' ? (
+                <QuotationBuilder />
+              ) : (
+                <AdminDashboard />
+              )}
+            </ErrorBoundary>
           ) : isPlayground ? (
             <UIPlayground />
           ) : isResolver ? (

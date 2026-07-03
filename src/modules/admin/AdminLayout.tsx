@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { apiFetch } from '../../lib/api';
 import * as perm from '../../core/permissions/permissions';
 import { PageLayout } from '../../components/layout/PageLayout';
 import { Button } from '../../components/ui/Button';
@@ -81,11 +82,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
     setSearchLoading(true);
     try {
-      const token = localStorage.getItem('arcus_token');
-      const headers = { 'Authorization': `Bearer ${token}` };
-
       // 1. Fetch Products
-      const prodRes = await fetch('http://localhost:5000/api/admin/products', { headers });
+      const prodRes = await apiFetch('/admin/products');
       let prods: any[] = [];
       if (prodRes.ok) {
         const prodData = await prodRes.json();
@@ -99,17 +97,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       }
 
       // 2. Fetch Orders
-      const orderRes = await fetch('http://localhost:5000/api/admin/orders', { headers });
+      const orderRes = await apiFetch('/admin/orders');
       let orders: any[] = [];
       if (orderRes.ok) orders = await orderRes.json();
 
       // 3. Fetch RFQs
-      const rfqRes = await fetch('http://localhost:5000/api/rfqs', { headers });
+      const rfqRes = await apiFetch('/rfqs');
       let rfqs: any[] = [];
       if (rfqRes.ok) rfqs = await rfqRes.json();
 
       // 4. Fetch Customers
-      const custRes = await fetch('http://localhost:5000/api/admin/users', { headers });
+      const custRes = await apiFetch('/admin/users');
       let customers: any[] = [];
       if (custRes.ok) {
         const users = await custRes.json();
@@ -117,7 +115,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       }
 
       // 5. Fetch Brands
-      const brandRes = await fetch('http://localhost:5000/api/brands', { headers });
+      const brandRes = await apiFetch('/brands');
       let brands: any[] = [];
       if (brandRes.ok) brands = await brandRes.json();
 

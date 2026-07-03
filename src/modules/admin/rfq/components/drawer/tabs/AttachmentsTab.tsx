@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { apiFetch } from '../../../../lib/api';
 import { 
   Paperclip, FileText, FileSpreadsheet, Image, FileCode, File, 
   Download, Trash2, UploadCloud, Loader2 
@@ -62,12 +63,8 @@ export function AttachmentsTab({ rfq, onDownload, onRefresh }: AttachmentsTabPro
       formData.append('mimeType', file.type);
       formData.append('size', String(file.size));
 
-      const token = localStorage.getItem('arcus_token');
-      const res = await fetch(`http://localhost:5000/api/admin/rfqs/${rfq.id}/attachments`, {
+      const res = await apiFetch(`/admin/rfqs/${rfq.id}/attachments`, {
         method: 'POST',
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : ''
-        },
         body: formData
       });
 
@@ -86,12 +83,8 @@ export function AttachmentsTab({ rfq, onDownload, onRefresh }: AttachmentsTabPro
   const handleDelete = async (attId: string) => {
     setDeletingId(attId);
     try {
-      const token = localStorage.getItem('arcus_token');
-      const res = await fetch(`http://localhost:5000/api/admin/rfqs/${rfq.id}/attachments/${attId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : ''
-        }
+      const res = await apiFetch(`/admin/rfqs/${rfq.id}/attachments/${attId}`, {
+        method: 'DELETE'
       });
 
       if (!res.ok) throw new Error('Deletion failed');

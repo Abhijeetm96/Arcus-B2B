@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { apiFetch } from '../../../lib/api';
 import { LayoutDashboard, TableProperties, Sparkles, X } from 'lucide-react';
 import { WorkspaceLayout } from '../../../components/layout/WorkspaceLayout';
 import { RFQLayout } from './components/layout/RFQLayout';
@@ -15,32 +16,73 @@ import { RFQStatus } from './constants/status';
 import { RFQCreateDialog } from './components/workspace/RFQCreateDialog';
 
 export function RFQWorkspace() {
-  // 1. Navigation & Layout Tab State
-  const [activeTab, setActiveTab] = React.useState<'dashboard' | 'workspace'>('dashboard');
+  // Load initial states from sessionStorage
+  const [activeTab, setActiveTab] = React.useState<'dashboard' | 'workspace'>(() => {
+    return (sessionStorage.getItem('rfq_active_tab') as 'dashboard' | 'workspace') || 'dashboard';
+  });
 
-  // 2. Data Lists State
   const [allRfqs, setAllRfqs] = React.useState<RFQSummary[]>([]);
   const [rfqSummaries, setRfqSummaries] = React.useState<RFQSummary[]>([]);
-  const [selectedRfqDetail, setSelectedRfqDetail] = React.useState<RFQDetail | null>(null);
+  const [selectedRfqDetail, setSelectedRfqDetail] = React.useState<RFQDetail | null>(() => {
+    const cached = sessionStorage.getItem('rfq_selected_detail');
+    return cached ? JSON.parse(cached) : null;
+  });
   const [activities, setActivities] = React.useState<(RFQTimelineEvent & { rfqNumber: string; companyName: string })[]>([]);
   
-  // 3. UI Loading & Feedback States
   const [isLoading, setIsLoading] = React.useState(true);
-  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = React.useState(() => {
+    return sessionStorage.getItem('rfq_is_drawer_open') === 'true';
+  });
   const [isCreateOpen, setIsCreateOpen] = React.useState(false);
   const [selectedRows, setSelectedRows] = React.useState<Record<string, boolean>>({});
   
-  // Toast Alert Notification state
   const [toast, setToast] = React.useState<{ message: string; type: 'success' | 'info' | 'warning' } | null>(null);
 
-  // 4. Primary Filters State
-  const [search, setSearch] = React.useState('');
-  const [statusFilter, setStatusFilter] = React.useState<string>('all');
-  const [priorityFilter, setPriorityFilter] = React.useState('all');
-  const [ownerFilter, setOwnerFilter] = React.useState('all');
-  const [locationFilter, setLocationFilter] = React.useState('all');
-  const [valueRangeIndex, setValueRangeIndex] = React.useState('all');
-  const [savedFilterId, setSavedFilterId] = React.useState('none');
+  const [search, setSearch] = React.useState(() => {
+    return sessionStorage.getItem('rfq_search') || '';
+  });
+  const [statusFilter, setStatusFilter] = React.useState<string>(() => {
+    return sessionStorage.getItem('rfq_status_filter') || 'all';
+  });
+  const [priorityFilter, setPriorityFilter] = React.useState(() => {
+    return sessionStorage.getItem('rfq_priority_filter') || 'all';
+  });
+  const [ownerFilter, setOwnerFilter] = React.useState(() => {
+    return sessionStorage.getItem('rfq_owner_filter') || 'all';
+  });
+  const [locationFilter, setLocationFilter] = React.useState(() => {
+    return sessionStorage.getItem('rfq_location_filter') || 'all';
+  });
+  const [valueRangeIndex, setValueRangeIndex] = React.useState(() => {
+    return sessionStorage.getItem('rfq_value_range_index') || 'all';
+  });
+  const [savedFilterId, setSavedFilterId] = React.useState(() => {
+    return sessionStorage.getItem('rfq_saved_filter_id') || 'none';
+  });
+
+  // Persist layout states in sessionStorage
+  React.useEffect(() => {
+    sessionStorage.setItem('rfq_active_tab', activeTab);
+  }, [activeTab]);
+
+  React.useEffect(() => {
+    sessionStorage.setItem('rfq_search', search);
+    sessionStorage.setItem('rfq_status_filter', statusFilter);
+    sessionStorage.setItem('rfq_priority_filter', priorityFilter);
+    sessionStorage.setItem('rfq_owner_filter', ownerFilter);
+    sessionStorage.setItem('rfq_location_filter', locationFilter);
+    sessionStorage.setItem('rfq_value_range_index', valueRangeIndex);
+    sessionStorage.setItem('rfq_saved_filter_id', savedFilterId);
+  }, [search, statusFilter, priorityFilter, ownerFilter, locationFilter, valueRangeIndex, savedFilterId]);
+
+  React.useEffect(() => {
+    sessionStorage.setItem('rfq_is_drawer_open', String(isDrawerOpen));
+    if (selectedRfqDetail) {
+      sessionStorage.setItem('rfq_selected_detail', JSON.stringify(selectedRfqDetail));
+    } else {
+      sessionStorage.removeItem('rfq_selected_detail');
+    }
+  }, [isDrawerOpen, selectedRfqDetail]);
 
   // Load RFQ dataset and activities
   const loadData = async () => {
@@ -114,6 +156,16 @@ export function RFQWorkspace() {
     return () => clearTimeout(handler);
   }, [search, statusFilter, priorityFilter, ownerFilter, locationFilter, valueRangeIndex]);
 
+  // Handle reconnect broadcast event to refresh dashboard datasets
+  React.useEffect(() => {
+    const handleReconnect = () => {
+      triggerToast('Connection restored. Updating workspace...', 'success');
+      loadData();
+    };
+    window.addEventListener('arcus-reconnected', handleReconnect);
+    return () => window.removeEventListener('arcus-reconnected', handleReconnect);
+  }, [search, statusFilter, priorityFilter, ownerFilter, locationFilter, valueRangeIndex]);
+
   // Load single RFQ details when clicked
   const handleSelectRFQ = async (id: string) => {
     try {
@@ -184,13 +236,8 @@ export function RFQWorkspace() {
   const handleAddNote = async (text: string, isInternal: boolean, parentCommentId?: string) => {
     if (!selectedRfqDetail) return;
     try {
-      const token = localStorage.getItem('arcus_token');
-      const res = await fetch(`http://localhost:5000/api/admin/rfqs/${selectedRfqDetail.id}/comments`, {
+      const res = await apiFetch(`/admin/rfqs/${selectedRfqDetail.id}/comments`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
-        },
         body: JSON.stringify({ text, isInternal, parentCommentId })
       });
       if (!res.ok) throw new Error('Failed to post comment');

@@ -30,6 +30,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [isDbDown, setIsDbDown] = useState(false);
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(false);
+  const [wasDown, setWasDown] = useState(false);
 
   // Confirmation dialog state
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -82,17 +83,26 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         setIsMaintenanceMode(true);
         setIsBackendDown(false);
         setIsDbDown(false);
+        setWasDown(true);
       } else if (res.ok) {
         const data = await res.json();
         setIsOffline(false);
         setIsBackendDown(false);
         setIsMaintenanceMode(false);
         setIsDbDown(!data.database); // Set dbDown if postgres database health check returned false
+
+        if (wasDown) {
+          // Dispatch reconnection event to trigger dashboard reloads
+          window.dispatchEvent(new CustomEvent('arcus-reconnected'));
+          setWasDown(false);
+        }
       } else {
         setIsBackendDown(true);
+        setWasDown(true);
       }
     } catch {
       setIsBackendDown(true);
+      setWasDown(true);
     } finally {
       setIsReconnecting(false);
     }

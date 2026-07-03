@@ -68,139 +68,66 @@ export async function apiClient<T = any>(
   endpoint: string,
   options: ApiRequestOptions = {}
 ): Promise<T> {
-  const { timeout = 30000, retries = 1, skipAuth = false, ...fetchOptions } = options;
+  const { skipAuth = false, ...fetchOptions } = options;
 
-  const url = endpoint.startsWith('http://') || endpoint.startsWith('https://')
-    ? endpoint
-    : `${API_BASE}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+  // Call our self-healing, retrying apiFetch wrapper
+  const response = await apiFetch(endpoint, options);
 
-  // Headers setup
-  const headers = new Headers(fetchOptions.headers);
-  if (!headers.has('Content-Type') && !(fetchOptions.body instanceof FormData)) {
-    headers.set('Content-Type', 'application/json');
+  // JSON parsing safety checks
+  let data: any = null;
+  const contentType = response.headers?.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    data = await response.json();
+  } else if (response.text) {
+    const text = await response.text();
+    data = text ? { message: text } : {};
+  } else {
+    data = {};
   }
 
-  // Token Injection
-  if (!skipAuth) {
-    const token = localStorage.getItem('arcus_token');
-    if (token) {
-      headers.set('Authorization', `Bearer ${token}`);
+  // Development Authentication & API Logging
+  if (isDev && (endpoint.includes('/auth') || endpoint.includes('/admin'))) {
+    console.group(`[API CLIENT LOG] ${fetchOptions.method || 'GET'} ${endpoint}`);
+    console.log(`Status: ${response.status} ${response.statusText}`);
+    
+    // Log authenticated user if payload returned
+    if (data && (data.user || data.id)) {
+      const userObj = data.user || data;
+      console.log(`Authenticated User: ${userObj.email || 'None'} (Role: ${userObj.role || 'None'})`);
     }
-  }
-
-  let attempt = 0;
-  while (true) {
-    attempt++;
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), timeout);
-
-    try {
-      const response = await fetch(url, {
-        ...fetchOptions,
-        headers,
-        signal: controller.signal,
-      });
-
-      clearTimeout(id);
-
-      // JSON parsing safety checks
-      let data: any = null;
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        data = await response.json();
-      } else {
-        const text = await response.text();
-        data = text ? { message: text } : {};
-      }
-
-      // Development Authentication & API Logging
-      if (isDev && (url.includes('/api/auth') || url.includes('/api/admin'))) {
-        console.group(`[API CLIENT LOG] ${fetchOptions.method || 'GET'} ${url}`);
-        console.log(`Status: ${response.status} ${response.statusText}`);
-        
-        // Log authenticated user if payload returned
-        if (data && (data.user || data.id)) {
-          const userObj = data.user || data;
-          console.log(`Authenticated User: ${userObj.email || 'None'} (Role: ${userObj.role || 'None'})`);
-        }
-        
-        // Log token info
-        const activeToken = localStorage.getItem('arcus_token') || data?.token;
-        if (activeToken) {
-          console.log(`Token Expiry: ${decodeTokenExpiry(activeToken)}`);
-        }
-
-        // Log redirect targets if login succeeded
-        if (data && data.success && data.user) {
-          const role = (data.user.role || '').toUpperCase();
-          const target = role === 'ADMIN' ? '#/portal/admin' : '#/dashboard';
-          console.log(`Redirect Destination: ${target}`);
-        }
-        console.groupEnd();
-      }
-
-      if (!response.ok) {
-        const correlationId = response.headers.get('x-correlation-id') || undefined;
-        const mappedMsg = mapHttpStatusToErrorMessage(
-          response.status,
-          data?.error || data?.message
-        );
-        notification.error(mappedMsg, {
-          url,
-          status: response.status,
-          endpoint: endpoint.split('?')[0],
-          correlationId
-        });
-        throw new ApiError(mappedMsg, response.status, data);
-      }
-
-      return data as T;
-    } catch (error: any) {
-      clearTimeout(id);
-
-      if (error instanceof ApiError) {
-        throw error;
-      }
-
-      // Handle aborted/timed-out requests
-      if (error.name === 'AbortError') {
-        if (attempt < retries) {
-          console.warn(`[API CLIENT] Timeout on ${url}. Retrying attempt ${attempt + 1}...`);
-          continue;
-        }
-        const msg = 'Unable to connect to the server (Request Timed Out).';
-        notification.error(msg, { url, status: 0, endpoint: endpoint.split('?')[0] });
-        throw new ApiError(msg, 0);
-      }
-
-      // Handle connection refusal/network offline errors
-      if (error instanceof TypeError) {
-        if (attempt < retries) {
-          console.warn(`[API CLIENT] Network error on ${url}. Retrying attempt ${attempt + 1}...`);
-          continue;
-        }
-        const msg = 'No internet connection.';
-        notification.error(msg, { url, status: 0, endpoint: endpoint.split('?')[0] });
-        throw new ApiError(msg, 0, error);
-      }
-
-      throw error;
+    
+    // Log token info
+    const activeToken = localStorage.getItem('arcus_token') || data?.token;
+    if (activeToken) {
+      console.log(`Token Expiry: ${decodeTokenExpiry(activeToken)}`);
     }
+    console.groupEnd();
   }
+
+  if (!response.ok) {
+    const correlationId = response.headers?.get('x-correlation-id') || undefined;
+    const mappedMsg = mapHttpStatusToErrorMessage(
+      response.status,
+      data?.error || data?.message
+    );
+    throw new ApiError(mappedMsg, response.status, data);
+  }
+
+  return data as T;
 }
 
 /**
  * A fetch-compatible client wrapper that handles:
  * - Prepends API_BASE
  * - Injects Authorization token
- * - Handles base error checking and mapping
- * - Compatible with existing .then() / res.json() patterns
+ * - Handles exponential backoff retries on transient errors (timeouts, TypeError/offline, 502/503/504)
+ * - Automatically displays self-healing notifications to the user
  */
 export async function apiFetch(
   endpoint: string,
   options: ApiRequestOptions = {}
 ): Promise<Response> {
-  const { timeout = 30000, skipAuth = false } = options;
+  const { timeout = 30000, retries = 3, skipAuth = false } = options;
 
   const url = endpoint.startsWith('http://') || endpoint.startsWith('https://')
     ? endpoint
@@ -218,51 +145,89 @@ export async function apiFetch(
     }
   }
 
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
+  let attempt = 0;
+  while (true) {
+    attempt++;
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
 
-  try {
-    const response = await fetch(url, {
-      ...options,
-      headers,
-      signal: controller.signal,
-    });
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers,
+        signal: controller.signal,
+      });
 
-    clearTimeout(id);
+      clearTimeout(id);
 
-    // Development Logging
-    if (isDev && (url.includes('/api/auth') || url.includes('/api/admin'))) {
-      console.log(`[API FETCH LOG] ${options.method || 'GET'} ${url} Status: ${response.status}`);
+      // Retry on server-side gateway or load balancing restarts (502, 503, 504)
+      if ([502, 503, 504].includes(response.status) && attempt <= retries) {
+        const delay = [1000, 2000, 5000, 10000][attempt - 1] || 10000;
+        const isWrite = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method || 'GET');
+        const msg = isWrite
+          ? 'Unable to save because the server is temporarily unavailable. Retrying...'
+          : 'Server is restarting. Reconnecting automatically...';
+        notification.warning(msg, { id: 'api-retry' });
+        
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+
+      // Success after self-healing reconnect attempt
+      if (attempt > 1 && response.ok) {
+        notification.success('Connection restored', { id: 'api-retry' });
+      }
+
+      // Intercept error responses to map status codes into standard fetch Response shape
+      if (!response.ok) {
+        const originalJson = response.json.bind(response);
+        response.json = async () => {
+          try {
+            const originalData = await originalJson();
+            const mappedMsg = mapHttpStatusToErrorMessage(response.status, originalData?.error || originalData?.message);
+            return { ...originalData, error: mappedMsg };
+          } catch {
+            return { error: mapHttpStatusToErrorMessage(response.status) };
+          }
+        };
+      }
+
+      return response;
+    } catch (error: any) {
+      clearTimeout(id);
+
+      const isTimeout = error.name === 'AbortError';
+      const isNetwork = error instanceof TypeError;
+
+      if ((isTimeout || isNetwork) && attempt <= retries) {
+        const delay = [1000, 2000, 5000, 10000][attempt - 1] || 10000;
+        const isWrite = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method || 'GET');
+        const msg = isWrite
+          ? 'Unable to save because the server is temporarily unavailable. Retrying...'
+          : 'Server is restarting. Reconnecting automatically...';
+        notification.warning(msg, { id: 'api-retry' });
+
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+
+      // Final failure report
+      if (attempt > 1) {
+        notification.error('Unable to connect to the server.', { id: 'api-retry' });
+      }
+
+      console.error(`[API FETCH] Connection Error on ${url}:`, error);
+
+      const errorMsg = isTimeout ? 'Request timed out.' : 'Unable to connect to the server.';
+
+      return {
+        ok: false,
+        status: 0,
+        statusText: isTimeout ? 'Request Timeout' : 'Network Error',
+        headers: new Headers(),
+        json: async () => ({ error: errorMsg }),
+        text: async () => errorMsg
+      } as Response;
     }
-
-    // Intercept error responses to map status codes into standard fetch Response shape
-    if (!response.ok) {
-      // We wrap the response to return our user-friendly status message when .json() or text() is called
-      const originalJson = response.json.bind(response);
-      response.json = async () => {
-        try {
-          const originalData = await originalJson();
-          const mappedMsg = mapHttpStatusToErrorMessage(response.status, originalData?.error || originalData?.message);
-          return { ...originalData, error: mappedMsg };
-        } catch {
-          return { error: mapHttpStatusToErrorMessage(response.status) };
-        }
-      };
-    }
-
-    return response;
-  } catch (error: any) {
-    clearTimeout(id);
-    
-    // Convert fetch connection errors to user-friendly response mock
-    console.error(`[API FETCH] Connection Error on ${url}:`, error);
-    
-    return {
-      ok: false,
-      status: 0,
-      statusText: 'Network Error',
-      json: async () => ({ error: 'Unable to connect to the server.' }),
-      text: async () => 'Unable to connect to the server.'
-    } as Response;
   }
 }

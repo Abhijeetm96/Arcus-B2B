@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiFetch } from '../../../../lib/api';
 import { 
   Building, MapPin, DollarSign, Calendar, ShieldAlert, 
   Eye, Clock, UserCheck 
@@ -39,24 +40,15 @@ export function OverviewTab({ rfq, onRefresh }: OverviewTabProps) {
         // Remove watcher
         await rfqService.assignOwner(rfq.id, rfq.owner, user.name, user.role); // trigger update
         // We'll call direct api through window or services if available
-        const token = localStorage.getItem('arcus_token');
-        await fetch(`http://localhost:5000/api/admin/rfqs/${rfq.id}/watchers/${user.id}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': token ? `Bearer ${token}` : ''
-          }
+        await apiFetch(`/admin/rfqs/${rfq.id}/watchers/${user.id}`, {
+          method: 'DELETE'
         });
         setIsWatching(false);
         setWatchers(prev => prev.filter(w => w.user_id !== user.id));
       } else {
         // Add watcher
-        const token = localStorage.getItem('arcus_token');
-        await fetch(`http://localhost:5000/api/admin/rfqs/${rfq.id}/watchers`, {
+        await apiFetch(`/admin/rfqs/${rfq.id}/watchers`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': token ? `Bearer ${token}` : ''
-          },
           body: JSON.stringify({ userId: user.id })
         });
         setIsWatching(true);
