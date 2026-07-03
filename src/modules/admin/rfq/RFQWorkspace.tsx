@@ -405,7 +405,7 @@ export function RFQWorkspace() {
         onDownloadAttachment={(fname) => triggerToast(`Mock Download: Commencing download of attachment "${fname}"`, 'success')}
         onDownloadQuote={(qid) => {
           const token = localStorage.getItem('arcus_token') || '';
-          window.open(`/api/admin/quotations/${qid}/pdf?token=${encodeURIComponent(token)}`, '_blank');
+          window.open(`/api/documents/${qid}?format=pdf&download=true&token=${encodeURIComponent(token)}`, '_blank');
         }}
         onAction={handleDrawerAction}
         onRefresh={handleRefreshDrawer}

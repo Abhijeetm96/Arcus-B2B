@@ -78,7 +78,10 @@ export const BusinessInvoices: React.FC = () => {
                       <td className="p-md font-bold text-green-700">{formatCurrency(claimableGst)}</td>
                       <td className="p-md text-right">
                         <button
-                          onClick={() => alert(`Downloading Invoice INV-${o.id.split('-').pop()}...`)}
+                          onClick={() => {
+                            const token = localStorage.getItem('arcus_token') || '';
+                            window.open(`/api/documents/${o.id}?format=pdf&download=true&token=${encodeURIComponent(token)}`, '_blank');
+                          }}
                           className="px-md py-1 border border-slate-200 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-[10px] flex items-center gap-xs ml-auto"
                         >
                           <span className="material-symbols-outlined text-[14px]">download</span>

@@ -431,7 +431,7 @@ export const QuotationBuilder: React.FC = () => {
   const handlePrintPdf = () => {
     if (!quoteId) return;
     const token = localStorage.getItem('arcus_token') || '';
-    window.open(`/api/admin/quotations/${quoteId}/pdf?token=${encodeURIComponent(token)}`, '_blank');
+    window.open(`/api/documents/${quoteId}?format=pdf&download=true&token=${encodeURIComponent(token)}`, '_blank');
   };
 
   const handleCompareVersions = async (v1Num: number, v2Num: number) => {

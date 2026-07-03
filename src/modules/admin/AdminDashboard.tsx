@@ -38,6 +38,7 @@ export const AdminDashboard: React.FC = () => {
   // Synchronize section from URL hash query parameter on hash change & mount
   useEffect(() => {
     const handleHashChange = () => {
+      if (!window.location.hash.startsWith('#/portal/admin')) return;
       const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
       const section = params.get('section') || 'dashboard';
       setActiveSection(section);
@@ -46,16 +47,19 @@ export const AdminDashboard: React.FC = () => {
     window.addEventListener('hashchange', handleHashChange);
 
     // Initialize the hash query parameter if not present
-    const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
-    if (!params.get('section')) {
-      const hashWithoutParams = window.location.hash.split('?')[0] || '#/portal/admin';
-      window.location.hash = `${hashWithoutParams}?section=${activeSection}`;
+    if (window.location.hash.startsWith('#/portal/admin')) {
+      const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
+      if (!params.get('section')) {
+        const hashWithoutParams = window.location.hash.split('?')[0] || '#/portal/admin';
+        window.location.hash = `${hashWithoutParams}?section=${activeSection}`;
+      }
     }
 
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
   const handleSectionChange = (section: string) => {
+    if (!window.location.hash.startsWith('#/portal/admin')) return;
     const hashWithoutParams = window.location.hash.split('?')[0] || '#/portal/admin';
     window.location.hash = `${hashWithoutParams}?section=${section}`;
   };

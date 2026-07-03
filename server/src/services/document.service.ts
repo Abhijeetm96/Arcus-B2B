@@ -1,5 +1,6 @@
 import { BrowserManager } from '../domain/shared/pdf/BrowserManager';
 import { QuotationRenderer } from '../documents/renderers/quotation/QuotationRenderer';
+import { InvoiceRenderer } from '../documents/renderers/invoice/InvoiceRenderer';
 
 export class DocumentService {
   /**
@@ -12,6 +13,14 @@ export class DocumentService {
       totals,
       items
     });
+  }
+
+  /**
+   * Renders the order model into styled corporate HTML.
+   */
+  public static async renderInvoiceHtml(order: any): Promise<string> {
+    const renderer = new InvoiceRenderer();
+    return renderer.render(order);
   }
 
   /**

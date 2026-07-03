@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { QuotationService } from '../services/quotation.service';
 import { DocumentService } from '../services/document.service';
 import { pgPool } from '../database/db';
+import { getOrderById } from '../modules/orders/OrderService';
 
 export class DocumentController {
   private quoteService: QuotationService;
@@ -20,22 +21,34 @@ export class DocumentController {
 
     console.log(`[DocumentController] Processing render request: id=${id}, format=${format}, download=${download}`);
 
-    // Verify UUID boundary (Phase 1)
+    // Determine if the ID is a valid UUID (required for quotations lookup to prevent pg cast crashes)
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-    if (!isUuid) {
-      console.error(`[DocumentController] Fail: Invalid UUID format "${id}"`);
-      return res.status(400).json({ error: 'Invalid document ID format. UUID is required.' });
-    }
 
     try {
-      // 1. Fetch Quotation data
-      const quote = await this.quoteService.getQuotation(id);
-      if (!quote) {
-        return res.status(404).json({ error: 'Quotation not found' });
+      let quote: any = null;
+      
+      // Query quotation only if the format is a valid UUID
+      if (isUuid) {
+        quote = await this.quoteService.getQuotation(id);
       }
+      
+      let htmlContent = '';
+      let filename = `document_${id}.pdf`;
 
-      // 2. Render HTML first (Phase 4)
-      const htmlContent = await DocumentService.renderQuotationHtml(quote, quote, quote.items);
+      if (quote) {
+        // Render Quotation HTML first
+        htmlContent = await DocumentService.renderQuotationHtml(quote, quote, quote.items);
+        filename = `${quote.quotation_number}_v${quote.version}.pdf`;
+      } else {
+        // Try to fetch order (IDs can be UUID or VARCHAR format like ARC-XXXXX)
+        const order = await getOrderById(id);
+        if (!order) {
+          return res.status(404).json({ error: 'Document not found' });
+        }
+        // Render Order HTML first (Tax Invoice)
+        htmlContent = await DocumentService.renderInvoiceHtml(order);
+        filename = `INV-${order.id.split('-').pop()?.toUpperCase() || 'INVOICE'}.pdf`;
+      }
 
       // Phase 6 & 7: Preview / Delivery modes
       if (format === 'html') {
@@ -44,10 +57,9 @@ export class DocumentController {
       }
 
       if (format === 'pdf') {
-        // Compile to PDF (Phase 4)
+        // Compile to PDF
         const pdfBuffer = await DocumentService.generatePdfFromHtml(htmlContent);
         
-        const filename = `${quote.quotation_number}_v${quote.version}.pdf`;
         res.setHeader('Content-Type', 'application/pdf');
         if (download) {
           res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
