@@ -6,7 +6,7 @@ export class BrowserManager {
 
   /**
    * Returns the shared singleton Browser instance.
-   * Launches it if it does not yet exist.
+   * Launces/restarts it if needed.
    */
   public static async getBrowser(): Promise<Browser> {
     if (this.instance) {
@@ -17,25 +17,26 @@ export class BrowserManager {
       return this.launchPromise;
     }
 
-    console.log('[BrowserManager] Launching reusable headless Chromium instance...');
+    console.log('[BrowserManager] Spawning reusable headless Chromium instance...');
     this.launchPromise = puppeteer.launch({
       headless: true,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
-        '--disable-gpu'
+        '--disable-gpu',
+        '--font-render-hinting=none'
       ]
     }).then((browser) => {
       this.instance = browser;
       this.launchPromise = null;
-      
+
       browser.on('disconnected', () => {
-        console.warn('[BrowserManager] Chromium browser disconnected. Resetting singleton instance...');
+        console.warn('[BrowserManager] Reusable browser was disconnected. Purging reference...');
         this.instance = null;
       });
 
-      console.log('[BrowserManager] Reusable Chromium browser launched successfully.');
+      console.log('[BrowserManager] Headless Chromium launched successfully.');
       return browser;
     }).catch((err) => {
       this.launchPromise = null;
@@ -47,13 +48,14 @@ export class BrowserManager {
   }
 
   /**
-   * Closes the active browser instance.
+   * Graceful shutdown of active instance.
    */
   public static async close(): Promise<void> {
     if (this.instance) {
-      console.log('[BrowserManager] Closing browser instance...');
+      console.log('[BrowserManager] Gracefully shutting down browser instance...');
       await this.instance.close();
       this.instance = null;
     }
   }
 }
+export default BrowserManager;
