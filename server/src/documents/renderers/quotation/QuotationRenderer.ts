@@ -1,5 +1,4 @@
 import { DocumentRenderer } from '../DocumentRenderer';
-import { corporateTheme } from '../../shared/styles/corporate-theme';
 
 export interface QuotationModel {
   quotation: any;
@@ -94,263 +93,281 @@ export class QuotationRenderer implements DocumentRenderer<QuotationModel> {
     const customerState = customer.state || 'Karnataka';
     const customerStateCode = stateCodes[customerState] || '29';
     const placeOfSupply = `${customerState} (${customerStateCode})`;
+    const isInterstate = customerState.toLowerCase() !== 'karnataka';
 
     const itemsRowsHtml = items.map((it: any, idx: number) => {
       const prod = it.product_snapshot || {};
-      const discountText = it.discount_percent > 0 ? `${Number(it.discount_percent).toFixed(2)}%` : '0.00';
-      const halfTaxRate = (it.tax_percent || 18) / 2;
-      const cgstAmt = it.tax_amount ? it.tax_amount / 2 : 0;
+      const discountText = it.discount_percent > 0 ? `${Number(it.discount_percent).toFixed(0)}%` : '—';
+      
+      let taxText = '—';
+      if (it.tax_percent > 0) {
+        if (isInterstate) {
+          taxText = `${Number(it.tax_percent).toFixed(0)}% IGST`;
+        } else {
+          const halfRate = Number(it.tax_percent) / 2;
+          taxText = `${halfRate.toFixed(0)}% + ${halfRate.toFixed(0)}%`;
+        }
+      }
       
       return `
-        <tr style="border-bottom: 1px solid #cbd5e1; font-size: 11px;">
-          <td style="padding: 8px; text-align: center; border-right: 1px solid #cbd5e1;">${idx + 1}</td>
-          <td style="padding: 8px; border-right: 1px solid #cbd5e1; text-align: left;">
-            <div style="font-weight: bold; color: #1e293b;">${prod.name || it.product_name}</div>
+        <tr class="hover:bg-slate-50/50">
+          <td class="text-gray-400 text-center font-mono">${String(idx + 1).padStart(2, '0')}</td>
+          <td>
+            <span class="font-semibold block text-gray-900">${prod.name || it.product_name || 'Item'}</span>
           </td>
-          <td style="padding: 8px; text-align: center; border-right: 1px solid #cbd5e1; font-family: monospace;">${prod.hsn_code || prod.hsn || '3917'}</td>
-          <td style="padding: 8px; text-align: center; border-right: 1px solid #cbd5e1;">
-            <div>${Number(it.quantity).toFixed(2)}</div>
-            <div style="font-size: 9px; color: #64748b; margin-top: 2px;">${prod.unit || 'pcs'}</div>
-          </td>
-          <td style="padding: 8px; text-align: right; border-right: 1px solid #cbd5e1; font-family: monospace;">${Number(it.rate).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-          <td style="padding: 8px; text-align: right; border-right: 1px solid #cbd5e1; font-family: monospace;">${discountText}</td>
-          
-          <!-- CGST Column -->
-          <td style="padding: 8px; text-align: center; border-right: 1px solid #cbd5e1; font-family: monospace;">${halfTaxRate}%</td>
-          <td style="padding: 8px; text-align: right; border-right: 1px solid #cbd5e1; font-family: monospace;">${cgstAmt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-          
-          <!-- SGST Column -->
-          <td style="padding: 8px; text-align: center; border-right: 1px solid #cbd5e1; font-family: monospace;">${halfTaxRate}%</td>
-          <td style="padding: 8px; text-align: right; border-right: 1px solid #cbd5e1; font-family: monospace;">${cgstAmt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-          
-          <td style="padding: 8px; text-align: right; font-weight: bold; font-family: monospace;">${Number(it.final_amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+          <td class="text-center text-gray-400 font-mono">${prod.hsn_code || prod.hsn || '—'}</td>
+          <td class="text-right font-medium">${Number(it.quantity).toFixed(2)} <span class="text-xxs text-gray-400">${prod.unit || 'pcs'}</span></td>
+          <td class="text-right font-mono">${Number(it.rate).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+          <td class="text-right font-medium">${discountText}</td>
+          <td class="text-right font-medium">${taxText}</td>
+          <td class="text-right font-semibold text-gray-900 font-mono">${Number(it.final_amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
         </tr>
       `;
     }).join('');
 
     const formattedGrandTotal = Number(totals.grand_total).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const formattedSubtotal = Number(totals.subtotal).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    
-    // Split GST details
-    const halfGst = totals.gst_amount ? totals.gst_amount / 2 : 0;
-    const formattedCgst = halfGst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const formattedSgst = halfGst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    
     const formattedRoundoff = Number(totals.round_off).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const totalInWords = numberToIndianWords(Number(totals.grand_total));
 
+    // Dynamic tax layout for totals block
+    let taxRowsHtml = '';
+    if (isInterstate) {
+      taxRowsHtml = `
+        <div class="flex justify-between text-gray-500">
+          <span>IGST (${Number(items[0]?.tax_percent || 18).toFixed(0)}%)</span>
+          <span class="font-medium text-gray-900 font-mono">${Number(totals.gst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        </div>
+      `;
+    } else {
+      const halfGst = (totals.gst_amount || 0) / 2;
+      const halfRate = (items[0]?.tax_percent || 18) / 2;
+      taxRowsHtml = `
+        <div class="flex justify-between text-gray-500">
+          <span>CGST (${halfRate.toFixed(0)}%)</span>
+          <span class="font-medium text-gray-900 font-mono">${halfGst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        </div>
+        <div class="flex justify-between text-gray-500">
+          <span>SGST (${halfRate.toFixed(0)}%)</span>
+          <span class="font-medium text-gray-900 font-mono">${halfGst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        </div>
+      `;
+    }
+
     return `
       <!DOCTYPE html>
-      <html>
+      <html lang="en">
       <head>
-        <meta charset="utf-8">
-        <title>Quotation ${quote.quotation_number}</title>
-        <style>
-          ${corporateTheme}
+        <meta charset="utf-8"/>
+        <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+        <title>Arcus Groups Quote - ${quote.quotation_number}</title>
+        <!-- Tailwind CSS CDN with forms and container-queries -->
+        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+        <style data-purpose="typography">
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+          body {
+            font-family: 'Inter', sans-serif;
+            color: #1f2937;
+            background-color: #f9fafb;
+          }
+          .text-xxs {
+            font-size: 0.7rem;
+          }
+        </style>
+        <style data-purpose="layout">
+          @media print {
+            body {
+              background-color: white;
+              padding: 0 !important;
+              margin: 0 !important;
+            }
+            main {
+              box-shadow: none !important;
+              max-width: 100% !important;
+              width: 100% !important;
+              border-radius: 0 !important;
+              padding: 0 !important;
+            }
+            .page-break {
+              page-break-before: always;
+            }
+          }
+          /* Modern minimalist table styles */
+          .invoice-table th {
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            color: #6b7280;
+            border-bottom: 1px solid #f3f4f6;
+            padding: 12px 8px;
+          }
+          .invoice-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #f9fafb;
+            line-height: 1.5;
+          }
+          .invoice-table tr:last-child td {
+            border-bottom: none;
+          }
         </style>
       </head>
-      <body>
-        <div class="container">
+      <body class="p-4 md:p-12 flex justify-center">
+        <!-- BEGIN: Main Container -->
+        <main class="bg-white w-full max-w-[850px] shadow-sm print-shadow rounded-lg overflow-hidden" data-purpose="invoice-document">
           
-          <!-- Top Header Table -->
-          <table class="header-table">
-            <tr>
-              <td class="logo-cell">
-                <div class="logo-box">
-                  <div style="font-size: 26px; font-weight: 900; color: #1e3a8a; letter-spacing: -1px; display: flex; align-items: center; gap: 6px;">
-                    <span style="font-family: 'Courier New', Courier, monospace; font-weight: bold; font-size: 32px; border: 2.5px solid #1e3a8a; padding: 2px 8px; border-radius: 4px;">AG</span>
-                    <div style="text-align: left; line-height: 1;">
-                      <span style="font-size: 16px; font-weight: 900; text-transform: uppercase;">Arcus</span><br>
-                      <span style="font-size: 9px; font-weight: bold; color: #64748b; tracking: 1px;">GROUPS</span>
-                    </div>
-                  </div>
+          <!-- BEGIN: Header Section -->
+          <header class="p-8 md:p-12 pb-6">
+            <div class="flex justify-between items-start">
+              <div class="flex flex-col gap-6">
+                <!-- Logo -->
+                <img alt="Arcus Groups Logo" class="h-12 w-auto object-contain self-start" data-purpose="company-logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3bMPtG0F6yJpAIWao2hoWPuYYOKBPUHS8xoO4OwJcZ-AEdCwk-kJjmI-4HqmFnm68z4z4CzAg81W_UnwHpI2xOvG-CSNHQ3OPIMsww3h67V_Hlct6MDYQzuOumOAYpvahQSCGqzRvsWQBkAnzBZ75wAgfV9BnCtZNrn7Qi7UsVKx4J8Xbof1caADe4vwMTAO6oTCuYHZAzozkVUcZUzURdxbLElvA-h_8XKLbHlj1tRQpsZyL05EDGCgo1ZEj2TDAdxdps5fm71pS"/>
+                <div data-purpose="company-address">
+                  <h1 class="font-bold text-2xl tracking-tight text-gray-900">Arcus Groups</h1>
+                  <address class="not-italic text-sm mt-3 text-gray-500 leading-relaxed max-w-xs">
+                    2ND FLOOR, 204/93, RISHIKA, 7th Main Road,<br/>
+                    Benelli Showroom Whitefield,<br/>
+                    B Narayanapura, Bengaluru Urban<br/>
+                    Karnataka 560016, India<br/>
+                    <span class="font-medium text-gray-700 block mt-2">GSTIN: 29CBWPR3706D1Z7</span>
+                    <span class="block">arcusgroups.blr@gmail.com</span>
+                  </address>
                 </div>
-              </td>
-              <td class="address-cell">
-                <div style="font-weight: 900; font-size: 12px; color: #1e293b; margin-bottom: 2px;">ARCUS INFRASTRUCTURE PRIVATE LIMITED</div>
-                <div>Regd Office: Ground Floor, Block A, Prestige Tech Park,</div>
-                <div>Outer Ring Road, Kadubeesanahalli, Bengaluru, Karnataka - 560103</div>
-                <div>GSTIN: 29AAICA2940J1ZX | Phone: +91 80 4910 2000</div>
-              </td>
-              <td class="title-cell">
-                <h1 class="doc-title">QUOTATION</h1>
-              </td>
-            </tr>
-          </table>
-
-          <!-- Metadata Ribbon Table -->
-          <div class="metadata-bar">
-            <table class="metadata-table">
-              <tr>
-                <td style="width: 15%; color: #64748b; font-weight: bold;">Quotation #</td>
-                <td style="width: 35%; font-weight: bold; color: #1e3a8a;">${quote.quotation_number}</td>
-                <td style="width: 15%; color: #64748b; font-weight: bold;">Quote Date</td>
-                <td style="width: 35%; font-family: monospace;">${new Date(quote.created_at || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-              </tr>
-              <tr>
-                <td style="color: #64748b; font-weight: bold;">RFQ Reference</td>
-                <td style="font-family: monospace;">${quote.rfq_number || 'RFQ-2026-001'}</td>
-                <td style="color: #64748b; font-weight: bold;">Valid Until</td>
-                <td style="font-family: monospace;">${new Date(quote.expires_at || (Date.now() + 7 * 24 * 60 * 60 * 1000)).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-              </tr>
-              <tr>
-                <td style="color: #64748b; font-weight: bold;">Place Of Supply</td>
-                <td colspan="3" style="font-weight: bold;">${placeOfSupply}</td>
-              </tr>
-            </table>
-          </div>
-
-          <!-- Billing & Shipping side-by-side -->
-          <table class="address-grid">
-            <tr class="address-header">
-              <td style="border-right: 1px solid #e2e8f0;">Bill To</td>
-              <td>Ship To</td>
-            </tr>
-            <tr class="address-body">
-              <td style="border-right: 1px solid #e2e8f0;">
-                <div style="font-weight: bold; color: #1e293b; font-size: 12px; margin-bottom: 4px;">${customer.company || 'Customer Entity'}</div>
-                <div style="white-space: pre-wrap; font-size: 11px; color: #475569;">${customer.billing_address || 'No Billing Address'}</div>
-                <div style="margin-top: 6px; font-size: 10px;">
-                  <strong>GSTIN:</strong> <span style="font-family: monospace;">${customer.GSTIN || 'URD (Unregistered)'}</span>
+              </div>
+              <div class="text-right">
+                <h2 class="text-5xl font-extralight mb-8 text-gray-800">Quote</h2>
+                <div class="space-y-1 text-sm">
+                  <p class="text-gray-400">Quote Number</p>
+                  <p class="font-semibold text-gray-900 font-mono">${quote.quotation_number}</p>
+                  <p class="text-gray-400 mt-4">Date</p>
+                  <p class="font-semibold text-gray-900 font-mono">${new Date(quote.created_at || Date.now()).toLocaleDateString('en-IN')}</p>
                 </div>
-                <div style="font-size: 10px;">
-                  <strong>Contact Person:</strong> ${customer.contact_person || 'N/A'} | <strong>Phone:</strong> ${customer.phone || 'N/A'}
-                </div>
-              </td>
-              <td>
-                <div style="font-weight: bold; color: #1e293b; font-size: 12px; margin-bottom: 4px;">${customer.company || 'Customer Entity'}</div>
-                <div style="white-space: pre-wrap; font-size: 11px; color: #475569;">${customer.shipping_address || 'No Shipping Address'}</div>
-                <div style="margin-top: 6px; font-size: 10px;">
-                  <strong>GSTIN:</strong> <span style="font-family: monospace;">${customer.GSTIN || 'URD (Unregistered)'}</span>
-                </div>
-                <div style="font-size: 10px;">
-                  <strong>Contact Person:</strong> ${customer.contact_person || 'N/A'} | <strong>Phone:</strong> ${customer.phone || 'N/A'}
-                </div>
-              </td>
-            </tr>
-          </table>
-
-          <!-- Items polymorphic table with nested CGST/SGST columns -->
-          <table class="items-table">
-            <thead>
-              <tr>
-                <th rowspan="2" style="width: 4%;">#</th>
-                <th rowspan="2" style="width: 32%; text-align: left;">Product / Service Description</th>
-                <th rowspan="2" style="width: 10%;">HSN/SAC</th>
-                <th rowspan="2" style="width: 10%;">Qty</th>
-                <th rowspan="2" style="width: 12%;">Rate</th>
-                <th rowspan="2" style="width: 8%;">Disc</th>
-                <th colspan="2" style="width: 12%; border-bottom: 1px solid #cbd5e1;">CGST</th>
-                <th colspan="2" style="width: 12%; border-bottom: 1px solid #cbd5e1;">SGST</th>
-                <th rowspan="2" style="width: 12%;">Amount</th>
-              </tr>
-              <tr>
-                <th style="font-size: 8px; padding: 3px; border-right: 1px solid #cbd5e1;">Rate</th>
-                <th style="font-size: 8px; padding: 3px; border-right: 1px solid #cbd5e1;">Amt</th>
-                <th style="font-size: 8px; padding: 3px; border-right: 1px solid #cbd5e1;">Rate</th>
-                <th style="font-size: 8px; padding: 3px; border-right: 1px solid #cbd5e1;">Amt</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itemsRowsHtml}
-            </tbody>
-          </table>
-
-          <!-- Footer Summary calculations and T&C -->
-          <div class="footer-section">
-            <table class="footer-table">
-              <tr>
-                <!-- Left footer: Bank Details & Commercial Terms -->
-                <td class="left-footer">
-                  <div style="font-weight: bold; color: #475569; font-size: 10px; margin-bottom: 4px; text-transform: uppercase;">Bank Account Details (For Payments)</div>
-                  <table style="width: 100%; border-collapse: collapse; font-size: 10px; color: #334155; line-height: 1.5; margin-bottom: 15px;">
-                    <tr>
-                      <td style="width: 30%; font-weight: bold;">Account Name</td>
-                      <td>ARCUS INFRASTRUCTURE PRIVATE LIMITED</td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight: bold;">Bank Name</td>
-                      <td>HDFC Bank Limited</td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight: bold;">Account Number</td>
-                      <td style="font-family: monospace; font-weight: bold; color: #1e3a8a;">50200067394012</td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight: bold;">IFSC Code</td>
-                      <td style="font-family: monospace; font-weight: bold; color: #1e3a8a;">HDFC0000094</td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight: bold;">Branch Details</td>
-                      <td>Prestige Tech Park Branch, Bangalore</td>
-                    </tr>
-                  </table>
-
-                  <div style="font-weight: bold; color: #475569; font-size: 10px; margin-bottom: 4px; text-transform: uppercase;">Terms & Conditions</div>
-                  <ul style="margin: 0; padding-left: 15px; font-size: 10px; color: #475569; line-height: 1.5;">
-                    <li><strong>Delivery terms:</strong> F.O.R Site Delivery as specified in project order.</li>
-                    <li><strong>Payment terms:</strong> Net 30 standard commercial credit limit.</li>
-                    <li>Interest @ 18% per annum will be charged for payments delayed beyond due date.</li>
-                    <li>Goods once dispatched cannot be returned or cancelled.</li>
-                  </ul>
-                </td>
-
-                <!-- Right footer: Price totals split & signature box -->
-                <td class="right-footer">
-                  <table class="totals-table">
-                    <tr>
-                      <td style="width: 55%; color: #475569; text-align: right;">Subtotal</td>
-                      <td style="font-family: monospace; text-align: right; width: 45%;">${formattedSubtotal}</td>
-                    </tr>
-                    <tr>
-                      <td style="color: #475569; text-align: right;">Discount</td>
-                      <td style="font-family: monospace; text-align: right; color: #dc2626;">-${Number(totals.discount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    </tr>
-                    <tr>
-                      <td style="color: #475569; text-align: right; font-weight: bold;">Taxable Amount</td>
-                      <td style="font-family: monospace; text-align: right; font-weight: bold;">${Number(totals.taxable_amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    </tr>
-                    <tr>
-                      <td style="color: #475569; text-align: right;">CGST Total</td>
-                      <td style="font-family: monospace; text-align: right;">${formattedCgst}</td>
-                    </tr>
-                    <tr>
-                      <td style="color: #475569; text-align: right;">SGST Total</td>
-                      <td style="font-family: monospace; text-align: right;">${formattedSgst}</td>
-                    </tr>
-                    <tr>
-                      <td style="color: #475569; text-align: right;">Rounding</td>
-                      <td style="font-family: monospace; text-align: right; font-weight: bold;">${formattedRoundoff}</td>
-                    </tr>
-                    <tr class="grand-total">
-                      <td style="text-align: right;">Total</td>
-                      <td style="font-family: monospace; text-align: right; font-size: 14px; font-weight: 900; color: #1e3a8a;">₹${formattedGrandTotal}</td>
-                    </tr>
-                  </table>
-                  
-                  <div style="font-size: 10px; font-weight: bold; color: #334155; margin-top: 10px; line-height: 1.4; text-align: right; text-transform: uppercase;">
-                    Amount in words:<br>
-                    <span style="font-size: 9px; color: #4b5563; font-style: italic; text-transform: none;">${totalInWords}</span>
-                  </div>
-
-                  <div class="sig-box">
-                    <div class="sig-label">Authorized Signature</div>
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </div>
-
-          <!-- Bottom Branding Footer -->
-          <div class="branding-footer">
-            <div style="display: flex; align-items: center; gap: 4px;">
-              <span>POWERED BY</span>
-              <span style="font-weight: 900; color: #1e3a8a; letter-spacing: -0.5px;">ARCUS</span>
+              </div>
             </div>
-            <div>1</div>
-          </div>
+          </header>
+          <!-- END: Header Section -->
 
-        </div>
+          <!-- BEGIN: Place of Supply Ribbon -->
+          <section class="px-8 md:px-12 py-6 border-y border-gray-50 flex justify-between items-center text-sm" data-purpose="document-info">
+            <div class="flex gap-2">
+              <span class="text-gray-400 uppercase tracking-wider text-xs font-semibold">Place Of Supply:</span>
+              <span class="font-medium">${placeOfSupply}</span>
+            </div>
+            <div class="flex gap-2">
+              <span class="text-gray-400 uppercase tracking-wider text-xs font-semibold">RFQ Reference:</span>
+              <span class="font-medium font-mono">${quote.rfq_number || 'RFQ-2026-001'}</span>
+            </div>
+          </section>
+
+          <!-- BEGIN: Billing and Shipping -->
+          <section class="grid grid-cols-2 gap-12 p-8 md:p-12 text-sm" data-purpose="billing-shipping">
+            <div class="space-y-4">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400 border-b border-gray-100 pb-2">Bill To</h3>
+              <div class="text-gray-600 leading-relaxed">
+                <p class="font-bold text-gray-900 mb-1">${customer.company || 'Customer Entity'}</p>
+                <p class="whitespace-pre-line">${customer.billing_address || 'No Billing Address'}</p>
+                <p class="font-semibold text-gray-800 mt-2">GSTIN: <span class="font-mono">${customer.GSTIN || 'URD (Unregistered)'}</span></p>
+              </div>
+            </div>
+            <div class="space-y-4">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400 border-b border-gray-100 pb-2">Ship To</h3>
+              <div class="text-gray-600 leading-relaxed">
+                <p class="font-bold text-gray-900 mb-1">${customer.company || 'Customer Entity'}</p>
+                <p class="whitespace-pre-line">${customer.shipping_address || 'No Shipping Address'}</p>
+                <p class="font-semibold text-gray-800 mt-2">GSTIN: <span class="font-mono">${customer.GSTIN || 'URD (Unregistered)'}</span></p>
+              </div>
+            </div>
+          </section>
+          <!-- END: Billing and Shipping -->
+
+          <!-- BEGIN: Items Table -->
+          <section class="px-8 md:px-12 pb-12" data-purpose="items-table">
+            <table class="w-full text-xs invoice-table">
+              <thead>
+                <tr class="text-left">
+                  <th class="w-8 text-center">#</th>
+                  <th class="w-48 text-left">Item &amp; Description</th>
+                  <th class="text-center">HSN</th>
+                  <th class="text-right">Qty</th>
+                  <th class="text-right">Rate</th>
+                  <th class="text-right">Disc</th>
+                  <th class="text-right">Tax Rate</th>
+                  <th class="text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody class="text-gray-700">
+                ${itemsRowsHtml}
+              </tbody>
+            </table>
+          </section>
+          <!-- END: Items Table -->
+
+          <!-- BEGIN: Totals and Notes -->
+          <section class="grid grid-cols-12 gap-8 px-8 md:px-12 py-12 bg-gray-50/50" data-purpose="totals-section">
+            <!-- Left Column: Words and Bank Details -->
+            <div class="col-span-7 space-y-8">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Total In Words</p>
+                <p class="text-sm font-medium text-gray-800 italic">${totalInWords}</p>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Bank Details</p>
+                  <div class="text-[11px] space-y-1 text-gray-600">
+                    <p><span class="text-gray-400 uppercase mr-1">Name:</span> ARCUS INFRASTRUCTURE PRIVATE LIMITED</p>
+                    <p><span class="text-gray-400 uppercase mr-1">Bank:</span> HDFC Bank</p>
+                    <p><span class="text-gray-400 uppercase mr-1">A/c:</span> <span class="font-mono font-bold text-gray-800">50200067394012</span></p>
+                    <p><span class="text-gray-400 uppercase mr-1">IFSC:</span> <span class="font-mono font-bold text-gray-800">HDFC0000094</span></p>
+                  </div>
+                </div>
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Terms &amp; Notes</p>
+                  <div class="text-[11px] text-gray-600 leading-relaxed">
+                    <p>• Delivery: F.O.R Site Delivery</p>
+                    <p>• Payment: Net 30 standard credit</p>
+                    <p class="mt-1 italic">Looking forward to your business.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Right Column: Calculation Summary -->
+            <div class="col-span-5">
+              <div class="space-y-3 text-sm">
+                <div class="flex justify-between text-gray-500">
+                  <span>Sub Total</span>
+                  <span class="font-medium text-gray-900 font-mono">${formattedSubtotal}</span>
+                </div>
+                <div class="flex justify-between text-gray-500">
+                  <span>Discount</span>
+                  <span class="font-medium text-red-600 font-mono">-${Number(totals.discount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                </div>
+                ${taxRowsHtml}
+                <div class="flex justify-between text-gray-400 text-xs">
+                  <span>Rounding</span>
+                  <span class="font-mono">${formattedRoundoff}</span>
+                </div>
+                <div class="flex justify-between items-baseline pt-4 border-t border-gray-200" style="border-top-color: #1e3a8a; border-top-width: 2px;">
+                  <span class="text-xs font-bold uppercase tracking-widest text-gray-900">Total</span>
+                  <span class="text-2xl font-bold text-gray-900 font-mono">₹${formattedGrandTotal}</span>
+                </div>
+              </div>
+              
+              <!-- Authorized Signature -->
+              <div class="mt-16 text-center">
+                <div class="h-12 flex items-end justify-center mb-2">
+                  <!-- Signature space -->
+                </div>
+                <div class="border-t border-gray-200 pt-3">
+                  <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Authorized Signature</p>
+                </div>
+              </div>
+            </div>
+          </section>
+          <!-- END: Totals and Notes -->
+          
+          <!-- Footer extra space -->
+          <div class="h-16"></div>
+        </main>
+        <!-- END: Main Container -->
       </body>
       </html>
     `;
