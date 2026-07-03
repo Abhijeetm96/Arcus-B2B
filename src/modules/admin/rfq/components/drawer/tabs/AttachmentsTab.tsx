@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { apiFetch } from '../../../../lib/api';
+import { apiFetch } from '../../../../../../lib/api';
 import { 
   Paperclip, FileText, FileSpreadsheet, Image, FileCode, File, 
   Download, Trash2, UploadCloud, Loader2 

@@ -1,4 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
+import { StartupGuard } from './components/StartupGuard'
+import { DiagnosticsOverlay } from './components/DiagnosticsOverlay'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Categories from './components/Categories'
@@ -202,7 +204,10 @@ function App() {
       <InboxNotificationProvider>
         <NotificationProvider>
           <CartProvider>
-            <AppContent />
+            <StartupGuard>
+              <AppContent />
+              <DiagnosticsOverlay />
+            </StartupGuard>
           </CartProvider>
         </NotificationProvider>
       </InboxNotificationProvider>

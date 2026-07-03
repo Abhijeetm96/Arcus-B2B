@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { apiFetch } from '../../../../lib/api';
+import { apiFetch } from '../../../../../../lib/api';
 import { 
   Building, MapPin, DollarSign, Calendar, ShieldAlert, 
   Eye, Clock, UserCheck 

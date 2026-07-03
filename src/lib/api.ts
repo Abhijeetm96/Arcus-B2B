@@ -1,5 +1,6 @@
 import { API_BASE } from '../config/api';
 import { notification } from './notification';
+import { RecoveryManager } from './recoveryManager';
 
 export interface ApiRequestOptions extends RequestInit {
   timeout?: number;
@@ -105,7 +106,6 @@ export async function apiClient<T = any>(
   }
 
   if (!response.ok) {
-    const correlationId = response.headers?.get('x-correlation-id') || undefined;
     const mappedMsg = mapHttpStatusToErrorMessage(
       response.status,
       data?.error || data?.message
@@ -132,6 +132,21 @@ export async function apiFetch(
   const url = endpoint.startsWith('http://') || endpoint.startsWith('https://')
     ? endpoint
     : `${API_BASE}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+
+  // Check if circuit breaker is open or connection is down (bypass health checks to avoid loop)
+  const connState = RecoveryManager.getConnectionState();
+  const isCircuitActive = connState === 'CIRCUIT_OPEN' || connState === 'OFFLINE';
+  const isHealthCheck = endpoint.includes('/health');
+
+  if (isCircuitActive && !isHealthCheck) {
+    // Queue the request and return its pending promise
+    RecoveryManager.log(`Circuit is OPEN or OFFLINE. Queuing [${options.method || 'GET'}] ${endpoint.split('?')[0]}`, 'warn');
+    return RecoveryManager.queueRequest(
+      () => apiFetch(endpoint, { ...options, retries: 0 }),
+      options.method || 'GET',
+      url
+    );
+  }
 
   const headers = new Headers(options.headers);
   if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
@@ -160,14 +175,20 @@ export async function apiFetch(
 
       clearTimeout(id);
 
+      // Record success
+      if (response.ok) {
+        RecoveryManager.recordSuccess();
+      }
+
       // Retry on server-side gateway or load balancing restarts (502, 503, 504)
       if ([502, 503, 504].includes(response.status) && attempt <= retries) {
+        RecoveryManager.recordFailure();
         const delay = [1000, 2000, 5000, 10000][attempt - 1] || 10000;
         const isWrite = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method || 'GET');
         const msg = isWrite
           ? 'Unable to save because the server is temporarily unavailable. Retrying...'
           : 'Server is restarting. Reconnecting automatically...';
-        notification.warning(msg, { id: 'api-retry' });
+        notification.warning(msg, { url });
         
         await new Promise((resolve) => setTimeout(resolve, delay));
         continue;
@@ -175,7 +196,7 @@ export async function apiFetch(
 
       // Success after self-healing reconnect attempt
       if (attempt > 1 && response.ok) {
-        notification.success('Connection restored', { id: 'api-retry' });
+        notification.success('Connection restored', { url });
       }
 
       // Intercept error responses to map status codes into standard fetch Response shape
@@ -196,6 +217,9 @@ export async function apiFetch(
     } catch (error: any) {
       clearTimeout(id);
 
+      // Record failure
+      RecoveryManager.recordFailure();
+
       const isTimeout = error.name === 'AbortError';
       const isNetwork = error instanceof TypeError;
 
@@ -205,7 +229,7 @@ export async function apiFetch(
         const msg = isWrite
           ? 'Unable to save because the server is temporarily unavailable. Retrying...'
           : 'Server is restarting. Reconnecting automatically...';
-        notification.warning(msg, { id: 'api-retry' });
+        notification.warning(msg, { url });
 
         await new Promise((resolve) => setTimeout(resolve, delay));
         continue;
@@ -213,7 +237,7 @@ export async function apiFetch(
 
       // Final failure report
       if (attempt > 1) {
-        notification.error('Unable to connect to the server.', { id: 'api-retry' });
+        notification.error('Unable to connect to the server.', { url });
       }
 
       console.error(`[API FETCH] Connection Error on ${url}:`, error);
