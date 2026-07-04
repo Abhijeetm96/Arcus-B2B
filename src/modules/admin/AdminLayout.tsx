@@ -50,6 +50,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const [showNotifications, setShowNotifications] = useState(false);
   const [showRoleSelector, setShowRoleSelector] = useState(false);
   const [hoveredGroupId, setHoveredGroupId] = useState<string | null>(null);
+  const [showWorkspaceSwitcher, setShowWorkspaceSwitcher] = useState(false);
+  const [currentWorkspace, setCurrentWorkspace] = useState('Admin Console');
 
   // Command Center Search state
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -205,7 +207,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     },
     { 
       id: 'rfqs', 
-      name: 'RFQs Workspace', 
+      name: 'Procurement Command Center', 
       icon: 'request_quote', 
       isGroup: false,
       check: (u: any) => perm.canApproveRFQs(u) 
@@ -404,15 +406,73 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
   const breadcrumbs = [
     { label: 'Admin Portal', href: '#/portal/admin' },
-    { label: activeSection.replace('-', ' ') }
+    { label: activeSection === 'rfqs' ? 'Procurement Command Center' : activeSection.replace('-', ' ') }
   ];
 
   const headerActions = (
     <div className="flex items-center gap-3">
+      {/* Workspace Switcher */}
+      <div className="relative">
+        <button
+          onClick={() => setShowWorkspaceSwitcher(!showWorkspaceSwitcher)}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 text-white rounded text-xs font-bold transition-all hover:bg-slate-700 select-none cursor-pointer"
+        >
+          <Lucide.LayoutGrid className="h-3.5 w-3.5 text-amber-500" />
+          {currentWorkspace}
+          <Lucide.ChevronDown className="h-3 w-3" />
+        </button>
+        {showWorkspaceSwitcher && (
+          <div className="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded shadow-xl z-50 py-1 text-slate-200">
+            <div className="px-3 py-1 text-[9px] font-bold text-slate-500 uppercase tracking-wider">
+              Workspace Switcher
+            </div>
+            {['Admin Console', 'B2B Procurement', 'B@C Distribution', 'Service Operations'].map((ws) => (
+              <button
+                key={ws}
+                onClick={() => {
+                  setCurrentWorkspace(ws);
+                  setShowWorkspaceSwitcher(false);
+                }}
+                className={cn(
+                  "w-full text-left px-3 py-1.5 text-xs font-semibold flex items-center justify-between hover:bg-slate-800 hover:text-white transition-colors cursor-pointer",
+                  currentWorkspace === ws ? 'text-primary font-bold bg-slate-800' : ''
+                )}
+              >
+                {ws}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Quick Create */}
+      <button
+        onClick={() => {
+          if (activeSection === 'rfqs') {
+            window.dispatchEvent(new CustomEvent('arcus-open-create-rfq'));
+          } else {
+            alert('Quick Create is context-aware. Navigate to Procurement Command Center to create RFQ.');
+          }
+        }}
+        className="flex items-center justify-center w-10 h-10 bg-slate-900 text-white hover:bg-slate-850 border border-slate-850 rounded transition-all cursor-pointer"
+        title="Quick Create RFQ"
+      >
+        <Lucide.Plus className="h-5 w-5 text-amber-500" />
+      </button>
+
+      {/* Theme Toggle */}
+      <button
+        onClick={() => alert('Simulating Dark/Light Theme toggler. Theme updated.')}
+        className="w-10 h-10 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center border border-slate-200 cursor-pointer"
+        title="Toggle Theme Mode"
+      >
+        <Lucide.Sun className="h-4.5 w-4.5" />
+      </button>
+
       {/* Command Search Bar Trigger */}
       <button
         onClick={() => setIsSearchOpen(true)}
-        className="hidden lg:flex items-center gap-2 px-3 h-10 w-64 border border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 rounded text-slate-400 text-xs transition-all select-none cursor-pointer"
+        className="hidden lg:flex items-center gap-2 px-3 h-10 w-48 border border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 rounded text-slate-400 text-xs transition-all select-none cursor-pointer"
       >
         <Lucide.Search className="h-4 w-4 text-slate-400" />
         <span>Search Command...</span>
@@ -423,7 +483,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       <div className="relative">
         <button
           onClick={() => setShowRoleSelector(!showRoleSelector)}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-bold transition-all border border-slate-200"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-bold transition-all border border-slate-200 cursor-pointer"
         >
           <Lucide.Users className="h-3.5 w-3.5 text-primary" />
           Role: {getFriendlyRoleName(currentRole)}
@@ -441,8 +501,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   setCurrentRole(r);
                   setShowRoleSelector(false);
                 }}
-                className={`w-full text-left px-3 py-1.5 text-xs font-semibold flex items-center justify-between transition-colors ${
-                  currentRole === r ? 'bg-amber-50 text-amber-900 font-bold' : 'hover:bg-slate-50 text-slate-600'
+                className={`w-full text-left px-3 py-1.5 text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                  currentRole === r ? 'bg-amber-50 text-amber-900 font-bold' : 'hover:bg-slate-50 text-slate-655'
                 }`}
               >
                 {getFriendlyRoleName(r)}
@@ -459,7 +519,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       <div className="relative">
         <button
           onClick={() => setShowNotifications(!showNotifications)}
-          className="w-10 h-10 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center relative transition-all border border-slate-200"
+          className="w-10 h-10 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center relative transition-all border border-slate-200 cursor-pointer"
         >
           <Lucide.Bell className="h-4.5 w-4.5" />
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -505,7 +565,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     <PageLayout
       sidebar={sidebarContent}
       breadcrumbItems={breadcrumbs}
-      title={activeSection.replace('-', ' ')}
+      title={activeSection === 'rfqs' ? 'Procurement Command Center' : activeSection.replace('-', ' ')}
       actions={headerActions}
       className="bg-slate-50"
     >

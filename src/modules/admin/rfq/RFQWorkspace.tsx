@@ -10,7 +10,7 @@ import { DrawerHeader } from './components/drawer/DrawerHeader';
 import { DrawerTabs } from './components/drawer/DrawerTabs';
 import { DrawerFooter } from './components/drawer/DrawerFooter';
 import { cn } from '../../../components/ui/utils';
-import { LoadingState } from '../../../components/shared/States';
+import { RFQWorkspaceSkeleton } from './components/workspace/RFQWorkspaceSkeleton';
 import { rfqService } from './services/rfq.service';
 import type { RFQSummary, RFQDetail, RFQTimelineEvent } from './types/rfqTypes';
 import { VALUE_RANGES, SAVED_FILTERS } from './constants/filters';
@@ -167,6 +167,13 @@ export function RFQWorkspace() {
     window.addEventListener('arcus-reconnected', handleReconnect);
     return () => window.removeEventListener('arcus-reconnected', handleReconnect);
   }, [search, statusFilter, priorityFilter, ownerFilter, locationFilter, valueRangeIndex]);
+
+  // Handle global header quick create event
+  React.useEffect(() => {
+    const handleOpenCreate = () => setIsCreateOpen(true);
+    window.addEventListener('arcus-open-create-rfq', handleOpenCreate);
+    return () => window.removeEventListener('arcus-open-create-rfq', handleOpenCreate);
+  }, []);
 
   // Load single RFQ details when clicked
   const handleSelectRFQ = async (id: string) => {
@@ -412,13 +419,12 @@ export function RFQWorkspace() {
 
       {/* Main Workspace Frame */}
       {isLoading && rfqSummaries.length === 0 ? (
-        <LoadingState text="Bootstrapping RFQ Workspace..." />
+        <RFQWorkspaceSkeleton />
       ) : activeTab === 'dashboard' ? (
         <RFQDashboard
           rfqs={allRfqs}
           activities={activities}
           onSelectRFQ={handleSelectRFQ}
-          onViewAll={() => setActiveTab('workspace')}
           onActionClick={(action) => triggerToast(`Mock Trigger: Dashboard Quick Action "${action}" launched`, 'info')}
         />
       ) : (

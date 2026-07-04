@@ -41,6 +41,9 @@ export function RFQTable({
   onBulkStatusChange,
   compact = false
 }: RFQTableProps) {
+  // Density State
+  const [density, setDensity] = React.useState<'compact' | 'comfortable'>('comfortable');
+
   // Sort State
   const [sortField, setSortField] = React.useState<SortField>('rfqNumber');
   const [sortOrder, setSortOrder] = React.useState<SortOrder>('desc');
@@ -216,34 +219,74 @@ export function RFQTable({
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-surface p-4 text-left select-none animate-in fade-in duration-300 relative">
       
-      {/* Column Visibility Trigger */}
+      {/* Column Visibility Trigger & Density Toggle */}
       <div className="flex items-center justify-between gap-4 mb-4">
-        <span className="text-xs text-text-secondary font-semibold">
-          {selectedCount} of {data.length} row(s) selected
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-text-secondary font-semibold">
+            {selectedCount} of {data.length} row(s) selected
+          </span>
+          {selectedCount > 0 && (
+            <div className="flex items-center gap-1.5 border border-indigo-100 bg-indigo-50/50 rounded-lg p-0.5 animate-in fade-in slide-in-from-left-2 duration-200">
+              <span className="text-[10px] font-extrabold text-indigo-750 px-2 shrink-0">Bulk:</span>
+              {['SUBMITTED', 'NEGOTIATION', 'APPROVED'].map(status => (
+                <button
+                  key={status}
+                  onClick={() => triggerBulkAction('STATUS', status)}
+                  className="px-2 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded text-[9px] font-black text-slate-700 cursor-pointer"
+                >
+                  Set {status}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 text-xs font-bold flex items-center gap-1">
-              Columns
-              <ChevronDown className="h-3.5 w-3.5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48 bg-white border border-border">
-            <DropdownMenuLabel className="text-xs font-bold text-text-primary">Toggle Columns</DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-border/60" />
-            {Object.keys(visibleColumns).map((col) => (
-              <DropdownMenuCheckboxItem
-                key={col}
-                checked={visibleColumns[col as keyof typeof visibleColumns]}
-                onCheckedChange={() => toggleColumn(col as keyof typeof visibleColumns)}
-                className="text-xs font-semibold text-text-secondary capitalize"
-              >
-                {col === 'rfqNumber' ? 'RFQ Number' : col === 'company' ? 'Company' : col}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-3 shrink-0">
+          {/* Density Toggle Group */}
+          <div className="flex border border-slate-200 bg-slate-50/60 p-0.5 rounded-lg shrink-0">
+            <button
+              onClick={() => setDensity('comfortable')}
+              className={cn(
+                "px-2.5 py-1 text-[10px] font-bold rounded cursor-pointer transition-all",
+                density === 'comfortable' ? "bg-white text-slate-800 shadow-xs" : "text-slate-400 hover:text-slate-600"
+              )}
+            >
+              Comfortable
+            </button>
+            <button
+              onClick={() => setDensity('compact')}
+              className={cn(
+                "px-2.5 py-1 text-[10px] font-bold rounded cursor-pointer transition-all",
+                density === 'compact' ? "bg-white text-slate-800 shadow-xs" : "text-slate-400 hover:text-slate-600"
+              )}
+            >
+              Compact
+            </button>
+          </div>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 text-xs font-bold flex items-center gap-1">
+                Columns
+                <ChevronDown className="h-3.5 w-3.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 bg-white border border-border">
+              <DropdownMenuLabel className="text-xs font-bold text-text-primary">Toggle Columns</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-border/60" />
+              {Object.keys(visibleColumns).map((col) => (
+                <DropdownMenuCheckboxItem
+                  key={col}
+                  checked={visibleColumns[col as keyof typeof visibleColumns]}
+                  onCheckedChange={() => toggleColumn(col as keyof typeof visibleColumns)}
+                  className="text-xs font-semibold text-text-secondary capitalize cursor-pointer"
+                >
+                  {col === 'rfqNumber' ? 'RFQ Number' : col === 'company' ? 'Company' : col}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {/* Main Responsive Table Wrapper */}
@@ -251,7 +294,7 @@ export function RFQTable({
         <Table className="w-full text-xs">
           <TableHeader className="bg-slate-50 border-b border-border">
             <TableRow>
-              <TableHead className="w-12 text-center p-2.5">
+              <TableHead className={cn("w-12 text-center p-2.5", density === 'compact' ? "py-1.5 px-2" : "p-3")}>
                 <Checkbox
                   checked={isAllSelected}
                   onCheckedChange={(checked) => onSelectAllRows(!!checked)}
@@ -260,7 +303,7 @@ export function RFQTable({
               </TableHead>
               
               {visibleColumns.rfqNumber && (
-                <TableHead className="p-3">
+                <TableHead className={density === 'compact' ? "py-1.5 px-2" : "p-3"}>
                   <button onClick={() => handleSort('rfqNumber')} className="flex items-center gap-1 font-bold text-text-secondary hover:text-text-primary uppercase">
                     RFQ Number
                     <ArrowUpDown className="h-3 w-3" />
@@ -269,7 +312,7 @@ export function RFQTable({
               )}
 
               {visibleColumns.company && (
-                <TableHead className="p-3">
+                <TableHead className={density === 'compact' ? "py-1.5 px-2" : "p-3"}>
                   <button onClick={() => handleSort('companyName')} className="flex items-center gap-1 font-bold text-text-secondary hover:text-text-primary uppercase">
                     Company
                     <ArrowUpDown className="h-3 w-3" />
@@ -278,19 +321,19 @@ export function RFQTable({
               )}
 
               {visibleColumns.contact && (
-                <TableHead className="p-3 font-bold text-text-secondary uppercase">Contact</TableHead>
+                <TableHead className={cn("font-bold text-text-secondary uppercase", density === 'compact' ? "py-1.5 px-2" : "p-3")}>Contact</TableHead>
               )}
 
               {visibleColumns.status && (
-                <TableHead className="p-3 font-bold text-text-secondary uppercase">Status</TableHead>
+                <TableHead className={cn("font-bold text-text-secondary uppercase", density === 'compact' ? "py-1.5 px-2" : "p-3")}>Status</TableHead>
               )}
 
               {visibleColumns.priority && (
-                <TableHead className="p-3 font-bold text-text-secondary uppercase">Priority</TableHead>
+                <TableHead className={cn("font-bold text-text-secondary uppercase", density === 'compact' ? "py-1.5 px-2" : "p-3")}>Priority</TableHead>
               )}
 
               {visibleColumns.owner && (
-                <TableHead className="p-3">
+                <TableHead className={density === 'compact' ? "py-1.5 px-2" : "p-3"}>
                   <button onClick={() => handleSort('owner')} className="flex items-center gap-1 font-bold text-text-secondary hover:text-text-primary uppercase">
                     Owner
                     <ArrowUpDown className="h-3 w-3" />
@@ -299,7 +342,7 @@ export function RFQTable({
               )}
 
               {visibleColumns.value && (
-                <TableHead className="p-3 text-right">
+                <TableHead className={cn("text-right", density === 'compact' ? "py-1.5 px-2" : "p-3")}>
                   <button onClick={() => handleSort('value')} className="flex items-center gap-1 font-bold text-text-secondary hover:text-text-primary uppercase ml-auto">
                     Est. Value
                     <ArrowUpDown className="h-3 w-3" />
@@ -308,7 +351,7 @@ export function RFQTable({
               )}
 
               {visibleColumns.lastUpdated && (
-                <TableHead className="p-3">
+                <TableHead className={density === 'compact' ? "py-1.5 px-2" : "p-3"}>
                   <button onClick={() => handleSort('lastUpdated')} className="flex items-center gap-1 font-bold text-text-secondary hover:text-text-primary uppercase">
                     Last Updated
                     <ArrowUpDown className="h-3 w-3" />
@@ -317,7 +360,7 @@ export function RFQTable({
               )}
 
               {visibleColumns.dueDate && (
-                <TableHead className="p-3">
+                <TableHead className={density === 'compact' ? "py-1.5 px-2" : "p-3"}>
                   <button onClick={() => handleSort('dueDate')} className="flex items-center gap-1 font-bold text-text-secondary hover:text-text-primary uppercase">
                     Due Date
                     <ArrowUpDown className="h-3 w-3" />
@@ -325,7 +368,7 @@ export function RFQTable({
                 </TableHead>
               )}
 
-              <TableHead className="w-16 p-3 text-right font-bold text-text-secondary uppercase">Actions</TableHead>
+              <TableHead className={cn("w-16 text-right font-bold text-text-secondary uppercase", density === 'compact' ? "py-1.5 px-2" : "p-3")}>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody className="divide-y divide-border">
@@ -342,6 +385,7 @@ export function RFQTable({
               paginatedData.map((row) => {
                 const isSelected = selectedRfqId === row.id;
                 const isChecked = !!selectedRows[row.id];
+                const cellPaddingClass = density === 'compact' ? "py-1 px-2.5 text-[11px]" : "p-3";
 
                 return (
                   <TableRow
@@ -352,7 +396,7 @@ export function RFQTable({
                     )}
                     onClick={() => onSelectRFQ(row.id)}
                   >
-                    <TableCell className="text-center p-2.5" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className={cn("text-center p-2.5", density === 'compact' && "py-1 px-2.5")} onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={isChecked}
                         onCheckedChange={(checked) => onRowSelectChange(row.id, !!checked)}
@@ -361,25 +405,25 @@ export function RFQTable({
                     </TableCell>
 
                     {visibleColumns.rfqNumber && (
-                      <TableCell className="p-3 font-mono font-bold text-text-primary">{row.rfqNumber}</TableCell>
+                      <TableCell className={cn("font-mono font-bold text-text-primary", cellPaddingClass)}>{row.rfqNumber}</TableCell>
                     )}
 
                     {visibleColumns.company && (
-                      <TableCell className="p-3 font-semibold text-text-primary truncate max-w-[150px]">{row.companyName}</TableCell>
+                      <TableCell className={cn("font-semibold text-text-primary truncate max-w-[150px]", cellPaddingClass)}>{row.companyName}</TableCell>
                     )}
 
                     {visibleColumns.contact && (
-                      <TableCell className="p-3 text-text-secondary font-medium">{row.contactName}</TableCell>
+                      <TableCell className={cn("text-text-secondary font-medium", cellPaddingClass)}>{row.contactName}</TableCell>
                     )}
 
                     {visibleColumns.status && (
-                      <TableCell className="p-3">
+                      <TableCell className={cellPaddingClass}>
                         <StatusBadge status={row.status} />
                       </TableCell>
                     )}
 
                     {visibleColumns.priority && (
-                      <TableCell className="p-3">
+                      <TableCell className={cellPaddingClass}>
                         <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded border', PRIORITY_COLORS[row.priority as keyof typeof PRIORITY_COLORS] || 'bg-slate-100')}>
                           {row.priority}
                         </span>
@@ -387,28 +431,28 @@ export function RFQTable({
                     )}
 
                     {visibleColumns.owner && (
-                      <TableCell className="p-3 text-text-secondary font-semibold">{row.owner}</TableCell>
+                      <TableCell className={cn("text-text-secondary font-semibold", cellPaddingClass)}>{row.owner}</TableCell>
                     )}
 
                     {visibleColumns.value && (
-                      <TableCell className="p-3 text-right font-bold text-text-primary">
+                      <TableCell className={cn("text-right font-bold text-text-primary", cellPaddingClass)}>
                         ₹{row.value.toLocaleString('en-IN')}
                       </TableCell>
                     )}
 
                     {visibleColumns.lastUpdated && (
-                      <TableCell className="p-3 text-text-secondary font-medium">
+                      <TableCell className={cn("text-text-secondary font-medium", cellPaddingClass)}>
                         {new Date(row.lastUpdated).toLocaleDateString('en-IN')}
                       </TableCell>
                     )}
 
                     {visibleColumns.dueDate && (
-                      <TableCell className="p-3 text-text-secondary font-medium">
+                      <TableCell className={cn("text-text-secondary font-medium", cellPaddingClass)}>
                         {new Date(row.dueDate).toLocaleDateString('en-IN')}
                       </TableCell>
                     )}
 
-                    <TableCell className="p-3 text-right" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className={cn("text-right", cellPaddingClass)} onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-slate-100 rounded-full">

@@ -1,18 +1,19 @@
+import { useState } from 'react';
 import { DashboardKPIs } from './DashboardKPIs';
 import { DashboardCharts } from './DashboardCharts';
 import { DashboardRecentActivity } from './DashboardRecentActivity';
-import { DashboardRecentRFQs } from './DashboardRecentRFQs';
 import { DashboardQuickActions } from './DashboardQuickActions';
+import { DashboardAttentionCenter } from './DashboardAttentionCenter';
+import { DashboardWorkQueue } from './DashboardWorkQueue';
+import { RFQKanban } from './RFQKanban';
 import type { RFQSummary, RFQTimelineEvent } from '../../types/rfqTypes';
-import { Card, CardHeader, CardTitle, CardContent } from '../../../../../components/ui/Card';
-import { User } from 'lucide-react';
-import { StatusBadge } from '../../../../../components/ui/StatusBadge';
+import { LayoutDashboard, Kanban } from 'lucide-react';
+import { cn } from '../../../../../components/ui/utils';
 
 interface RFQDashboardProps {
   rfqs: RFQSummary[];
   activities: (RFQTimelineEvent & { rfqNumber: string; companyName: string })[];
   onSelectRFQ: (id: string) => void;
-  onViewAll: () => void;
   onActionClick: (action: string) => void;
 }
 
@@ -20,84 +21,78 @@ export function RFQDashboard({
   rfqs,
   activities,
   onSelectRFQ,
-  onViewAll,
   onActionClick
 }: RFQDashboardProps) {
-  // Filter RFQs assigned to the active user in the dashboard (e.g. Vikram Sharma)
-  const assignedRFQs = rfqs.filter(r => r.owner === 'Vikram Sharma').slice(0, 4);
+  const [dashboardView, setDashboardView] = useState<'overview' | 'kanban'>('overview');
 
   return (
     <div className="space-y-6 text-left">
-      {/* 1. KPIs Cards Section */}
-      <DashboardKPIs rfqs={rfqs} />
-
-      {/* Charts Section */}
-      <DashboardCharts rfqs={rfqs} />
-
-      {/* 2. Main Dashboard Layout Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Recent RFQs & Assigned List */}
-        <div className="lg:col-span-2 space-y-6">
-          <DashboardRecentRFQs
-            rfqs={rfqs}
-            onSelectRFQ={onSelectRFQ}
-            onViewAll={onViewAll}
-          />
-
-          {/* Assigned to Me Section */}
-          <Card className="text-left">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <User className="h-4 w-4 text-primary" />
-                Assigned to Me (My RFQs)
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 md:p-6 pt-0">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {assignedRFQs.length === 0 ? (
-                  <div className="col-span-2 text-center py-6 text-xs text-text-secondary">
-                    No active RFQs assigned to you.
-                  </div>
-                ) : (
-                  assignedRFQs.map(r => (
-                    <div
-                      key={r.id}
-                      onClick={() => onSelectRFQ(r.id)}
-                      className="p-4 border border-border rounded bg-surface hover:border-primary/50 hover:bg-slate-50/20 cursor-pointer flex flex-col justify-between transition-all duration-200"
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="font-mono text-xs font-bold text-text-primary">
-                          {r.rfqNumber}
-                        </span>
-                        <StatusBadge status={r.status} />
-                      </div>
-                      <h4 className="font-bold text-xs text-text-primary mb-1 truncate">
-                        {r.companyName}
-                      </h4>
-                      <p className="text-[10px] text-text-secondary font-semibold mb-4">
-                        Contact: {r.contactName}
-                      </p>
-                      <div className="flex justify-between items-center text-[10px] font-bold text-text-primary mt-auto border-t border-border/40 pt-2">
-                        <span>Val: ₹{r.value.toLocaleString('en-IN')}</span>
-                        <span className="text-text-secondary text-[9px] font-semibold">
-                          Due: {new Date(r.dueDate).toLocaleDateString([], { month: 'short', day: 'numeric' })}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Column: Quick Actions & Recent Activity Feed */}
-        <div className="lg:col-span-1 space-y-6">
-          <DashboardQuickActions onActionClick={onActionClick} />
-          
-          <DashboardRecentActivity activities={activities} />
+      {/* View Switcher Toggle Bar */}
+      <div className="flex justify-between items-center bg-white border border-slate-100 rounded-xl p-3 shadow-xs">
+        <h2 className="font-extrabold text-sm text-slate-800 uppercase tracking-widest font-mono">
+          {dashboardView === 'overview' ? 'Operational Hub' : 'Visual Pipeline'}
+        </h2>
+        <div className="flex bg-slate-50 border border-slate-200/60 p-0.5 rounded-lg">
+          <button
+            onClick={() => setDashboardView('overview')}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer",
+              dashboardView === 'overview'
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-500 hover:text-slate-800"
+            )}
+          >
+            <LayoutDashboard className="h-3.5 w-3.5" />
+            Overview
+          </button>
+          <button
+            onClick={() => setDashboardView('kanban')}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer",
+              dashboardView === 'kanban'
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-500 hover:text-slate-800"
+            )}
+          >
+            <Kanban className="h-3.5 w-3.5 text-amber-500" />
+            Pipeline Kanban
+          </button>
         </div>
       </div>
+
+      {dashboardView === 'kanban' ? (
+        <div className="w-full bg-white border border-slate-100 rounded-xl p-5 shadow-sm min-h-[480px]">
+          <RFQKanban rfqs={rfqs} onSelectRFQ={onSelectRFQ} />
+        </div>
+      ) : (
+        <>
+          {/* 1. KPIs Cards Section */}
+          <DashboardKPIs rfqs={rfqs} />
+
+          {/* 2. Attention Center */}
+          <DashboardAttentionCenter />
+
+          {/* 3. Main Dashboard Layout Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            {/* Left Column: Work Queue & Charts */}
+            <div className="lg:col-span-2 space-y-6">
+              <DashboardWorkQueue 
+                rfqs={rfqs} 
+                onSelectRFQ={onSelectRFQ} 
+              />
+              
+              <DashboardCharts rfqs={rfqs} />
+            </div>
+
+            {/* Right Column: Quick Actions & Recent Activity Feed */}
+            <div className="lg:col-span-1 space-y-6">
+              <DashboardQuickActions onActionClick={onActionClick} />
+              
+              <DashboardRecentActivity activities={activities} />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
