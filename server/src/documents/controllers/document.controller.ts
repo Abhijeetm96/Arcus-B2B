@@ -41,47 +41,57 @@ export class DocumentController {
         }
       }
 
-      // 2. Resolve Tax Invoice Order (by order ID prefix)
-      if (!documentData && (id.startsWith('ord_') || id.startsWith('ORD-'))) {
-        documentData = await getOrderById(id);
-        if (documentData) {
-          docType = 'invoice';
-          filename = `INV-${documentData.id.split('-').pop()?.toUpperCase() || 'INVOICE'}.pdf`;
+      // 2. Resolve Tax Invoice Order / Invoice
+      if (!documentData) {
+        try {
+          const order = await getOrderById(id);
+          if (order) {
+            documentData = order;
+            docType = 'invoice';
+            filename = `INV-${documentData.id.split('-').pop()?.toUpperCase() || 'INVOICE'}.pdf`;
+          }
+        } catch (e) {
+          console.warn(`[DocumentController] Order resolution failed for ID ${id}:`, e);
         }
       }
 
-      // 3. Resolve RFQ Brief (by RFQ ID prefix)
-      if (!documentData && (id.startsWith('RFQ-') || id.startsWith('rfq_'))) {
-        documentData = await this.rfqRepository.findById(id);
-        if (documentData) {
-          // Map database row keys to template props
-          documentData.rfqNumber = documentData.id;
-          documentData.lastUpdated = documentData.updated_at || documentData.timestamp;
-          documentData.dueDate = documentData.due_date;
-          documentData.description = documentData.details;
-          
-          if (documentData.customer_json) {
-            documentData.customer = typeof documentData.customer_json === 'string'
-              ? JSON.parse(documentData.customer_json)
-              : documentData.customer_json;
+      // 3. Resolve RFQ Brief
+      if (!documentData) {
+        try {
+          const rfq = await this.rfqRepository.findById(id);
+          if (rfq) {
+            documentData = rfq;
+            // Map database row keys to template props
+            documentData.rfqNumber = documentData.id;
+            documentData.lastUpdated = documentData.updated_at || documentData.timestamp;
+            documentData.dueDate = documentData.due_date;
+            documentData.description = documentData.details;
+            
+            if (documentData.customer_json) {
+              documentData.customer = typeof documentData.customer_json === 'string'
+                ? JSON.parse(documentData.customer_json)
+                : documentData.customer_json;
+            }
+
+            // Fetch items
+            const items = await this.rfqRepository.findItemsByRfqId(id);
+            documentData.items = items.map((i: any) => {
+              const specs = typeof i.specification_requirements === 'string'
+                ? JSON.parse(i.specification_requirements)
+                : i.specification_requirements || {};
+              return {
+                itemName: i.item_name,
+                quantity: i.quantity,
+                unit: specs.unit || 'pcs',
+                targetPrice: specs.targetPrice
+              };
+            });
+
+            docType = 'rfq';
+            filename = `RFQ-Brief-${id}.pdf`;
           }
-
-          // Fetch items
-          const items = await this.rfqRepository.findItemsByRfqId(id);
-          documentData.items = items.map((i: any) => {
-            const specs = typeof i.specification_requirements === 'string'
-              ? JSON.parse(i.specification_requirements)
-              : i.specification_requirements || {};
-            return {
-              itemName: i.item_name,
-              quantity: i.quantity,
-              unit: specs.unit || 'pcs',
-              targetPrice: specs.targetPrice
-            };
-          });
-
-          docType = 'rfq';
-          filename = `RFQ-Brief-${id}.pdf`;
+        } catch (e) {
+          console.warn(`[DocumentController] RFQ resolution failed for ID ${id}:`, e);
         }
       }
 

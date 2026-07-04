@@ -30,8 +30,9 @@ export class QuotationRepository {
     return `QT-${year}-${padded}`;
   }
 
-  public async findById(id: string): Promise<any> {
-    const res = await this.pool.query(`
+  public async findById(id: string, client?: PoolClient): Promise<any> {
+    const conn = client || this.pool;
+    const res = await conn.query(`
       SELECT q.*, qt.currency_code, qt.exchange_rate, qt.base_currency, 
              qt.subtotal, qt.discount, qt.taxable_amount, qt.gst_amount, 
              qt.shipping, qt.other_charges, qt.grand_total, qt.calculation_audit,
@@ -226,8 +227,7 @@ export class QuotationRepository {
         item.position || 0
       ]);
     }
-
-    return this.findById(quoteId);
+    return this.findById(quoteId, client);
   }
 
   public async saveVersion(
