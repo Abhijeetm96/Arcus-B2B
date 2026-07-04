@@ -482,10 +482,7 @@ export function RFQWorkspace() {
                       onRefresh={handleRefreshDrawer}
                     />
                   </div>
-                  
-                  <div className="mt-4 border-t border-border pt-4">
-                    <DrawerFooter rfq={selectedRfqDetail} />
-                  </div>
+                  <DrawerFooter rfq={selectedRfqDetail} />
                 </div>
               </div>
             ) : (
