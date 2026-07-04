@@ -25,7 +25,7 @@ const PageLayout = React.forwardRef<HTMLDivElement, PageLayoutProps>(
       <div ref={ref} className="flex h-screen w-screen bg-background text-text-primary flex-col md:flex-row overflow-hidden" {...props}>
         {/* Desktop Left Sidebar */}
         {sidebar && (
-          <aside className="w-64 border-r border-border bg-surface flex-shrink-0 hidden md:block h-full overflow-y-auto">
+          <aside className="w-64 border-r border-border bg-surface flex-shrink-0 hidden md:block h-full overflow-y-auto scrollbar-none">
             {sidebar}
           </aside>
         )}

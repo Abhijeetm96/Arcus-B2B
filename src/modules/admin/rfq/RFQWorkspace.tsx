@@ -4,12 +4,12 @@ import { LayoutDashboard, TableProperties, Sparkles, X } from 'lucide-react';
 import { WorkspaceLayout } from '../../../components/layout/WorkspaceLayout';
 import { RFQLayout } from './components/layout/RFQLayout';
 import { RFQDashboard } from './components/dashboard/RFQDashboard';
-import { RFQSidebar } from './components/workspace/RFQSidebar';
 import { RFQToolbar } from './components/workspace/RFQToolbar';
 import { RFQTable } from './components/workspace/RFQTable';
 import { DrawerHeader } from './components/drawer/DrawerHeader';
 import { DrawerTabs } from './components/drawer/DrawerTabs';
 import { DrawerFooter } from './components/drawer/DrawerFooter';
+import { cn } from '../../../components/ui/utils';
 import { LoadingState } from '../../../components/shared/States';
 import { rfqService } from './services/rfq.service';
 import type { RFQSummary, RFQDetail, RFQTimelineEvent } from './types/rfqTypes';
@@ -423,22 +423,90 @@ export function RFQWorkspace() {
         />
       ) : (
         <WorkspaceLayout
-          splitPane
-          workspaceSidebar={
-            <RFQSidebar
-              selectedStatus={statusFilter}
-              onStatusChange={(status) => { setStatusFilter(status); setSelectedRows({}); }}
-              counts={statusCounts}
-            />
-          }
+          splitPane={false}
           workspaceDetails={
-            selectedRfqDetail ? (
-              <div className="flex flex-col md:flex-row h-full divide-y md:divide-y-0 md:divide-x divide-border min-h-0 overflow-hidden w-full bg-white">
-                {/* Left compact list */}
-                <div className="w-full md:w-80 flex-shrink-0 flex flex-col border-r border-border bg-slate-50/10">
+            <div className="flex flex-col h-full min-h-0 overflow-hidden w-full bg-white">
+              {/* Horizontal Status Pills Selector */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-2.5 pt-1 px-4 border-b border-border bg-slate-50/30 shrink-0 scrollbar-none">
+                {Object.entries(statusCounts).map(([statusKey, count]) => {
+                  const isSelected = statusFilter === statusKey;
+                  const label = statusKey === 'all' ? 'All RFQs' : statusKey;
+                  return (
+                    <button
+                      key={statusKey}
+                      onClick={() => { setStatusFilter(statusKey); setSelectedRows({}); }}
+                      className={cn(
+                        "px-3 py-1 rounded-full text-xs font-bold transition-all shrink-0 border select-none cursor-pointer",
+                        isSelected
+                          ? "bg-slate-900 text-white border-slate-900 shadow-sm"
+                          : "bg-white text-slate-655 border-slate-200 hover:bg-slate-50"
+                      )}
+                    >
+                      {label} <span className={cn("ml-1 font-extrabold text-[9px]", isSelected ? "text-primary" : "text-slate-400")}>{count}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Central Grid: Split or Table */}
+              <div className="flex-1 min-h-0 overflow-hidden">
+                {selectedRfqDetail ? (
+                  <div className="flex flex-col md:flex-row h-full divide-y md:divide-y-0 md:divide-x divide-border min-h-0 overflow-hidden w-full bg-white">
+                    {/* Left compact list */}
+                    <div className="w-full md:w-80 flex-shrink-0 flex flex-col border-r border-border bg-slate-50/10">
+                      <RFQTable
+                        data={rfqSummaries}
+                        selectedRfqId={selectedRfqDetail?.id || null}
+                        onSelectRFQ={handleSelectRFQ}
+                        selectedRows={selectedRows}
+                        onRowSelectChange={(id, checked) => setSelectedRows(prev => ({ ...prev, [id]: checked }))}
+                        onSelectAllRows={(checked) => {
+                          const updated: Record<string, boolean> = {};
+                          rfqSummaries.forEach(r => { updated[r.id] = checked; });
+                          setSelectedRows(updated);
+                        }}
+                        onBulkStatusChange={handleBulkStatusChange}
+                        compact={true}
+                      />
+                    </div>
+
+                    {/* Right details content view */}
+                    <div className="flex-1 flex flex-col min-h-0 overflow-y-auto bg-white p-4 md:p-6 text-left animate-in fade-in slide-in-from-right duration-200 relative">
+                      <button
+                        onClick={() => {
+                          setSelectedRfqDetail(null);
+                          sessionStorage.removeItem('rfq_selected_detail');
+                        }}
+                        className="absolute top-4 right-4 text-slate-400 hover:text-slate-655 transition-colors z-10 p-1 hover:bg-slate-50 rounded"
+                        title="Close details"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+
+                      <DrawerHeader rfq={selectedRfqDetail} onAction={handleDrawerAction} />
+
+                      <div className="flex-grow mt-4 min-h-0 flex flex-col overflow-y-auto scrollbar-none">
+                        <DrawerTabs
+                          rfq={selectedRfqDetail}
+                          onAddNote={handleAddNote}
+                          onDownloadAttachment={(fname) => {
+                            const token = localStorage.getItem('arcus_token') || '';
+                            window.open(`/api/attachments/download/${encodeURIComponent(fname)}?token=${encodeURIComponent(token)}`, '_blank');
+                          }}
+                          onDownloadQuote={(qid) => {
+                            const token = localStorage.getItem('arcus_token') || '';
+                            window.open(`/api/documents/${qid}?format=pdf&download=true&token=${encodeURIComponent(token)}`, '_blank');
+                          }}
+                          onRefresh={handleRefreshDrawer}
+                        />
+                      </div>
+                      <DrawerFooter rfq={selectedRfqDetail} />
+                    </div>
+                  </div>
+                ) : (
                   <RFQTable
                     data={rfqSummaries}
-                    selectedRfqId={selectedRfqDetail?.id || null}
+                    selectedRfqId={null}
                     onSelectRFQ={handleSelectRFQ}
                     selectedRows={selectedRows}
                     onRowSelectChange={(id, checked) => setSelectedRows(prev => ({ ...prev, [id]: checked }))}
@@ -448,59 +516,11 @@ export function RFQWorkspace() {
                       setSelectedRows(updated);
                     }}
                     onBulkStatusChange={handleBulkStatusChange}
-                    compact={true}
+                    compact={false}
                   />
-                </div>
-
-                {/* Right details content view */}
-                <div className="flex-1 flex flex-col min-h-0 overflow-y-auto bg-white p-4 md:p-6 text-left animate-in fade-in slide-in-from-right duration-200 relative">
-                  <button
-                    onClick={() => {
-                      setSelectedRfqDetail(null);
-                      sessionStorage.removeItem('rfq_selected_detail');
-                    }}
-                    className="absolute top-4 right-4 text-slate-400 hover:text-slate-655 transition-colors z-10 p-1 hover:bg-slate-50 rounded"
-                    title="Close details"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-
-                  <DrawerHeader rfq={selectedRfqDetail} onAction={handleDrawerAction} />
-
-                  <div className="flex-grow mt-4 min-h-0 flex flex-col overflow-y-auto scrollbar-none">
-                    <DrawerTabs
-                      rfq={selectedRfqDetail}
-                      onAddNote={handleAddNote}
-                      onDownloadAttachment={(fname) => {
-                        const token = localStorage.getItem('arcus_token') || '';
-                        window.open(`/api/attachments/download/${encodeURIComponent(fname)}?token=${encodeURIComponent(token)}`, '_blank');
-                      }}
-                      onDownloadQuote={(qid) => {
-                        const token = localStorage.getItem('arcus_token') || '';
-                        window.open(`/api/documents/${qid}?format=pdf&download=true&token=${encodeURIComponent(token)}`, '_blank');
-                      }}
-                      onRefresh={handleRefreshDrawer}
-                    />
-                  </div>
-                  <DrawerFooter rfq={selectedRfqDetail} />
-                </div>
+                )}
               </div>
-            ) : (
-              <RFQTable
-                data={rfqSummaries}
-                selectedRfqId={null}
-                onSelectRFQ={handleSelectRFQ}
-                selectedRows={selectedRows}
-                onRowSelectChange={(id, checked) => setSelectedRows(prev => ({ ...prev, [id]: checked }))}
-                onSelectAllRows={(checked) => {
-                  const updated: Record<string, boolean> = {};
-                  rfqSummaries.forEach(r => { updated[r.id] = checked; });
-                  setSelectedRows(updated);
-                }}
-                onBulkStatusChange={handleBulkStatusChange}
-                compact={false}
-              />
-            )
+            </div>
           }
           toolbar={
             <RFQToolbar

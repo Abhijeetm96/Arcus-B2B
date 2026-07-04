@@ -3,6 +3,7 @@ import { apiFetch } from '../../lib/api';
 import * as perm from '../../core/permissions/permissions';
 import { PageLayout } from '../../components/layout/PageLayout';
 import { Button } from '../../components/ui/Button';
+import { cn } from '../../components/ui/utils';
 import * as Lucide from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -48,6 +49,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const { logout } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showRoleSelector, setShowRoleSelector] = useState(false);
+  const [hoveredGroupId, setHoveredGroupId] = useState<string | null>(null);
 
   // Command Center Search state
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -271,7 +273,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           </span>
         </div>
       </div>
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 scrollbar-none">
         {menuItems.map((item) => {
           if (!item.check(simulatedUser)) return null;
 
@@ -279,6 +281,63 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             const visibleSubItems = item.subItems?.filter(sub => sub.check(simulatedUser)) || [];
             if (visibleSubItems.length === 0) return null;
             const GroupIcon = iconMap[item.icon] || Lucide.HelpCircle;
+
+            if (item.id === 'orders-group') {
+              const isHovered = hoveredGroupId === item.id;
+              const hasActiveSub = visibleSubItems.some(sub => activeSection === sub.id);
+              return (
+                <div 
+                  key={item.id}
+                  className="relative"
+                  onMouseEnter={() => setHoveredGroupId(item.id)}
+                  onMouseLeave={() => setHoveredGroupId(null)}
+                >
+                  <button
+                    className={cn(
+                      "w-full flex items-center gap-3 px-4 py-2.5 rounded text-sm font-semibold transition-all text-left",
+                      hasActiveSub
+                        ? 'bg-primary text-slate-950 font-bold shadow-sm'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                    )}
+                  >
+                    <GroupIcon className="h-4 w-4" />
+                    <span className="flex-1">Orders</span>
+                    <Lucide.ChevronRight className="h-3.5 w-3.5 text-slate-500 opacity-60 shrink-0" />
+                  </button>
+
+                  {isHovered && (
+                    <div 
+                      className="absolute left-full top-0 ml-1.5 py-1 w-44 bg-slate-950 border border-slate-800 rounded-md shadow-xl z-50 text-left animate-in fade-in slide-in-from-left-2 duration-150"
+                      onMouseEnter={() => setHoveredGroupId(item.id)}
+                      onMouseLeave={() => setHoveredGroupId(null)}
+                    >
+                      {visibleSubItems.map(sub => {
+                        const SubIcon = iconMap[sub.icon] || Lucide.HelpCircle;
+                        const displayName = sub.name === 'B2C Orders' ? 'B@C Orders' : sub.name === 'Service Bookings' ? 'Services Order' : sub.name;
+                        return (
+                          <button
+                            key={sub.id}
+                            onClick={() => {
+                              setActiveSection(sub.id);
+                              setHoveredGroupId(null);
+                            }}
+                            className={cn(
+                              "w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold transition-all text-left",
+                              activeSection === sub.id
+                                ? 'bg-primary text-slate-950 font-bold'
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                            )}
+                          >
+                            <SubIcon className="h-3.5 w-3.5 shrink-0" />
+                            <span>{displayName}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
 
             return (
               <div key={item.id} className="space-y-1 pt-2">
