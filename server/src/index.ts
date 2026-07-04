@@ -6,7 +6,7 @@ import https from 'https';
 import multer from 'multer';
 import * as XLSX from 'xlsx';
 import { 
-  pgPool, usePostgres, readJsonDb,
+  pgPool, usePostgres, readJsonDb, writeJsonDb,
   addRfq, addBooking, addQuote, getAllRfqs, getAllBookings, getAllQuotes, getAllProducts, getProductById, updateProductStock, 
   addUser, getUserByEmail, getUserByPhone, getUserByGst, getUserById, addOrder, getOrdersByUserId, updateUser, addOtp, 
   getOtpByUserId, incrementOtpAttempts, deleteOtp, deleteOtpsByUserId, getOrderById, updateOrderStatus, deleteUserByEmail, 
@@ -1751,6 +1751,70 @@ app.post('/api/admin/rfqs/:id/quotations-draft', async (req: any, res) => {
     const id = req.params.id;
     const { value, validityDays, user, userRole } = req.body;
 
+    if (!usePostgres) {
+      // JSON DB Fallback path
+      const db = await readJsonDb();
+      if (!db.rfqs) db.rfqs = [];
+      if (!db.quotations) db.quotations = [];
+
+      const rfq = db.rfqs.find((r: any) => r.id === id);
+      if (!rfq) {
+        return res.status(404).json({ error: 'RFQ not found' });
+      }
+
+      const rfqValue = rfq.value ? parseFloat(rfq.value) : 0;
+      const today = new Date();
+      const expiryDate = new Date(today.getTime() + (validityDays || 30) * 24 * 60 * 60 * 1000);
+
+      if (!rfq.quotations_json) rfq.quotations_json = [];
+      if (!rfq.timeline_json) rfq.timeline_json = [];
+
+      const vNumber = rfq.quotations_json.length + 1;
+      const quoteVal = value || (rfqValue * 0.95);
+      const newQuote = {
+        id: `QUO-${id}-${String(vNumber).padStart(3, '0')}`,
+        version: `v${vNumber}.0`,
+        value: quoteVal,
+        status: 'SENT',
+        createdAt: today.toISOString(),
+        validUntil: expiryDate.toISOString(),
+        pdfUrl: `/api/documents/QUO-${id}-${String(vNumber).padStart(3, '0')}?format=pdf`
+      };
+
+      const newEvent = {
+        id: `${id}-EV-${Date.now()}`,
+        eventType: 'QUOTE_CREATED',
+        title: `Quotation Version v${vNumber}.0 Generated`,
+        description: `Offer value: ₹${newQuote.value.toLocaleString('en-IN')}, Valid until: ${expiryDate.toLocaleDateString('en-IN')}.`,
+        timestamp: today.toISOString(),
+        user: user || 'System Admin',
+        userRole: userRole || 'Admin'
+      };
+
+      rfq.quotations_json.push(newQuote);
+      rfq.timeline_json.unshift(newEvent);
+      rfq.status = 'Negotiation';
+      rfq.updated_at = today.toISOString();
+
+      // Mirror inside root quotations array
+      db.quotations.push({
+        id: newQuote.id,
+        quotationNumber: `QT-2026-${String(db.quotations.length + 1).padStart(6, '0')}`,
+        version: vNumber,
+        rfqId: id,
+        status: 'SENT',
+        grandTotal: quoteVal,
+        createdAt: today.toISOString(),
+        validityDate: expiryDate.toISOString()
+      });
+
+      await writeJsonDb(db);
+
+      const detailRes = await fetchRFQDetailInternal(id);
+      return res.json(detailRes);
+    }
+
+    // PostgreSQL path
     if (!pgPool) {
       return res.status(500).json({ error: 'Database pool not initialized.' });
     }
@@ -1844,6 +1908,50 @@ app.post('/api/admin/rfqs/:id/quotations-draft', async (req: any, res) => {
 });
 
 async function fetchRFQDetailInternal(id: string) {
+  if (!usePostgres) {
+    // JSON DB Fallback
+    const db = await readJsonDb();
+    if (!db.rfqs) db.rfqs = [];
+    const rfq = db.rfqs.find((r: any) => r.id === id);
+    if (!rfq) return null;
+
+    const items = db.rfq_items?.filter((i: any) => i.rfqId === id).map((r: any) => {
+      const specs = typeof r.specification_requirements === 'string'
+        ? JSON.parse(r.specification_requirements)
+        : r.specification_requirements || {};
+      return {
+        id: r.id,
+        itemName: r.itemName || r.item_name || '',
+        description: r.description || specs.description || '',
+        quantity: parseInt(r.quantity, 10) || 0,
+        unit: r.unit || specs.unit || 'Piece',
+        targetPrice: r.targetPrice || specs.targetPrice
+      };
+    }) || [];
+
+    return {
+      id: rfq.id,
+      rfqNumber: rfq.id,
+      companyName: rfq.customer_json?.companyName || rfq.name || 'Generic Corp',
+      contactName: rfq.name,
+      status: rfq.status,
+      priority: rfq.priority || 'Normal',
+      owner: rfq.owner || 'Unassigned',
+      value: rfq.value ? parseFloat(rfq.value) : 0,
+      lastUpdated: rfq.updated_at || rfq.timestamp,
+      dueDate: rfq.due_date || new Date().toISOString(),
+      projectType: rfq.project_type || rfq.projectType,
+      description: rfq.details,
+      customer: rfq.customer_json || {},
+      items,
+      timeline: rfq.timeline_json || [],
+      notes: rfq.notes || [],
+      attachments: rfq.attachments || [],
+      quotations: rfq.quotations_json || []
+    };
+  }
+
+  // Postgres implementation
   if (!pgPool) return null;
   const rfqRes = await pgPool.query('SELECT * FROM rfqs WHERE id = $1', [id]);
   if (rfqRes.rows.length === 0) return null;
