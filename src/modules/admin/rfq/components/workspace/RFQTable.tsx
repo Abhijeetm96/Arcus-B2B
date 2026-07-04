@@ -25,6 +25,7 @@ interface RFQTableProps {
   onRowSelectChange: (id: string, checked: boolean) => void;
   onSelectAllRows: (checked: boolean) => void;
   onBulkStatusChange: (status: string) => void;
+  compact?: boolean;
 }
 
 type SortField = 'rfqNumber' | 'companyName' | 'owner' | 'value' | 'lastUpdated' | 'dueDate';
@@ -37,7 +38,8 @@ export function RFQTable({
   selectedRows,
   onRowSelectChange,
   onSelectAllRows,
-  onBulkStatusChange
+  onBulkStatusChange,
+  compact = false
 }: RFQTableProps) {
   // Sort State
   const [sortField, setSortField] = React.useState<SortField>('rfqNumber');
@@ -124,6 +126,92 @@ export function RFQTable({
     setShowConfirm(false);
     setPendingAction(null);
   };
+
+  if (compact) {
+    return (
+      <div className="w-full flex flex-col min-h-0 bg-surface text-left select-none animate-in fade-in duration-200">
+        <div className="p-3 border-b border-border bg-slate-50/75 flex justify-between items-center flex-shrink-0">
+          <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+            RFQ List ({data.length})
+          </span>
+          {selectedCount > 0 && (
+            <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
+              {selectedCount} Selected
+            </span>
+          )}
+        </div>
+        
+        <div className="flex-1 overflow-y-auto divide-y divide-slate-100 max-h-[calc(100vh-250px)] scrollbar-none">
+          {paginatedData.map((r) => {
+            const isSelected = r.id === selectedRfqId;
+            return (
+              <div
+                key={r.id}
+                onClick={() => onSelectRFQ(r.id)}
+                className={cn(
+                  "p-3.5 flex flex-col gap-1.5 cursor-pointer hover:bg-slate-50/70 transition-all duration-150 relative border-l-4",
+                  isSelected ? "bg-indigo-50/40 border-l-indigo-600 font-bold" : "border-l-transparent"
+                )}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <span className="font-extrabold text-xs text-slate-800 tracking-tight">
+                    {r.rfqNumber}
+                  </span>
+                  <StatusBadge status={r.status} />
+                </div>
+                <div className="text-[11px] font-bold text-slate-500 truncate">
+                  {r.companyName}
+                </div>
+                <div className="flex items-center justify-between mt-1">
+                  <span className="font-extrabold text-[11px] text-slate-800">
+                    ₹{r.value?.toLocaleString('en-IN') || '0'}
+                  </span>
+                  <span className="text-[9px] text-slate-400 font-semibold">
+                    {new Date(r.lastUpdated).toLocaleDateString('en-IN')}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+
+          {paginatedData.length === 0 && (
+            <div className="p-8 text-center text-slate-400 text-xs italic">
+              No matching RFQs
+            </div>
+          )}
+        </div>
+
+        {/* Minimal Compact Pagination */}
+        {totalPages > 1 && (
+          <div className="p-3 border-t border-border bg-slate-50/50 flex justify-between items-center text-xs flex-shrink-0">
+            <span className="text-[10px] font-bold text-slate-400">
+              Page {currentPage} of {totalPages}
+            </span>
+            <div className="flex gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="h-6 w-6 p-0 border-slate-200"
+              >
+                <ChevronLeft className="h-3 w-3" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="h-6 w-6 p-0 border-slate-200"
+              >
+                <ChevronRight className="h-3 w-3" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-surface p-4 text-left select-none animate-in fade-in duration-300 relative">

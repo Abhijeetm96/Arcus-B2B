@@ -7,7 +7,9 @@ import { RFQDashboard } from './components/dashboard/RFQDashboard';
 import { RFQSidebar } from './components/workspace/RFQSidebar';
 import { RFQToolbar } from './components/workspace/RFQToolbar';
 import { RFQTable } from './components/workspace/RFQTable';
-import { RFQDetailDrawer } from './components/drawer/RFQDetailDrawer';
+import { DrawerHeader } from './components/drawer/DrawerHeader';
+import { DrawerTabs } from './components/drawer/DrawerTabs';
+import { DrawerFooter } from './components/drawer/DrawerFooter';
 import { LoadingState } from '../../../components/shared/States';
 import { rfqService } from './services/rfq.service';
 import type { RFQSummary, RFQDetail, RFQTimelineEvent } from './types/rfqTypes';
@@ -430,19 +432,78 @@ export function RFQWorkspace() {
             />
           }
           workspaceDetails={
-            <RFQTable
-              data={rfqSummaries}
-              selectedRfqId={selectedRfqDetail?.id || null}
-              onSelectRFQ={handleSelectRFQ}
-              selectedRows={selectedRows}
-              onRowSelectChange={(id, checked) => setSelectedRows(prev => ({ ...prev, [id]: checked }))}
-              onSelectAllRows={(checked) => {
-                const updated: Record<string, boolean> = {};
-                rfqSummaries.forEach(r => { updated[r.id] = checked; });
-                setSelectedRows(updated);
-              }}
-              onBulkStatusChange={handleBulkStatusChange}
-            />
+            selectedRfqDetail ? (
+              <div className="flex flex-col md:flex-row h-full divide-y md:divide-y-0 md:divide-x divide-border min-h-0 overflow-hidden w-full bg-white">
+                {/* Left compact list */}
+                <div className="w-full md:w-80 flex-shrink-0 flex flex-col border-r border-border bg-slate-50/10">
+                  <RFQTable
+                    data={rfqSummaries}
+                    selectedRfqId={selectedRfqDetail?.id || null}
+                    onSelectRFQ={handleSelectRFQ}
+                    selectedRows={selectedRows}
+                    onRowSelectChange={(id, checked) => setSelectedRows(prev => ({ ...prev, [id]: checked }))}
+                    onSelectAllRows={(checked) => {
+                      const updated: Record<string, boolean> = {};
+                      rfqSummaries.forEach(r => { updated[r.id] = checked; });
+                      setSelectedRows(updated);
+                    }}
+                    onBulkStatusChange={handleBulkStatusChange}
+                    compact={true}
+                  />
+                </div>
+
+                {/* Right details content view */}
+                <div className="flex-1 flex flex-col min-h-0 overflow-y-auto bg-white p-4 md:p-6 text-left animate-in fade-in slide-in-from-right duration-200 relative">
+                  <button
+                    onClick={() => {
+                      setSelectedRfqDetail(null);
+                      sessionStorage.removeItem('rfq_selected_detail');
+                    }}
+                    className="absolute top-4 right-4 text-slate-400 hover:text-slate-655 transition-colors z-10 p-1 hover:bg-slate-50 rounded"
+                    title="Close details"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+
+                  <DrawerHeader rfq={selectedRfqDetail} onAction={handleDrawerAction} />
+
+                  <div className="flex-grow mt-4 min-h-0 flex flex-col overflow-y-auto scrollbar-none">
+                    <DrawerTabs
+                      rfq={selectedRfqDetail}
+                      onAddNote={handleAddNote}
+                      onDownloadAttachment={(fname) => {
+                        const token = localStorage.getItem('arcus_token') || '';
+                        window.open(`/api/attachments/download/${encodeURIComponent(fname)}?token=${encodeURIComponent(token)}`, '_blank');
+                      }}
+                      onDownloadQuote={(qid) => {
+                        const token = localStorage.getItem('arcus_token') || '';
+                        window.open(`/api/documents/${qid}?format=pdf&download=true&token=${encodeURIComponent(token)}`, '_blank');
+                      }}
+                      onRefresh={handleRefreshDrawer}
+                    />
+                  </div>
+                  
+                  <div className="mt-4 border-t border-border pt-4">
+                    <DrawerFooter rfq={selectedRfqDetail} />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <RFQTable
+                data={rfqSummaries}
+                selectedRfqId={null}
+                onSelectRFQ={handleSelectRFQ}
+                selectedRows={selectedRows}
+                onRowSelectChange={(id, checked) => setSelectedRows(prev => ({ ...prev, [id]: checked }))}
+                onSelectAllRows={(checked) => {
+                  const updated: Record<string, boolean> = {};
+                  rfqSummaries.forEach(r => { updated[r.id] = checked; });
+                  setSelectedRows(updated);
+                }}
+                onBulkStatusChange={handleBulkStatusChange}
+                compact={false}
+              />
+            )
           }
           toolbar={
             <RFQToolbar
@@ -466,24 +527,6 @@ export function RFQWorkspace() {
           }
         />
       )}
-
-      {/* Details Side-Drawer / Pull Sheet overlay */}
-      <RFQDetailDrawer
-        rfq={selectedRfqDetail}
-        isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-        onAddNote={handleAddNote}
-        onDownloadAttachment={(fname) => {
-          const token = localStorage.getItem('arcus_token') || '';
-          window.open(`/api/attachments/download/${encodeURIComponent(fname)}?token=${encodeURIComponent(token)}`, '_blank');
-        }}
-        onDownloadQuote={(qid) => {
-          const token = localStorage.getItem('arcus_token') || '';
-          window.open(`/api/documents/${qid}?format=pdf&download=true&token=${encodeURIComponent(token)}`, '_blank');
-        }}
-        onAction={handleDrawerAction}
-        onRefresh={handleRefreshDrawer}
-      />
 
       <RFQCreateDialog
         isOpen={isCreateOpen}
