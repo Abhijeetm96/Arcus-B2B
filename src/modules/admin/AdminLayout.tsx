@@ -307,32 +307,37 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
                   {isHovered && (
                     <div 
-                      className="absolute left-full top-0 ml-1.5 py-1 w-44 bg-slate-950 border border-slate-800 rounded-md shadow-xl z-50 text-left animate-in fade-in slide-in-from-left-2 duration-150"
+                      className="absolute left-full top-0 pl-2 w-44 z-50 text-left animate-in fade-in duration-150"
                       onMouseEnter={() => setHoveredGroupId(item.id)}
                       onMouseLeave={() => setHoveredGroupId(null)}
                     >
-                      {visibleSubItems.map(sub => {
-                        const SubIcon = iconMap[sub.icon] || Lucide.HelpCircle;
-                        const displayName = sub.name === 'B2C Orders' ? 'B@C Orders' : sub.name === 'Service Bookings' ? 'Services Order' : sub.name;
-                        return (
-                          <button
-                            key={sub.id}
-                            onClick={() => {
-                              setActiveSection(sub.id);
-                              setHoveredGroupId(null);
-                            }}
-                            className={cn(
-                              "w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold transition-all text-left",
-                              activeSection === sub.id
-                                ? 'bg-primary text-slate-950 font-bold'
-                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-                            )}
-                          >
-                            <SubIcon className="h-3.5 w-3.5 shrink-0" />
-                            <span>{displayName}</span>
-                          </button>
-                        );
-                      })}
+                      <div className="py-1 bg-slate-950 border border-slate-800 rounded-md shadow-xl">
+                        {visibleSubItems.map(sub => {
+                          const SubIcon = iconMap[sub.icon] || Lucide.HelpCircle;
+                          const displayName = 
+                            sub.name === 'B2C Orders' ? 'B@C' : 
+                            sub.name === 'Service Bookings' ? 'services Order' : 
+                            sub.name === 'B2B Orders' ? 'b2B' : sub.name;
+                          return (
+                            <button
+                              key={sub.id}
+                              onClick={() => {
+                                setActiveSection(sub.id);
+                                setHoveredGroupId(null);
+                              }}
+                              className={cn(
+                                "w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold transition-all text-left",
+                                activeSection === sub.id
+                                  ? 'bg-primary text-slate-950 font-bold'
+                                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                              )}
+                            >
+                              <SubIcon className="h-3.5 w-3.5 shrink-0 text-slate-500" />
+                              <span>{displayName}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </div>

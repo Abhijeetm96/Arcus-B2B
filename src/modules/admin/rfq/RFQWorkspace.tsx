@@ -439,7 +439,7 @@ export function RFQWorkspace() {
                         "px-3 py-1 rounded-full text-xs font-bold transition-all shrink-0 border select-none cursor-pointer",
                         isSelected
                           ? "bg-slate-900 text-white border-slate-900 shadow-sm"
-                          : "bg-white text-slate-655 border-slate-200 hover:bg-slate-50"
+                          : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                       )}
                     >
                       {label} <span className={cn("ml-1 font-extrabold text-[9px]", isSelected ? "text-primary" : "text-slate-400")}>{count}</span>
@@ -477,7 +477,7 @@ export function RFQWorkspace() {
                           setSelectedRfqDetail(null);
                           sessionStorage.removeItem('rfq_selected_detail');
                         }}
-                        className="absolute top-4 right-4 text-slate-400 hover:text-slate-655 transition-colors z-10 p-1 hover:bg-slate-50 rounded"
+                        className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors z-10 p-1 hover:bg-slate-50 rounded"
                         title="Close details"
                       >
                         <X className="h-5 w-5" />
