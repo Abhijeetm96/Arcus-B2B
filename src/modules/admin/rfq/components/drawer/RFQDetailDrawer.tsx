@@ -2,7 +2,6 @@ import * as React from 'react';
 import { Sheet, SheetContent } from '../../../../../components/ui/Sheet';
 import type { RFQDetail } from '../../types/rfqTypes';
 import { DrawerHeader } from './DrawerHeader';
-import { DrawerActions } from './DrawerActions';
 import { DrawerTabs } from './DrawerTabs';
 import { DrawerFooter } from './DrawerFooter';
 
@@ -55,7 +54,7 @@ export function RFQDetailDrawer({
 
         {/* Header container */}
         <div className="px-4 md:px-6 pt-4 pb-2 shrink-0">
-          <DrawerHeader rfq={rfq} />
+          <DrawerHeader rfq={rfq} onAction={onAction} />
         </div>
 
         {/* Content Tabs (takes remaining height) */}
@@ -66,9 +65,6 @@ export function RFQDetailDrawer({
           onDownloadQuote={onDownloadQuote}
           onRefresh={onRefresh}
         />
-
-        {/* Actions panel */}
-        <DrawerActions rfq={rfq} onAction={onAction} />
 
         {/* Footer info metadata */}
         <DrawerFooter rfq={rfq} />

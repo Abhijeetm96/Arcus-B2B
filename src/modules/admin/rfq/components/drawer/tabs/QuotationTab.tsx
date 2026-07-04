@@ -3,6 +3,7 @@ import type { RFQDetail } from '../../../types/rfqTypes';
 import { Button } from '../../../../../../components/ui/Button';
 import { EmptyStateContainer } from '../../shared/EmptyStateContainer';
 import { DocumentStatusBadge } from '../../../../../../components/shared/DocumentStatusBadge';
+import { cn } from '../../../../../../components/ui/utils';
 
 interface QuotationTabProps {
   rfq: RFQDetail;
@@ -41,77 +42,84 @@ export function QuotationTab({ rfq, onDownloadQuote }: QuotationTabProps) {
           icon={FileSignature}
         />
       ) : (
-        <div className="space-y-3">
-          {quotations.map((q) => {
-            const isAccepted = q.status === 'ACCEPTED' || q.status === 'APPROVED' || q.status === 'CONVERTED';
-            const createdVal = q.createdAt || q.created_at || Date.now();
-            const created = new Date(createdVal);
-            const expiresVal = q.validUntil || q.expires_at || (Date.now() + 7 * 24 * 60 * 60 * 1000);
-            const expires = new Date(expiresVal);
+        <div className="border border-slate-100 rounded-lg overflow-hidden bg-white shadow-sm">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="bg-slate-50/75 border-b border-slate-100 text-slate-500 font-bold">
+                <th className="p-3">Quotation No.</th>
+                <th className="p-3">Revision</th>
+                <th className="p-3 text-right">Offer Value</th>
+                <th className="p-3">Status</th>
+                <th className="p-3">Sent Date</th>
+                <th className="p-3">Validity</th>
+                <th className="p-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {quotations.map((q) => {
+                const isAccepted = q.status === 'ACCEPTED' || q.status === 'APPROVED' || q.status === 'CONVERTED';
+                const createdVal = q.createdAt || q.created_at || Date.now();
+                const created = new Date(createdVal);
+                const expiresVal = q.validUntil || q.expires_at || (Date.now() + 7 * 24 * 60 * 60 * 1000);
+                const expires = new Date(expiresVal);
+                const isExpired = expires < new Date();
 
-            return (
-              <div
-                key={q.id}
-                className={`p-3 border rounded bg-surface hover:bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-150 ${
-                  isAccepted ? 'border-success bg-success/5' : 'border-border'
-                }`}
-              >
-                <div className="space-y-1.5 min-w-0 text-left">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono font-bold text-xs text-text-primary">
+                return (
+                  <tr key={q.id} className={cn("border-b border-slate-100 hover:bg-slate-50/50 last:border-b-0", isAccepted && "bg-emerald-50/10")}>
+                    <td className="p-3 font-mono font-bold text-slate-800">
                       {q.quotation_number || q.id.substring(0, 8)}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-mono">
-                      (Rev {q.version || 1})
-                    </span>
-                    <DocumentStatusBadge status={q.status} />
-                  </div>
-
-                  <div className="font-extrabold text-sm text-text-primary">
-                    Offer: ₹{Number(q.value || q.grand_total || 0).toLocaleString('en-IN')}
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-x-2 text-[10px] text-text-secondary font-semibold">
-                    <span>Sent: {created.toLocaleDateString()}</span>
-                    <span>•</span>
-                    <span className={expires < new Date() ? 'text-danger' : 'text-text-secondary'}>
-                      Valid to: {expires.toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleViewDetails(q.id)}
-                    className="h-8 text-xs font-bold flex items-center gap-1 border-border"
-                  >
-                    <Eye className="h-3.5 w-3.5" />
-                    Edit
-                  </Button>
-                  {q.isPersisted !== false ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onDownloadQuote(q.id, `${q.id}.pdf`)}
-                      className="h-8 text-xs font-bold flex items-center gap-1 border-border"
-                    >
-                      <Download className="h-3.5 w-3.5" />
-                      PDF
-                    </Button>
-                  ) : (
-                    <span 
-                      title="This proposal is mock data. Create and save a real quotation to compile and download its PDF document."
-                      className="text-[10px] text-slate-400 bg-slate-100 font-semibold px-2.5 py-1.5 rounded cursor-not-allowed select-none"
-                    >
-                      Document available after saving
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+                    </td>
+                    <td className="p-3 text-slate-500 font-medium">
+                      Rev {q.version || 1}
+                    </td>
+                    <td className="p-3 text-right font-extrabold text-slate-900">
+                      ₹{Number(q.value || q.grand_total || 0).toLocaleString('en-IN')}
+                    </td>
+                    <td className="p-3">
+                      <DocumentStatusBadge status={q.status} />
+                    </td>
+                    <td className="p-3 text-slate-500 font-medium">
+                      {created.toLocaleDateString('en-IN')}
+                    </td>
+                    <td className={cn("p-3 font-medium", isExpired ? "text-rose-500 font-bold" : "text-slate-500")}>
+                      {expires.toLocaleDateString('en-IN')}
+                    </td>
+                    <td className="p-3 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleViewDetails(q.id)}
+                          className="h-7 w-7 border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 rounded-full"
+                          title="View & Edit Proposal"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                        </Button>
+                        {q.isPersisted !== false ? (
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => onDownloadQuote(q.id, `${q.id}.pdf`)}
+                            className="h-7 w-7 border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 rounded-full"
+                            title="Download PDF"
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                          </Button>
+                        ) : (
+                          <span 
+                            title="Document available after saving"
+                            className="text-[10px] text-slate-400 bg-slate-50 font-semibold px-2 py-1 rounded cursor-not-allowed select-none border border-slate-100"
+                          >
+                            Draft
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
