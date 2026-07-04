@@ -1,4 +1,4 @@
-import { Activity, Clock } from 'lucide-react';
+import { Activity } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../../../../components/ui/Card';
 import type { RFQTimelineEvent } from '../../types/rfqTypes';
 
@@ -7,44 +7,48 @@ interface DashboardRecentActivityProps {
 }
 
 export function DashboardRecentActivity({ activities }: DashboardRecentActivityProps) {
+  // Limit to top 5 activities to align perfectly in height with the left column
+  const list = activities
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, 5);
+
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between pb-4">
-        <CardTitle className="text-sm font-bold flex items-center gap-2">
-          <Activity className="h-4 w-4 text-primary" />
+    <Card className="border border-slate-100 bg-white shadow-sm rounded-xl text-left flex flex-col justify-between">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-bold text-slate-800 flex items-center gap-2">
+          <Activity className="h-4 w-4 text-indigo-500" />
           Recent Activity Log
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 overflow-y-auto p-4 md:p-6 pt-0 max-h-[360px]">
-        {activities.length === 0 ? (
-          <div className="text-center py-8 text-xs text-text-secondary">
+      <CardContent className="p-4 md:p-6 pt-0 flex-grow max-h-[380px] overflow-y-auto scrollbar-none">
+        {list.length === 0 ? (
+          <div className="text-center py-8 text-xs text-slate-400 italic">
             No recent activity recorded.
           </div>
         ) : (
-          <div className="relative pl-4 border-l border-border space-y-4">
-            {activities.map((act) => {
+          <div className="relative pl-3 border-l-2 border-slate-100 space-y-3.5 mt-2">
+            {list.map((act) => {
               const date = new Date(act.timestamp);
               return (
-                <div key={act.id} className="relative group text-left">
-                  {/* Timeline Dot */}
-                  <span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full border-2 border-primary bg-surface group-hover:bg-primary transition-colors" />
+                <div key={act.id} className="relative text-left group">
+                  {/* Small timeline dot */}
+                  <span className="absolute -left-[17px] top-1.5 h-2 w-2 rounded-full border-2 border-indigo-500 bg-white group-hover:bg-indigo-500 transition-colors duration-150" />
                   
-                  <div className="space-y-1">
-                    <div className="flex flex-wrap items-baseline justify-between gap-x-2">
-                      <span className="font-bold text-xs text-text-primary">
+                  <div className="space-y-0.5">
+                    <div className="flex justify-between items-start gap-2">
+                      <span className="font-extrabold text-xs text-slate-800">
                         {act.title}
                       </span>
-                      <span className="flex items-center text-[10px] text-text-secondary font-medium">
-                        <Clock className="h-3 w-3 mr-1" />
-                        {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {date.toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                      <span className="text-[9px] text-slate-400 font-semibold shrink-0">
+                        {date.toLocaleDateString([], { month: 'short', day: 'numeric' })}
                       </span>
                     </div>
-                    <p className="text-[11px] text-text-secondary leading-relaxed">
+                    <p className="text-[10px] text-slate-500 leading-relaxed font-semibold">
                       {act.description}
                     </p>
-                    <div className="text-[10px] text-text-secondary/80 flex justify-between font-semibold mt-1">
+                    <div className="text-[9px] text-slate-400 font-bold flex justify-between pt-0.5">
                       <span>{act.rfqNumber} • {act.companyName}</span>
-                      <span className="text-[9px] bg-slate-100 text-slate-650 px-1.5 py-0.5 rounded uppercase">
+                      <span className="uppercase text-[8px] bg-slate-50 text-slate-500 px-1 py-0.5 rounded border border-slate-100/50">
                         {act.userRole}
                       </span>
                     </div>

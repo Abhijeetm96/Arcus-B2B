@@ -1,5 +1,7 @@
 import { Card, CardHeader, CardTitle, CardContent } from '../../../../../components/ui/Card';
 import type { RFQSummary } from '../../types/rfqTypes';
+import { cn } from '../../../../../components/ui/utils';
+import { ShieldAlert, AlertTriangle, Info, ShieldCheck } from 'lucide-react';
 
 interface DashboardChartsProps {
   rfqs: RFQSummary[];
@@ -29,6 +31,16 @@ export function DashboardCharts({ rfqs }: DashboardChartsProps) {
     CONVERTED: '#06b6d4' // Cyan
   };
 
+  const statusBgColors: Record<string, string> = {
+    SUBMITTED: 'bg-indigo-500',
+    ASSIGNED: 'bg-blue-500',
+    UNDER_REVIEW: 'bg-violet-500',
+    NEGOTIATION: 'bg-amber-500',
+    APPROVED: 'bg-emerald-500',
+    REJECTED: 'bg-rose-500',
+    CONVERTED: 'bg-cyan-500'
+  };
+
   // Compute Donut SVG parameters
   const totalStatus = statusData.reduce((sum, d) => sum + d.value, 0);
   let accumulatedPercent = 0;
@@ -42,43 +54,66 @@ export function DashboardCharts({ rfqs }: DashboardChartsProps) {
       value: d.value,
       percent,
       startPercent,
-      color: statusColors[d.name] || '#cbd5e1'
+      color: statusColors[d.name] || '#cbd5e1',
+      bgColor: statusBgColors[d.name] || 'bg-slate-400'
     };
   });
 
   // 2. Priority distribution
-  const priorities = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+  const priorities = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
   const priorityCounts = rfqs.reduce((acc: Record<string, number>, r) => {
     const p = r.priority.toUpperCase();
     acc[p] = (acc[p] || 0) + 1;
     return acc;
   }, {});
 
-  const priorityData = priorities.map(p => ({
-    name: p,
-    value: priorityCounts[p] || 0
-  }));
+  const totalPriority = priorities.reduce((sum, p) => sum + (priorityCounts[p] || 0), 0);
 
-  const maxPriorityValue = Math.max(...priorityData.map(d => d.value), 1);
+  const priorityData = priorities.map(p => {
+    const value = priorityCounts[p] || 0;
+    const percent = totalPriority > 0 ? (value / totalPriority) * 100 : 0;
+    return {
+      name: p,
+      value,
+      percent
+    };
+  });
 
   const priorityColors: Record<string, string> = {
-    LOW: '#10b981', // Emerald
-    MEDIUM: '#3b82f6', // Blue
-    HIGH: '#f59e0b', // Amber
-    CRITICAL: '#ef4444' // Rose
+    CRITICAL: 'bg-rose-500 border-rose-600',
+    HIGH: 'bg-amber-500 border-amber-600',
+    MEDIUM: 'bg-blue-500 border-blue-600',
+    LOW: 'bg-emerald-500 border-emerald-600'
+  };
+
+  const priorityIcons: Record<string, any> = {
+    CRITICAL: ShieldAlert,
+    HIGH: AlertTriangle,
+    MEDIUM: Info,
+    LOW: ShieldCheck
+  };
+
+  const priorityLabels: Record<string, string> = {
+    CRITICAL: 'Critical SLA (<6h)',
+    HIGH: 'High SLA (12h)',
+    MEDIUM: 'Medium SLA (24h)',
+    LOW: 'Low SLA (48h)'
   };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 select-none animate-in fade-in duration-200">
       
-      {/* Donut Chart: Status distribution */}
-      <Card className="text-left">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-bold text-slate-800">
-            RFQ Status Segmentation
+      {/* 1. Status distribution donut chart */}
+      <Card className="border border-slate-100 bg-white shadow-sm rounded-xl">
+        <CardHeader className="pb-1">
+          <CardTitle className="text-sm font-bold text-slate-800 flex items-center justify-between">
+            <span>RFQ Status Segment</span>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+              Live breakdown
+            </span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-4 md:p-6 pt-0 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <CardContent className="p-4 md:p-6 pt-0 flex flex-col sm:flex-row items-center justify-between gap-6 mt-2">
           
           {/* Donut SVG */}
           <div className="relative h-40 w-40 flex items-center justify-center shrink-0">
@@ -89,10 +124,9 @@ export function DashboardCharts({ rfqs }: DashboardChartsProps) {
                 <circle 
                   cx="21" cy="21" r="15.915" 
                   fill="transparent" 
-                  stroke="#f1f5f9" strokeWidth="4.2"
+                  stroke="#f8fafc" strokeWidth="4.2"
                 />
                 {donutSegments.map((seg, idx) => {
-                  // Circumference = 2 * PI * r = 100
                   const strokeDasharray = `${seg.percent} ${100 - seg.percent}`;
                   const strokeDashoffset = 100 - seg.startPercent;
                   return (
@@ -104,7 +138,7 @@ export function DashboardCharts({ rfqs }: DashboardChartsProps) {
                       strokeWidth="4.2"
                       strokeDasharray={strokeDasharray}
                       strokeDashoffset={strokeDashoffset}
-                      className="transition-all duration-300 hover:stroke-[5px] cursor-pointer"
+                      className="transition-all duration-300 hover:stroke-[5.2px] cursor-pointer"
                     >
                       <title>{`${seg.name}: ${seg.value} (${seg.percent.toFixed(1)}%)`}</title>
                     </circle>
@@ -113,63 +147,77 @@ export function DashboardCharts({ rfqs }: DashboardChartsProps) {
               </svg>
             )}
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <span className="text-xl font-black text-slate-800">{totalStatus}</span>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">RFQs Total</span>
+              <span className="text-2xl font-black text-slate-800">{totalStatus}</span>
+              <span className="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest font-mono">RFQs Total</span>
             </div>
           </div>
 
-          {/* Legend */}
-          <div className="space-y-1.5 w-full">
+          {/* Ledger Legend list with Share Progress bars */}
+          <div className="space-y-3 w-full">
             {donutSegments.map((seg, idx) => (
-              <div key={idx} className="flex justify-between items-center text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: seg.color }} />
-                  <span className="text-slate-600 font-semibold truncate capitalize max-w-[100px]">
-                    {seg.name.toLowerCase().replace('_', ' ')}
+              <div key={idx} className="space-y-1">
+                <div className="flex justify-between items-center text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", seg.bgColor)} />
+                    <span className="text-slate-600 font-bold capitalize">
+                      {seg.name.toLowerCase().replace('_', ' ')}
+                    </span>
+                  </div>
+                  <span className="font-extrabold text-slate-800">
+                    {seg.value} <span className="text-slate-400 font-medium">({seg.percent.toFixed(0)}%)</span>
                   </span>
                 </div>
-                <span className="font-bold text-slate-700 text-[11px]">
-                  {seg.value} <span className="text-slate-400 font-medium">({seg.percent.toFixed(0)}%)</span>
-                </span>
+                {/* Visual horizontal share bar */}
+                <div className="w-full bg-slate-50 h-1.5 rounded-full overflow-hidden border border-slate-100/50">
+                  <div className={cn("h-full rounded-full", seg.bgColor)} style={{ width: `${seg.percent}%` }} />
+                </div>
               </div>
             ))}
           </div>
         </CardContent>
       </Card>
 
-      {/* Bar Chart: Priority distribution */}
-      <Card className="text-left">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-bold text-slate-800">
-            SLA Priority Distribution
+      {/* 2. Priority List with progress indicators */}
+      <Card className="border border-slate-100 bg-white shadow-sm rounded-xl">
+        <CardHeader className="pb-1">
+          <CardTitle className="text-sm font-bold text-slate-800 flex items-center justify-between">
+            <span>SLA Priority Distribution</span>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+              Commitment limits
+            </span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-4 md:p-6 pt-0 flex flex-col justify-end h-44">
-          <div className="flex items-end justify-between h-28 gap-4 w-full px-2 border-b border-slate-100">
+        <CardContent className="p-4 md:p-6 pt-0 flex flex-col justify-center gap-4 mt-2">
+          <div className="space-y-3.5 w-full">
             {priorityData.map((d, idx) => {
-              const barHeightPercent = (d.value / maxPriorityValue) * 100;
-              const color = priorityColors[d.name] || '#94a3b8';
+              const Icon = priorityIcons[d.name] || Info;
+              const color = priorityColors[d.name] || 'bg-slate-400';
+              const label = priorityLabels[d.name] || d.name;
+              
               return (
-                <div key={idx} className="flex flex-col items-center flex-1 h-full justify-end group">
-                  <span className="text-[10px] font-extrabold text-slate-700 mb-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-                    {d.value}
-                  </span>
-                  <div 
-                    style={{ height: `${barHeightPercent}%`, backgroundColor: color }}
-                    className="w-full max-w-[28px] rounded-t transition-all duration-300 hover:brightness-95 hover:shadow-sm cursor-pointer"
-                    title={`${d.name}: ${d.value} RFQs`}
-                  />
+                <div key={idx} className="flex items-center gap-3">
+                  {/* Left Label & Icon */}
+                  <div className="w-28 flex items-center gap-1.5 shrink-0">
+                    <Icon className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                    <span className="text-[11px] font-bold text-slate-600 truncate">{label}</span>
+                  </div>
+
+                  {/* Horizontal share progress bar */}
+                  <div className="flex-1 bg-slate-50 h-2.5 rounded-full overflow-hidden border border-slate-100/50">
+                    <div 
+                      className={cn("h-full rounded-full transition-all duration-300", color)}
+                      style={{ width: `${d.percent}%` }}
+                    />
+                  </div>
+
+                  {/* Right count details */}
+                  <div className="w-12 text-right shrink-0">
+                    <span className="text-xs font-extrabold text-slate-800">{d.value}</span>
+                    <span className="text-[9px] font-semibold text-slate-400 ml-1">({d.percent.toFixed(0)}%)</span>
+                  </div>
                 </div>
               );
             })}
-          </div>
-          {/* Axis Labels */}
-          <div className="flex justify-between w-full px-2 mt-2">
-            {priorityData.map((d, idx) => (
-              <span key={idx} className="text-[9px] font-bold text-slate-500 uppercase tracking-wide flex-1 text-center truncate">
-                {d.name}
-              </span>
-            ))}
           </div>
         </CardContent>
       </Card>
