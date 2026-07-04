@@ -65,6 +65,16 @@ export class RFQController {
         return res.status(404).json({ error: 'RFQ not found' });
       }
 
+      const quotationsRes = pgPool 
+        ? await pgPool.query(`
+            SELECT q.*, qt.grand_total
+            FROM quotations q
+            LEFT JOIN quotation_totals qt ON q.id = qt.quotation_id
+            WHERE q.rfq_id = $1
+            ORDER BY q.created_at DESC
+          `, [id])
+        : { rows: [] };
+
       const [items, watchers, assignment, assignmentHistory, comments, attachments] = await Promise.all([
         rfqRepo.findItemsByRfqId(id),
         rfqRepo.findWatchersByRfqId(id),
@@ -82,7 +92,8 @@ export class RFQController {
         assignment,
         assignmentHistory,
         comments,
-        attachments
+        attachments,
+        quotations: quotationsRes.rows
       });
     } catch (err: any) {
       console.error('[RFQController] getRfqById error:', err);

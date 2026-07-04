@@ -201,7 +201,15 @@ export const rfqService = {
           timeline: timelineEvents.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()),
           notes,
           attachments,
-          quotations: [] // Loaded asynchronously on the dashboard drawer
+          quotations: (data.quotations || []).map((q: any) => ({
+            id: q.id,
+            version: `v${q.version || 1}.0`,
+            value: parseFloat(q.grand_total || q.value || 0),
+            status: q.status,
+            createdAt: q.created_at || q.createdAt,
+            validUntil: q.expires_at || q.validUntil,
+            pdfUrl: q.pdfUrl || `/api/documents/${q.id}?format=pdf`
+          }))
         };
       }
       return data;

@@ -1887,9 +1887,9 @@ app.post('/api/admin/rfqs/:id/quotations-draft', async (req: any, res) => {
         performerId
       ]);
 
-      // 7. Update RFQ Status to Negotiation
+      // 7. Update RFQ Status to NEGOTIATION
       await pgPool.query(
-        "UPDATE rfqs SET status = 'Negotiation', updated_at = CURRENT_TIMESTAMP WHERE id = $1",
+        "UPDATE rfqs SET status = 'NEGOTIATION', updated_at = CURRENT_TIMESTAMP WHERE id = $1",
         [id]
       );
 
