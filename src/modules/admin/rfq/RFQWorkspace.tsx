@@ -473,7 +473,10 @@ export function RFQWorkspace() {
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         onAddNote={handleAddNote}
-        onDownloadAttachment={(fname) => triggerToast(`Mock Download: Commencing download of attachment "${fname}"`, 'success')}
+        onDownloadAttachment={(fname) => {
+          const token = localStorage.getItem('arcus_token') || '';
+          window.open(`/api/attachments/download/${encodeURIComponent(fname)}?token=${encodeURIComponent(token)}`, '_blank');
+        }}
         onDownloadQuote={(qid) => {
           const token = localStorage.getItem('arcus_token') || '';
           window.open(`/api/documents/${qid}?format=pdf&download=true&token=${encodeURIComponent(token)}`, '_blank');

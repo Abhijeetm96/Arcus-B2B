@@ -281,6 +281,25 @@ export class RFQController {
       }
 
       const storageKey = `uploads/rfq/${id}/${filename}`;
+      
+      // Save buffer locally to uploads/ directory
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const uploadsDir = path.join(__dirname, '../../uploads');
+        if (!fs.existsSync(uploadsDir)) {
+          fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+        const filePath = path.join(uploadsDir, filename);
+        if (req.file?.buffer) {
+          fs.writeFileSync(filePath, req.file.buffer);
+        } else {
+          // Write a dummy PDF mock for seed fallbacks
+          fs.writeFileSync(filePath, Buffer.from('%PDF-1.4 ... mock pdf specifications blueprint ...'));
+        }
+      } catch (err) {
+        console.error('[RFQController] Local attachment write error:', err);
+      }
       const publicUrl = `/api/attachments/download/${filename}`;
       const checksum = Math.random().toString(36).substring(7);
 
