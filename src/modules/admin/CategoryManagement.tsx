@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import type { Category } from './types';
 import { apiFetch } from '../../lib/api';
 
-
 export const CategoryManagement: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -13,6 +12,9 @@ export const CategoryManagement: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [form, setForm] = useState<Partial<Category>>({});
+  const [deleteConfirmCategory, setDeleteConfirmCategory] = useState<Category | null>(null);
+  const [transferTargetId, setTransferTargetId] = useState<string>('');
+  const [shouldTransfer, setShouldTransfer] = useState<boolean>(true);
 
   const fetchCategories = async () => {
     setLoading(true);
@@ -37,7 +39,7 @@ export const CategoryManagement: React.FC = () => {
 
   const openAddModal = () => {
     setEditingCategory(null);
-    setForm({ id: '', name: '', icon: 'folder', count: '0 products', href: '' });
+    setForm({ id: '', name: '', icon: 'folder', count: '0 products', href: '', parentId: null });
     setIsModalOpen(true);
   };
 
@@ -55,8 +57,8 @@ export const CategoryManagement: React.FC = () => {
       const token = localStorage.getItem('arcus_token');
       const method = editingCategory ? 'PUT' : 'POST';
       const url = editingCategory 
-        ? `/api/admin/categories/${editingCategory.id}` 
-        : '/api/admin/categories';
+        ? `/admin/categories/${editingCategory.id}` 
+        : '/admin/categories';
 
       const res = await apiFetch(url, {
         method,
@@ -78,25 +80,75 @@ export const CategoryManagement: React.FC = () => {
     }
   };
 
-  const handleDeleteCategory = async (id: string, name: string) => {
-    if (!window.confirm(`Are you sure you want to delete category "${name}"?`)) return;
+  const confirmDeleteCategory = async () => {
+    if (!deleteConfirmCategory) return;
+    const { id, name } = deleteConfirmCategory;
+    console.log('confirmDeleteCategory triggered for:', id, name);
+    
+    let url = `/admin/categories/${id}`;
+    const productCount = parseInt((deleteConfirmCategory.count || '').replace(/[^0-9]/g, ''), 10) || 0;
+    if (productCount > 0 && shouldTransfer && transferTargetId) {
+      url += `?transferTo=${encodeURIComponent(transferTargetId)}`;
+    }
+    
+    setDeleteConfirmCategory(null);
+    setTransferTargetId('');
+    setShouldTransfer(true);
     setError(null);
     setSuccess(null);
     try {
       const token = localStorage.getItem('arcus_token');
-      const res = await apiFetch(`/admin/categories/${id}`, {
+      console.log(`Sending DELETE request to ${url}...`);
+      const res = await apiFetch(url, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      console.log(`DELETE request returned status: ${res.status}`);
       if (!res.ok) {
         const data = await res.json();
+        console.error('Server rejected category deletion:', data);
         throw new Error(data.error || 'Failed to delete category.');
       }
+      console.log('Category deleted successfully on server.');
       setSuccess(`Category "${name}" deleted successfully.`);
       fetchCategories();
     } catch (err: any) {
+      console.error('Error in handleDeleteCategory:', err);
       setError(err.message || 'Error deleting category.');
     }
+  };
+
+  const getSortedCategories = () => {
+    const topLevel = categories.filter(c => !c.parentId);
+    const subCategories = categories.filter(c => !!c.parentId);
+    
+    const result: Array<Category & { isSub?: boolean; parentName?: string }> = [];
+    
+    topLevel.forEach(parent => {
+      result.push(parent);
+      const children = subCategories.filter(child => child.parentId === parent.id);
+      children.forEach(child => {
+        result.push({
+          ...child,
+          isSub: true,
+          parentName: parent.name
+        });
+      });
+    });
+    
+    // Append any orphaned subcategories
+    subCategories.forEach(child => {
+      if (!result.some(r => r.id === child.id)) {
+        const parent = categories.find(p => p.id === child.parentId);
+        result.push({
+          ...child,
+          isSub: true,
+          parentName: parent ? parent.name : 'Unknown Parent'
+        });
+      }
+    });
+    
+    return result;
   };
 
   return (
@@ -123,10 +175,10 @@ export const CategoryManagement: React.FC = () => {
         </div>
         <button
           onClick={openAddModal}
-          className="flex items-center gap-xs bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-lg h-11 rounded font-bold text-xs transition-all shadow-sm"
+          className="flex items-center gap-xs bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-lg h-11 rounded font-bold text-xs transition-all shadow-sm cursor-pointer"
         >
           <span className="material-symbols-outlined text-[16px]">add</span>
-          Add Main Category
+          Add Category
         </button>
       </div>
 
@@ -148,29 +200,45 @@ export const CategoryManagement: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {categories.map(c => (
-                <tr key={c.id} className="hover:bg-slate-50/50 transition-colors">
+              {getSortedCategories().map(c => (
+                <tr key={c.id} className={`hover:bg-slate-50/50 transition-colors ${c.isSub ? 'bg-slate-50/30' : ''}`}>
                   <td className="px-lg py-md font-bold text-slate-900">
-                    <div className="flex items-center gap-sm">
-                      <span className="material-symbols-outlined text-primary text-[20px]">{c.icon || 'folder'}</span>
-                      {c.name}
+                    <div className="flex items-center gap-sm" style={{ paddingLeft: c.isSub ? '24px' : '0px' }}>
+                      {c.isSub ? (
+                        <>
+                          <span className="text-slate-400 font-mono select-none">↳</span>
+                          <span className="material-symbols-outlined text-slate-400 text-[18px]">{c.icon || 'folder'}</span>
+                          <span className="font-semibold text-slate-700">{c.name}</span>
+                          <span className="text-[9px] bg-slate-100 text-slate-500 font-bold px-sm py-0.5 rounded-full ml-xs">Sub</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="material-symbols-outlined text-primary text-[20px]">{c.icon || 'folder'}</span>
+                          <span>{c.name}</span>
+                        </>
+                      )}
                     </div>
                   </td>
                   <td className="px-lg py-md text-slate-500 font-mono text-xs">{c.href || `#/materials/${c.id}`}</td>
-                  <td className="px-lg py-md text-slate-500 font-mono text-xs">{c.icon || 'folder'}</td>
+                  <td className="px-lg py-md text-slate-500 font-mono text-xs">
+                    <span className="flex items-center gap-xs">
+                      <span className="material-symbols-outlined text-[16px] text-slate-400">{c.icon}</span>
+                      {c.icon || 'folder'}
+                    </span>
+                  </td>
                   <td className="px-lg py-md text-slate-500 font-semibold">{c.count || '0 products'}</td>
                   <td className="px-lg py-md text-right">
                     <div className="flex gap-sm justify-end">
                       <button
                         onClick={() => openEditModal(c)}
-                        className="w-8 h-8 rounded border border-slate-200 flex items-center justify-center hover:bg-slate-100 text-slate-600 hover:text-slate-900"
+                        className="w-8 h-8 rounded border border-slate-200 flex items-center justify-center hover:bg-slate-100 text-slate-600 hover:text-slate-900 cursor-pointer"
                         title="Edit Category"
                       >
                         <span className="material-symbols-outlined text-[16px]">edit</span>
                       </button>
                       <button
-                        onClick={() => handleDeleteCategory(c.id, c.name)}
-                        className="w-8 h-8 rounded border border-slate-200 flex items-center justify-center hover:bg-red-50 text-slate-600 hover:text-red-600"
+                        onClick={() => setDeleteConfirmCategory(c)}
+                        className="w-8 h-8 rounded border border-slate-200 flex items-center justify-center hover:bg-red-50 text-slate-600 hover:text-red-600 cursor-pointer"
                         title="Delete Category"
                       >
                         <span className="material-symbols-outlined text-[16px]">delete</span>
@@ -194,20 +262,20 @@ export const CategoryManagement: React.FC = () => {
       {/* Editor Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-md">
-          <div className="w-full max-w-md bg-white rounded shadow overflow-hidden">
-            <div className="px-lg py-md border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+          <div className="w-full max-w-md bg-white rounded shadow overflow-hidden max-h-[90vh] flex flex-col">
+            <div className="px-lg py-md border-b border-slate-200 bg-slate-50 flex justify-between items-center shrink-0">
               <h3 className="font-extrabold text-slate-900 text-body-md">
                 {editingCategory ? 'Edit Category Properties' : 'Create Category Entity'}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="w-8 h-8 rounded-full border border-slate-200 hover:bg-slate-100 flex items-center justify-center text-slate-500"
+                className="w-8 h-8 rounded-full border border-slate-200 hover:bg-slate-100 flex items-center justify-center text-slate-500 cursor-pointer"
               >
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
 
-            <form onSubmit={handleSaveCategory} className="p-lg space-y-md">
+            <form onSubmit={handleSaveCategory} className="p-lg space-y-md overflow-y-auto flex-1">
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-sm">Category ID *</label>
                 <input
@@ -234,14 +302,89 @@ export const CategoryManagement: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-sm">Icon (Google Material Icon tag)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. folder, plumbing, electrical_services"
-                  value={form.icon || ''}
-                  onChange={e => setForm({ ...form, icon: e.target.value })}
-                  className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm"
-                />
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-sm">Category Hierarchy *</label>
+                <div className="flex gap-md mb-sm">
+                  <label className="flex items-center gap-xs text-body-sm font-bold text-slate-700 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="catLevel"
+                      checked={!form.parentId}
+                      onChange={() => setForm({ ...form, parentId: null })}
+                      className="w-4 h-4 text-primary focus:ring-primary border-slate-300"
+                    />
+                    Main Category
+                  </label>
+                  <label className="flex items-center gap-xs text-body-sm font-bold text-slate-700 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="catLevel"
+                      checked={!!form.parentId}
+                      onChange={() => {
+                        const firstParent = categories.find(c => c.id !== form.id && !c.parentId);
+                        setForm({ ...form, parentId: firstParent ? firstParent.id : '' });
+                      }}
+                      className="w-4 h-4 text-primary focus:ring-primary border-slate-300"
+                    />
+                    Sub-category
+                  </label>
+                </div>
+
+                {form.parentId !== undefined && form.parentId !== null && (
+                  <div className="mt-sm">
+                    <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-xs">Select Parent Category *</label>
+                    <select
+                      value={form.parentId || ''}
+                      onChange={e => setForm({ ...form, parentId: e.target.value })}
+                      required
+                      className="w-full h-11 px-md border border-slate-200 rounded text-body-sm bg-slate-50 focus:border-primary focus:ring-0 font-bold"
+                    >
+                      <option value="" disabled>-- Select Parent Category --</option>
+                      {categories
+                        .filter(c => c.id !== form.id && !c.parentId)
+                        .map(c => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-sm">Category Icon *</label>
+                <div className="grid grid-cols-4 gap-xs border border-slate-200 rounded p-sm bg-slate-50 max-h-36 overflow-y-auto">
+                  {[
+                    { id: 'folder', name: 'Folder' },
+                    { id: 'plumbing', name: 'Plumbing' },
+                    { id: 'electrical_services', name: 'Electrical' },
+                    { id: 'construction', name: 'Structural' },
+                    { id: 'bolt', name: 'Power/Volt' },
+                    { id: 'water_drop', name: 'Fluids/Water' },
+                    { id: 'handyman', name: 'Tools/Safety' },
+                    { id: 'tools', name: 'Equipment' },
+                    { id: 'square_foot', name: 'Precision' },
+                    { id: 'home', name: 'Roof/Brick' },
+                    { id: 'format_paint', name: 'Paint/Coat' },
+                    { id: 'kitchen', name: 'Appliances' },
+                    { id: 'hardware', name: 'Hardware' },
+                    { id: 'engineering', name: 'Engineering' },
+                    { id: 'warehouse', name: 'Warehouse' },
+                    { id: 'build', name: 'Build/Fix' }
+                  ].map(iconOpt => (
+                    <button
+                      key={iconOpt.id}
+                      type="button"
+                      onClick={() => setForm({ ...form, icon: iconOpt.id })}
+                      className={`flex flex-col items-center justify-center p-xs rounded border transition-all cursor-pointer ${
+                        form.icon === iconOpt.id
+                          ? 'border-primary bg-primary-container text-on-primary-container font-bold shadow-xs'
+                          : 'border-transparent bg-white hover:bg-slate-100 text-slate-600'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[20px]">{iconOpt.id}</span>
+                      <span className="text-[9px] mt-0.5 truncate max-w-full">{iconOpt.name}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div>
@@ -270,13 +413,13 @@ export const CategoryManagement: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-lg h-11 border border-slate-200 hover:border-slate-800 rounded font-bold text-xs text-slate-600 hover:text-slate-800 transition-all"
+                  className="px-lg h-11 border border-slate-200 hover:border-slate-800 rounded font-bold text-xs text-slate-600 hover:text-slate-800 transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-xl h-11 rounded font-bold text-xs transition-all shadow-sm"
+                  className="bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-xl h-11 rounded font-bold text-xs transition-all shadow-sm cursor-pointer"
                 >
                   Save Category
                 </button>
@@ -285,6 +428,111 @@ export const CategoryManagement: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmCategory && (() => {
+        const productCount = parseInt((deleteConfirmCategory.count || '').replace(/[^0-9]/g, ''), 10) || 0;
+        const otherCategories = categories.filter(c => c.id !== deleteConfirmCategory.id);
+        const isDeleteDisabled = productCount > 0 && shouldTransfer && !transferTargetId;
+
+        return (
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-md">
+            <div className="bg-white rounded shadow-lg border border-slate-200 w-full max-w-md overflow-hidden transform transition-all scale-100 flex flex-col">
+              <div className="p-xl flex gap-md items-start">
+                <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-600 shrink-0">
+                  <span className="material-symbols-outlined text-[24px]">warning</span>
+                </div>
+                <div className="space-y-sm text-left flex-1">
+                  <h3 className="font-extrabold text-slate-900 text-body-md">Delete Category Confirmation</h3>
+                  <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+                    Are you sure you want to delete the category <span className="font-bold text-slate-800">"{deleteConfirmCategory.name}"</span>?
+                    This will permanently delete it from the system catalog tree.
+                  </p>
+
+                  {productCount > 0 && (
+                    <div className="mt-md p-md bg-amber-50 rounded border border-amber-200 text-left space-y-sm">
+                      <p className="text-xs font-bold text-amber-800 flex items-center gap-xs">
+                        <span className="material-symbols-outlined text-[16px]">warning</span>
+                        Contains {productCount} Active Products
+                      </p>
+                      
+                      <div className="space-y-xs pt-xs">
+                        <label className="flex items-center gap-xs text-[11px] font-bold text-slate-700 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="deleteAction"
+                            checked={shouldTransfer}
+                            onChange={() => setShouldTransfer(true)}
+                            className="w-3.5 h-3.5 text-amber-600 focus:ring-amber-500 border-slate-300"
+                          />
+                          Transfer products to another category
+                        </label>
+                        <label className="flex items-center gap-xs text-[11px] font-bold text-slate-700 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="deleteAction"
+                            checked={!shouldTransfer}
+                            onChange={() => {
+                              setShouldTransfer(false);
+                              setTransferTargetId('');
+                            }}
+                            className="w-3.5 h-3.5 text-amber-600 focus:ring-amber-500 border-slate-300"
+                          />
+                          Leave products unassigned (set category to null)
+                        </label>
+                      </div>
+
+                      {shouldTransfer && (
+                        <div className="pt-sm">
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-xs">Select Target Category *</label>
+                          <select
+                            value={transferTargetId}
+                            onChange={e => setTransferTargetId(e.target.value)}
+                            required
+                            className="w-full h-9 px-sm border border-slate-300 rounded text-xs bg-white focus:border-amber-500 focus:ring-0 font-bold"
+                          >
+                            <option value="">-- Choose Category --</option>
+                            {otherCategories.map(c => (
+                              <option key={c.id} value={c.id}>
+                                {c.parentId ? `↳ ${c.name}` : c.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="bg-slate-50 px-xl py-lg flex justify-end gap-md border-t border-slate-100 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDeleteConfirmCategory(null);
+                    setTransferTargetId('');
+                    setShouldTransfer(true);
+                  }}
+                  className="px-lg h-10 rounded border border-slate-200 hover:border-slate-800 text-slate-600 hover:text-slate-800 font-bold text-xs cursor-pointer transition-all bg-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteCategory}
+                  disabled={isDeleteDisabled}
+                  className={`px-lg h-10 rounded font-bold text-xs cursor-pointer transition-all shadow-sm text-white ${
+                    isDeleteDisabled 
+                      ? 'bg-red-300 cursor-not-allowed' 
+                      : 'bg-red-600 hover:bg-red-700'
+                  }`}
+                >
+                  Delete Category
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 };

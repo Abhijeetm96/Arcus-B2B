@@ -3,6 +3,8 @@ import type { Brand } from './types';
 import { apiFetch } from '../../lib/api';
 
 
+
+
 export const BrandManagement: React.FC = () => {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
@@ -13,6 +15,9 @@ export const BrandManagement: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
   const [form, setForm] = useState<Partial<Brand>>({});
+  const [deleteConfirmBrand, setDeleteConfirmBrand] = useState<Brand | null>(null);
+  const [transferTargetBrandId, setTransferTargetBrandId] = useState<string>('');
+  const [shouldTransferBrand, setShouldTransferBrand] = useState<boolean>(true);
 
   const fetchBrands = async () => {
     setLoading(true);
@@ -78,23 +83,40 @@ export const BrandManagement: React.FC = () => {
     }
   };
 
-  const handleArchiveBrand = async (id: string, name: string) => {
-    if (!window.confirm(`Are you sure you want to archive brand "${name}"? Products linked to this brand will remain, but the brand status will change.`)) return;
+  const confirmArchiveBrand = async () => {
+    if (!deleteConfirmBrand) return;
+    const { id, name } = deleteConfirmBrand;
+    console.log('confirmArchiveBrand triggered for:', id, name);
+    
+    let url = `/admin/brands/${id}`;
+    const productCount = parseInt((deleteConfirmBrand.count || '').replace(/[^0-9]/g, ''), 10) || 0;
+    if (productCount > 0 && shouldTransferBrand && transferTargetBrandId) {
+      url += `?transferTo=${encodeURIComponent(transferTargetBrandId)}`;
+    }
+    
+    setDeleteConfirmBrand(null);
+    setTransferTargetBrandId('');
+    setShouldTransferBrand(true);
     setError(null);
     setSuccess(null);
     try {
       const token = localStorage.getItem('arcus_token');
-      const res = await apiFetch(`/admin/brands/${id}`, {
+      console.log(`Sending DELETE request to ${url}...`);
+      const res = await apiFetch(url, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      console.log(`DELETE request returned status: ${res.status}`);
       if (!res.ok) {
         const data = await res.json();
+        console.error('Server rejected brand archive:', data);
         throw new Error(data.error || 'Failed to archive brand.');
       }
+      console.log('Brand archived successfully on server.');
       setSuccess(`Brand "${name}" archived successfully.`);
       fetchBrands();
     } catch (err: any) {
+      console.error('Error in handleArchiveBrand:', err);
       setError(err.message || 'Error archiving brand.');
     }
   };
@@ -143,6 +165,7 @@ export const BrandManagement: React.FC = () => {
                 <th className="px-lg py-md">Brand Details</th>
                 <th className="px-lg py-md">Brand ID</th>
                 <th className="px-lg py-md">Description</th>
+                <th className="px-lg py-md">Products</th>
                 <th className="px-lg py-md">Status</th>
                 <th className="px-lg py-md text-right">Actions</th>
               </tr>
@@ -160,6 +183,7 @@ export const BrandManagement: React.FC = () => {
                   </td>
                   <td className="px-lg py-md text-slate-500 font-mono text-xs">{b.id}</td>
                   <td className="px-lg py-md text-slate-500 font-medium">{b.description || 'N/A'}</td>
+                  <td className="px-lg py-md text-slate-500 font-semibold">{b.count || '0 products'}</td>
                   <td className="px-lg py-md">
                     <span className={`text-[10px] font-bold px-md py-0.5 rounded-full border ${
                       b.status === 'ACTIVE' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-slate-100 text-slate-500 border-slate-300'
@@ -178,7 +202,7 @@ export const BrandManagement: React.FC = () => {
                       </button>
                       {b.status !== 'ARCHIVED' && (
                         <button
-                          onClick={() => handleArchiveBrand(b.id, b.name)}
+                          onClick={() => setDeleteConfirmBrand(b)}
                           className="w-8 h-8 rounded border border-slate-200 flex items-center justify-center hover:bg-red-50 text-slate-600 hover:text-red-600"
                           title="Archive Brand"
                         >
@@ -191,7 +215,7 @@ export const BrandManagement: React.FC = () => {
               ))}
               {brands.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="text-center py-xl text-slate-400 font-semibold">
+                  <td colSpan={6} className="text-center py-xl text-slate-400 font-semibold">
                     No brands found in system database.
                   </td>
                 </tr>
@@ -296,6 +320,111 @@ export const BrandManagement: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Delete/Archive Confirmation Modal */}
+      {deleteConfirmBrand && (() => {
+        const productCount = parseInt((deleteConfirmBrand.count || '').replace(/[^0-9]/g, ''), 10) || 0;
+        const otherBrands = brands.filter(b => b.id !== deleteConfirmBrand.id && b.status !== 'ARCHIVED');
+        const isDeleteDisabled = productCount > 0 && shouldTransferBrand && !transferTargetBrandId;
+
+        return (
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-md">
+            <div className="bg-white rounded shadow-lg border border-slate-200 w-full max-w-md overflow-hidden transform transition-all scale-100 flex flex-col">
+              <div className="p-xl flex gap-md items-start">
+                <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-600 shrink-0">
+                  <span className="material-symbols-outlined text-[24px]">warning</span>
+                </div>
+                <div className="space-y-sm text-left flex-1">
+                  <h3 className="font-extrabold text-slate-900 text-body-md">Archive Brand Confirmation</h3>
+                  <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+                    Are you sure you want to archive the brand <span className="font-bold text-slate-800">"{deleteConfirmBrand.name}"</span>?
+                    This will set its status to archived.
+                  </p>
+
+                  {productCount > 0 && (
+                    <div className="mt-md p-md bg-amber-50 rounded border border-amber-200 text-left space-y-sm">
+                      <p className="text-xs font-bold text-amber-800 flex items-center gap-xs">
+                        <span className="material-symbols-outlined text-[16px]">warning</span>
+                        Contains {productCount} Active Products
+                      </p>
+                      
+                      <div className="space-y-xs pt-xs">
+                        <label className="flex items-center gap-xs text-[11px] font-bold text-slate-700 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="deleteBrandAction"
+                            checked={shouldTransferBrand}
+                            onChange={() => setShouldTransferBrand(true)}
+                            className="w-3.5 h-3.5 text-amber-600 focus:ring-amber-500 border-slate-300"
+                          />
+                          Transfer products to another brand
+                        </label>
+                        <label className="flex items-center gap-xs text-[11px] font-bold text-slate-700 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="deleteBrandAction"
+                            checked={!shouldTransferBrand}
+                            onChange={() => {
+                              setShouldTransferBrand(false);
+                              setTransferTargetBrandId('');
+                            }}
+                            className="w-3.5 h-3.5 text-amber-600 focus:ring-amber-500 border-slate-300"
+                          />
+                          Mark products as 'Generic' brand
+                        </label>
+                      </div>
+
+                      {shouldTransferBrand && (
+                        <div className="pt-sm">
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-xs">Select Target Brand *</label>
+                          <select
+                            value={transferTargetBrandId}
+                            onChange={e => setTransferTargetBrandId(e.target.value)}
+                            required
+                            className="w-full h-9 px-sm border border-slate-300 rounded text-xs bg-white focus:border-amber-500 focus:ring-0 font-bold"
+                          >
+                            <option value="">-- Choose Brand --</option>
+                            {otherBrands.map(b => (
+                              <option key={b.id} value={b.id}>
+                                {b.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="bg-slate-50 px-xl py-lg flex justify-end gap-md border-t border-slate-100 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDeleteConfirmBrand(null);
+                    setTransferTargetBrandId('');
+                    setShouldTransferBrand(true);
+                  }}
+                  className="px-lg h-10 rounded border border-slate-200 hover:border-slate-800 text-slate-600 hover:text-slate-800 font-bold text-xs cursor-pointer transition-all bg-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmArchiveBrand}
+                  disabled={isDeleteDisabled}
+                  className={`px-lg h-10 rounded font-bold text-xs cursor-pointer transition-all shadow-sm text-white ${
+                    isDeleteDisabled 
+                      ? 'bg-red-300 cursor-not-allowed' 
+                      : 'bg-red-600 hover:bg-red-700'
+                  }`}
+                >
+                  Archive Brand
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 };

@@ -30,8 +30,9 @@ export class QuotationRepository {
     return `QT-${year}-${padded}`;
   }
 
-  public async findById(id: string): Promise<any> {
-    const res = await this.pool.query(`
+  public async findById(id: string, client?: PoolClient): Promise<any> {
+    const conn = client || this.pool;
+    const res = await conn.query(`
       SELECT q.*, qt.currency_code, qt.exchange_rate, qt.base_currency, 
              qt.subtotal, qt.discount, qt.taxable_amount, qt.gst_amount, 
              qt.shipping, qt.other_charges, qt.grand_total, qt.calculation_audit,
@@ -182,6 +183,27 @@ export class QuotationRepository {
     await client.query(`DELETE FROM quotation_items WHERE quotation_id = $1`, [quoteId]);
     
     for (const item of items) {
+      const qty = Number(item.quantity || 0);
+      const rate = Number(item.rate || 0);
+      const discPercent = Number(item.discount_percent || 0);
+      const taxPercent = Number(item.tax_percent || 0);
+
+      const discAmount = item.discount_amount !== undefined && item.discount_amount !== null
+        ? item.discount_amount
+        : (qty * rate * (discPercent / 100));
+
+      const subtotal = item.subtotal !== undefined && item.subtotal !== null
+        ? item.subtotal
+        : (qty * rate - discAmount);
+
+      const taxAmount = item.tax_amount !== undefined && item.tax_amount !== null
+        ? item.tax_amount
+        : (subtotal * (taxPercent / 100));
+
+      const finalAmount = item.final_amount !== undefined && item.final_amount !== null
+        ? item.final_amount
+        : (subtotal + taxAmount);
+
       await client.query(`
         INSERT INTO quotation_items (
           quotation_id, product_id, product_snapshot, quantity, rate, 
@@ -193,20 +215,19 @@ export class QuotationRepository {
         quoteId,
         item.product_id || null,
         JSON.stringify(item.product_snapshot || {}),
-        item.quantity,
-        item.rate,
-        item.discount_percent || 0,
-        item.discount_amount || 0,
-        item.tax_percent || 0,
-        item.tax_amount || 0,
-        item.subtotal,
-        item.final_amount,
+        qty,
+        rate,
+        discPercent,
+        discAmount,
+        taxPercent,
+        taxAmount,
+        subtotal,
+        finalAmount,
         item.remarks || null,
         item.position || 0
       ]);
     }
-
-    return this.findById(quoteId);
+    return this.findById(quoteId, client);
   }
 
   public async saveVersion(

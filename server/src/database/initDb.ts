@@ -399,12 +399,31 @@ async function initDb() {
   initJsonDb();
   if (usePostgres && pgPool) {
     console.log('PostgreSQL connection detected. Initializing schema tables...');
-    try {
-      // Enable UUID extensions
-      await pgPool.query(`
-        CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-        CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-      `);
+    let retries = 10;
+    let connected = false;
+    while (retries > 0 && !connected) {
+      try {
+        await pgPool.query('SELECT 1');
+        connected = true;
+      } catch (err: any) {
+        retries--;
+        console.warn(`⏳ Waiting for PostgreSQL to be ready... (${retries} attempts left). Error: ${err.message}`);
+        if (retries === 0) {
+          console.warn('❌ Failed to connect to PostgreSQL after multiple retries. Falling back to local JSON database.');
+          setUsePostgres(false);
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+    }
+
+    if (usePostgres) {
+      try {
+        // Enable UUID extensions
+        await pgPool.query(`
+          CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+          CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+        `);
 
       // Detect and perform UUID/relational normalization for RFQ module
       const typeCheck = await pgPool.query(`
@@ -896,6 +915,7 @@ async function initDb() {
     } catch (err: any) {
       console.warn('❌ Failed to connect to PostgreSQL. Falling back to local JSON database.', err.message);
       setUsePostgres(false);
+    }
     }
   } else {
     console.log('ℹ️ No DATABASE_URL environment variable found. Operating in local JSON fallback mode.');

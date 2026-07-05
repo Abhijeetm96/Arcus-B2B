@@ -73,21 +73,115 @@ Grid margins, paddings, and column offsets are calculated relative to our 4px sp
 ---
 
 ## 4. Typography & Icons
-To preserve structural legibility:
-* **Headers**: `Poppins` (Weights: 700 bold, 800 black). Bold headings reflect an industrial profile.
-* **Body & Data**: `Inter` (Weights: 400 regular, 500 medium, 600 semi-bold). Optimized for readable tables and grid lists.
-* **Size Scale**:
-  - **H1 Display**: `64px` (`line-height: 110%`) - Public landing hero titles.
-  - **H2 Page Title**: `24px` (`line-height: 120%`) - Screen header titles.
-  - **H3 Section Title**: `18px` (`line-height: 120%`) - Card container titles.
-  - **Body Text**: `14px` (`line-height: 150%`) - Data grids, detail descriptions.
-  - **Caption / Label**: `12px` (`line-height: 100%`) - Form input helper text and tag metadata.
+To preserve structural legibility and establish a premium enterprise-grade visual rhythm, ARCUS enforces a standardized typography system.
 
-* **Icons**:
-  - **Library**: `lucide-react` is the official and exclusive icon library.
-  - Standard inside buttons/labels: `h-4 w-4` (16px).
-  - Page/Card header icons: `h-5 w-5` (20px).
-  - Big Empty States placeholders: `h-12 w-12` (48px).
+### A. Font Families & Weights
+* **Display & Headings**: `Poppins` (Weights: `700` Bold for Display/H1, `600` Semibold for H2/H3/H4). Bold headings reflect a strong industrial profile.
+* **Body & UI Elements**: `Inter` (Weights: `400` Regular for body/captions, `500` Medium for labels/metadata, `600` Semibold for buttons/card titles).
+
+### B. Typography Role Classifications
+
+#### Category A — Fluid Typography (Using CSS clamp())
+These tokens interpolate smoothly between mobile and desktop limits to ensure highly polished responsiveness:
+* **Display XL**: `clamp(2.75rem, 2rem + 2vw, 3.75rem)` (Mobile: 44px, Desktop: 60px)
+* **Display**: `clamp(2.375rem, 1.9rem + 1.6vw, 3rem)` (Mobile: 38px, Desktop: 48px)
+* **H1**: `clamp(1.875rem, 1.6rem + 1vw, 2.25rem)` (Mobile: 30px, Desktop: 36px)
+* **H2**: `clamp(1.625rem, 1.45rem + 0.7vw, 1.875rem)` (Mobile: 26px, Desktop: 30px)
+* **H3**: `clamp(1.375rem, 1.3rem + 0.4vw, 1.5rem)` (Mobile: 22px, Desktop: 24px)
+
+#### Category B — Fixed Typography (Never use clamp())
+These tokens are locked to static sizes across all viewports to preserve dense enterprise portal information layouts:
+* **H4**: Fixed at `20px`
+* **Section**: Fixed at `18px`
+* **Card Title**: Fixed at `16px`
+* **Metric Value**: Fixed at `30px`
+* **Metric Label**: Fixed at `12px`
+* **Body Large**: Fixed at `18px`
+* **Body**: Fixed at `16px`
+* **Body Small**: Fixed at `14px`
+* **Label**: Fixed at `14px`
+* **Button**: Fixed at `14px`
+* **Caption**: Fixed at `12px`
+* **Overline**: Fixed at `11px`
+
+This hybrid approach guarantees that core tabular, form, navigation, and workspace elements are completely stable while top-level view headings benefit from smooth scaling.
+
+---
+
+### C. Semantic Mappings
+
+#### 1. Tables & Data Grids
+- **Table Header**: `text-overline uppercase font-sans text-text-secondary`
+- **Table Cell (Text)**: `text-body-sm font-sans text-text-primary`
+- **Numeric Cell / Currency**: `text-body-sm font-sans font-medium font-mono text-text-primary`
+- **Status Badge**: `text-overline font-sans font-bold uppercase`
+- **Date / Timestamp**: `text-caption font-sans text-muted`
+- **Actions Menu/Trigger**: `text-body-sm font-sans font-medium text-text-secondary`
+
+#### 2. Forms & Inputs
+- **Input Label**: `text-label font-sans text-text-primary`
+- **Input Value / Typed Text**: `text-body font-sans text-text-primary`
+- **Placeholder**: `text-body font-sans text-muted/60`
+- **Helper / Description Text**: `text-caption font-sans text-muted`
+- **Validation / Error Text**: `text-caption font-sans font-semibold text-danger`
+- **Form Section Header**: `text-section font-sans text-text-primary`
+
+#### 3. Layout Navigation
+- **Sidebar Menu Item**: `text-body-sm font-sans font-medium text-sidebar-foreground`
+- **Top Navbar Item**: `text-body-sm font-sans font-medium text-text-primary`
+- **Breadcrumb**: `text-caption font-sans text-muted`
+- **Tab Header (Active/Inactive)**: `text-body-sm font-sans font-semibold`
+- **Pagination Controls**: `text-caption font-sans text-text-secondary`
+- **Dropdown Menu Item**: `text-body-sm font-sans text-text-primary`
+
+#### 4. Dashboard Metrics & KPI Cards
+- **Metric Number (KPI)**: `text-metric-value font-sans font-bold`
+- **Metric Label**: `text-metric-label font-sans font-medium text-text-secondary`
+- **Trend Indicator**: `text-body-sm font-sans font-semibold text-success/danger`
+- **Secondary Helper/Period**: `text-caption font-sans text-muted`
+
+#### 5. RFQ Workspace
+- **Workspace Title**: `text-h2 font-display text-text-primary`
+- **Filter Bar Title**: `text-overline font-sans text-text-secondary`
+- **Drawer / Details Panel Title**: `text-h3 font-display text-text-primary`
+- **Approval Timeline Step**: `text-caption font-sans font-medium text-text-secondary`
+- **Internal Note / Comment**: `text-body-sm font-sans text-text-secondary`
+- **Attachment Row / Spec file**: `text-body-sm font-sans font-semibold text-primary-hover`
+
+---
+
+### D. Typography Design Tokens (CSS Custom Properties)
+Exposed inside `src/index.css`:
+- `--font-display-xl`
+- `--font-display`
+- `--font-h1`
+- `--font-h2`
+- `--font-h3`
+- `--font-h4`
+- `--font-section`
+- `--font-card`
+- `--font-metric`
+- `--font-body-lg`
+- `--font-body`
+- `--font-body-sm`
+- `--font-label`
+- `--font-button`
+- `--font-caption`
+- `--font-overline`
+
+---
+
+### E. Constraints & Exceptions
+* **No-Touch Modules**: Logo typography, marketing headings, hero landing copy, and brand visuals are preserved as-is. Standardizations apply exclusively to Dashboards, Business, Admin, workspaces, forms, tables, and internal pages.
+* **Engineering Rule**: No component may define its own typography using arbitrary Tailwind `text-*` utilities or inline `font-size` values. All typography must consume the semantic typography tokens defined by the ARCUS Design System. Any exception must be documented and justified.
+
+---
+
+### F. Icons
+* **Library**: `lucide-react` is the official and exclusive icon library.
+* **Buttons / Labels**: `h-4 w-4` (16px).
+* **Page/Card Headers**: `h-5 w-5` (20px).
+* **Placeholders / Empty States**: `h-12 w-12` (48px).
 
 ---
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
+import { StartupGuard } from './components/StartupGuard'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Categories from './components/Categories'
@@ -13,7 +14,8 @@ import ProductDetail from './components/ProductDetail'
 import { Agentation } from 'agentation'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
-import { NotificationProvider } from './context/NotificationContext'
+import { NotificationProvider as InboxNotificationProvider } from './context/NotificationContext'
+import { NotificationProvider } from './providers/NotificationProvider'
 import { AuthPage } from './components/AuthPage'
 import { IndividualDashboard } from './modules/individual/IndividualDashboard'
 import { PortalResolver } from './core/auth/PortalResolver'
@@ -134,17 +136,25 @@ function AppContent() {
           ) : isResources ? (
             <Resources />
           ) : isIndividualDb ? (
-            <IndividualDashboard />
+            <ErrorBoundary>
+              <IndividualDashboard />
+            </ErrorBoundary>
           ) : isBusinessDb ? (
-            <BusinessDashboard />
+            <ErrorBoundary>
+              <BusinessDashboard />
+            </ErrorBoundary>
           ) : isProfessionalDb ? (
-            <ProfessionalDashboard />
+            <ErrorBoundary>
+              <ProfessionalDashboard />
+            </ErrorBoundary>
           ) : isAdminDb ? (
-            segments[2] === 'quotations' ? (
-              <QuotationBuilder />
-            ) : (
-              <AdminDashboard />
-            )
+            <ErrorBoundary>
+              {segments[2] === 'quotations' ? (
+                <QuotationBuilder />
+              ) : (
+                <AdminDashboard />
+              )}
+            </ErrorBoundary>
           ) : isPlayground ? (
             <UIPlayground />
           ) : isResolver ? (
@@ -190,11 +200,15 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <NotificationProvider>
-        <CartProvider>
-          <AppContent />
-        </CartProvider>
-      </NotificationProvider>
+      <InboxNotificationProvider>
+        <NotificationProvider>
+          <CartProvider>
+            <StartupGuard>
+              <AppContent />
+            </StartupGuard>
+          </CartProvider>
+        </NotificationProvider>
+      </InboxNotificationProvider>
     </AuthProvider>
   )
 }

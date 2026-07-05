@@ -4,6 +4,7 @@ import { IndividualOrders } from './IndividualOrders';
 import { IndividualAddresses } from './IndividualAddresses';
 import { IndividualProfile } from './IndividualProfile';
 import { useAuth } from '../../context/AuthContext';
+import { useNotification } from '../../hooks/useNotification';
 import { useOrders } from '../../core/hooks/useOrders';
 import { formatCurrency, formatDate } from '../../core/config/format';
 import { MetricCard, Card, CardHeader, CardTitle, CardContent } from '../../components/shared/Card';
@@ -12,6 +13,7 @@ import { Award, TrendingUp, Sparkles, Heart } from 'lucide-react';
 
 export const IndividualDashboard: React.FC = () => {
   const { user } = useAuth();
+  const { success } = useNotification();
   const { orders } = useOrders();
   const [activeTab, setActiveTab] = useState<string>('overview');
 
@@ -152,7 +154,7 @@ export const IndividualDashboard: React.FC = () => {
                   disabled={challengesClaimed.includes('challenge_profile')}
                   onClick={() => {
                     setChallengesClaimed([...challengesClaimed, 'challenge_profile']);
-                    alert('Claimed 100 BuildPoints!');
+                    success('Claimed 100 BuildPoints!');
                   }}
                 >
                   {challengesClaimed.includes('challenge_profile') ? 'Claimed' : 'Claim 100 Pts'}

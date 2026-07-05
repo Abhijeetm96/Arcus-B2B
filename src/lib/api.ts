@@ -1,4 +1,6 @@
 import { API_BASE } from '../config/api';
+import { notification } from './notification';
+import { RecoveryManager } from './recoveryManager';
 
 export interface ApiRequestOptions extends RequestInit {
   timeout?: number;
@@ -26,13 +28,19 @@ export const mapHttpStatusToErrorMessage = (status: number, customMessage?: stri
     case 401:
       return 'Invalid email or password.';
     case 403:
-      return 'Access denied.';
+      return "You don't have permission to perform this action.";
     case 404:
-      return 'Authentication service unavailable.';
+      return "We couldn't find what you're looking for.";
+    case 409:
+      return 'This record already exists.';
     case 422:
-      return 'Validation failed.';
+      return 'Please correct the highlighted fields.';
+    case 429:
+      return 'Too many requests. Please wait a moment and try again.';
     case 500:
-      return 'Internal server error.';
+      return 'Something went wrong on our side. Please try again shortly.';
+    case 503:
+      return 'The service is temporarily unavailable.';
     default:
       return customMessage || 'An unexpected error occurred.';
   }
@@ -61,19 +69,90 @@ export async function apiClient<T = any>(
   endpoint: string,
   options: ApiRequestOptions = {}
 ): Promise<T> {
-  const { timeout = 30000, retries = 1, skipAuth = false, ...fetchOptions } = options;
+  const { skipAuth = false, ...fetchOptions } = options;
+
+  // Call our self-healing, retrying apiFetch wrapper
+  const response = await apiFetch(endpoint, options);
+
+  // JSON parsing safety checks
+  let data: any = null;
+  const contentType = response.headers?.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    data = await response.json();
+  } else if (response.text) {
+    const text = await response.text();
+    data = text ? { message: text } : {};
+  } else {
+    data = {};
+  }
+
+  // Development Authentication & API Logging
+  if (isDev && (endpoint.includes('/auth') || endpoint.includes('/admin'))) {
+    console.group(`[API CLIENT LOG] ${fetchOptions.method || 'GET'} ${endpoint}`);
+    console.log(`Status: ${response.status} ${response.statusText}`);
+    
+    // Log authenticated user if payload returned
+    if (data && (data.user || data.id)) {
+      const userObj = data.user || data;
+      console.log(`Authenticated User: ${userObj.email || 'None'} (Role: ${userObj.role || 'None'})`);
+    }
+    
+    // Log token info
+    const activeToken = localStorage.getItem('arcus_token') || data?.token;
+    if (activeToken) {
+      console.log(`Token Expiry: ${decodeTokenExpiry(activeToken)}`);
+    }
+    console.groupEnd();
+  }
+
+  if (!response.ok) {
+    const mappedMsg = mapHttpStatusToErrorMessage(
+      response.status,
+      data?.error || data?.message
+    );
+    throw new ApiError(mappedMsg, response.status, data);
+  }
+
+  return data as T;
+}
+
+/**
+ * A fetch-compatible client wrapper that handles:
+ * - Prepends API_BASE
+ * - Injects Authorization token
+ * - Handles exponential backoff retries on transient errors (timeouts, TypeError/offline, 502/503/504)
+ * - Automatically displays self-healing notifications to the user
+ */
+export async function apiFetch(
+  endpoint: string,
+  options: ApiRequestOptions = {}
+): Promise<Response> {
+  const { timeout = 30000, retries = 3, skipAuth = false } = options;
 
   const url = endpoint.startsWith('http://') || endpoint.startsWith('https://')
     ? endpoint
     : `${API_BASE}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
 
-  // Headers setup
-  const headers = new Headers(fetchOptions.headers);
-  if (!headers.has('Content-Type') && !(fetchOptions.body instanceof FormData)) {
+  // Check if circuit breaker is open or connection is down (bypass health checks to avoid loop)
+  const connState = RecoveryManager.getConnectionState();
+  const isCircuitActive = connState === 'CIRCUIT_OPEN' || connState === 'OFFLINE';
+  const isHealthCheck = endpoint.includes('/health');
+
+  if (isCircuitActive && !isHealthCheck) {
+    // Queue the request and return its pending promise
+    RecoveryManager.log(`Circuit is OPEN or OFFLINE. Queuing [${options.method || 'GET'}] ${endpoint.split('?')[0]}`, 'warn');
+    return RecoveryManager.queueRequest(
+      () => apiFetch(endpoint, { ...options, retries: 0 }),
+      options.method || 'GET',
+      url
+    );
+  }
+
+  const headers = new Headers(options.headers);
+  if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
   }
 
-  // Token Injection
   if (!skipAuth) {
     const token = localStorage.getItem('arcus_token');
     if (token) {
@@ -89,158 +168,90 @@ export async function apiClient<T = any>(
 
     try {
       const response = await fetch(url, {
-        ...fetchOptions,
+        ...options,
         headers,
         signal: controller.signal,
       });
 
       clearTimeout(id);
 
-      // JSON parsing safety checks
-      let data: any = null;
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        data = await response.json();
-      } else {
-        const text = await response.text();
-        data = text ? { message: text } : {};
+      // Record success
+      if (response.ok) {
+        RecoveryManager.recordSuccess();
       }
 
-      // Development Authentication & API Logging
-      if (isDev && (url.includes('/api/auth') || url.includes('/api/admin'))) {
-        console.group(`[API CLIENT LOG] ${fetchOptions.method || 'GET'} ${url}`);
-        console.log(`Status: ${response.status} ${response.statusText}`);
+      // Retry on server-side gateway or load balancing restarts (502, 503, 504)
+      if ([502, 503, 504].includes(response.status) && attempt <= retries) {
+        RecoveryManager.recordFailure();
+        const delay = [1000, 2000, 5000, 10000][attempt - 1] || 10000;
+        const isWrite = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method || 'GET');
+        const msg = isWrite
+          ? 'Unable to save because the server is temporarily unavailable. Retrying...'
+          : 'Server is restarting. Reconnecting automatically...';
+        notification.warning(msg, { url });
         
-        // Log authenticated user if payload returned
-        if (data && (data.user || data.id)) {
-          const userObj = data.user || data;
-          console.log(`Authenticated User: ${userObj.email || 'None'} (Role: ${userObj.role || 'None'})`);
-        }
-        
-        // Log token info
-        const activeToken = localStorage.getItem('arcus_token') || data?.token;
-        if (activeToken) {
-          console.log(`Token Expiry: ${decodeTokenExpiry(activeToken)}`);
-        }
-
-        // Log redirect targets if login succeeded
-        if (data && data.success && data.user) {
-          const role = (data.user.role || '').toUpperCase();
-          const target = role === 'ADMIN' ? '#/portal/admin' : '#/dashboard';
-          console.log(`Redirect Destination: ${target}`);
-        }
-        console.groupEnd();
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
       }
 
+      // Success after self-healing reconnect attempt
+      if (attempt > 1 && response.ok) {
+        notification.success('Connection restored', { url });
+      }
+
+      // Intercept error responses to map status codes into standard fetch Response shape
       if (!response.ok) {
-        const mappedMsg = mapHttpStatusToErrorMessage(
-          response.status,
-          data?.error || data?.message
-        );
-        throw new ApiError(mappedMsg, response.status, data);
+        const originalJson = response.json.bind(response);
+        response.json = async () => {
+          try {
+            const originalData = await originalJson();
+            const mappedMsg = mapHttpStatusToErrorMessage(response.status, originalData?.error || originalData?.message);
+            return { ...originalData, error: mappedMsg };
+          } catch {
+            return { error: mapHttpStatusToErrorMessage(response.status) };
+          }
+        };
       }
 
-      return data as T;
+      return response;
     } catch (error: any) {
       clearTimeout(id);
 
-      // Handle aborted/timed-out requests
-      if (error.name === 'AbortError') {
-        if (attempt < retries) {
-          console.warn(`[API CLIENT] Timeout on ${url}. Retrying attempt ${attempt + 1}...`);
-          continue;
-        }
-        throw new ApiError('Unable to connect to the server (Request Timed Out).', 0);
+      // Record failure
+      RecoveryManager.recordFailure();
+
+      const isTimeout = error.name === 'AbortError';
+      const isNetwork = error instanceof TypeError;
+
+      if ((isTimeout || isNetwork) && attempt <= retries) {
+        const delay = [1000, 2000, 5000, 10000][attempt - 1] || 10000;
+        const isWrite = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method || 'GET');
+        const msg = isWrite
+          ? 'Unable to save because the server is temporarily unavailable. Retrying...'
+          : 'Server is restarting. Reconnecting automatically...';
+        notification.warning(msg, { url });
+
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
       }
 
-      // Handle connection refusal/network offline errors
-      if (error instanceof TypeError) {
-        if (attempt < retries) {
-          console.warn(`[API CLIENT] Network error on ${url}. Retrying attempt ${attempt + 1}...`);
-          continue;
-        }
-        throw new ApiError('Unable to connect to the server.', 0, error);
+      // Final failure report
+      if (attempt > 1) {
+        notification.error('Unable to connect to the server.', { url });
       }
 
-      throw error;
+      console.error(`[API FETCH] Connection Error on ${url}:`, error);
+
+      const errorMsg = isTimeout ? 'Request timed out.' : 'Unable to connect to the server.';
+
+      return {
+        ok: false,
+        status: 0,
+        statusText: isTimeout ? 'Request Timeout' : 'Network Error',
+        headers: new Headers(),
+        json: async () => ({ error: errorMsg }),
+        text: async () => errorMsg
+      } as Response;
     }
-  }
-}
-
-/**
- * A fetch-compatible client wrapper that handles:
- * - Prepends API_BASE
- * - Injects Authorization token
- * - Handles base error checking and mapping
- * - Compatible with existing .then() / res.json() patterns
- */
-export async function apiFetch(
-  endpoint: string,
-  options: ApiRequestOptions = {}
-): Promise<Response> {
-  const { timeout = 30000, skipAuth = false } = options;
-
-  const url = endpoint.startsWith('http://') || endpoint.startsWith('https://')
-    ? endpoint
-    : `${API_BASE}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
-
-  const headers = new Headers(options.headers);
-  if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
-    headers.set('Content-Type', 'application/json');
-  }
-
-  if (!skipAuth) {
-    const token = localStorage.getItem('arcus_token');
-    if (token) {
-      headers.set('Authorization', `Bearer ${token}`);
-    }
-  }
-
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
-
-  try {
-    const response = await fetch(url, {
-      ...options,
-      headers,
-      signal: controller.signal,
-    });
-
-    clearTimeout(id);
-
-    // Development Logging
-    if (isDev && (url.includes('/api/auth') || url.includes('/api/admin'))) {
-      console.log(`[API FETCH LOG] ${options.method || 'GET'} ${url} Status: ${response.status}`);
-    }
-
-    // Intercept error responses to map status codes into standard fetch Response shape
-    if (!response.ok) {
-      // We wrap the response to return our user-friendly status message when .json() or text() is called
-      const originalJson = response.json.bind(response);
-      response.json = async () => {
-        try {
-          const originalData = await originalJson();
-          const mappedMsg = mapHttpStatusToErrorMessage(response.status, originalData?.error || originalData?.message);
-          return { ...originalData, error: mappedMsg };
-        } catch {
-          return { error: mapHttpStatusToErrorMessage(response.status) };
-        }
-      };
-    }
-
-    return response;
-  } catch (error: any) {
-    clearTimeout(id);
-    
-    // Convert fetch connection errors to user-friendly response mock
-    console.error(`[API FETCH] Connection Error on ${url}:`, error);
-    
-    return {
-      ok: false,
-      status: 0,
-      statusText: 'Network Error',
-      json: async () => ({ error: 'Unable to connect to the server.' }),
-      text: async () => 'Unable to connect to the server.'
-    } as Response;
   }
 }

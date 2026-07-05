@@ -4,4 +4,5 @@ export interface Category {
   icon: string;
   count?: string;
   href?: string;
+  parentId?: string | null;
 }

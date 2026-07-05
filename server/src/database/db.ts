@@ -39,6 +39,9 @@ if (connectionString) {
       ? { rejectUnauthorized: false } 
       : undefined,
   });
+  pgPool.on('error', (err) => {
+    console.error('Unexpected error on idle PostgreSQL client:', err.message);
+  });
   usePostgres = true;
 }
 

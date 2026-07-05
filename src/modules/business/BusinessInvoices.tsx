@@ -2,6 +2,7 @@ import React from 'react';
 import { useOrders } from '../../core/hooks/useOrders';
 import { formatCurrency, formatDate } from '../../core/config/format';
 import { useAuth } from '../../context/AuthContext';
+import { EmptyState } from '../../components/feedback/EmptyState/EmptyState';
 
 export const BusinessInvoices: React.FC = () => {
   const { user } = useAuth();
@@ -51,7 +52,12 @@ export const BusinessInvoices: React.FC = () => {
         </div>
 
         {completedOrders.length === 0 ? (
-          <p className="p-xl text-center text-slate-500 text-xs">No delivered orders found. Tax invoices will generate once orders are delivered.</p>
+          <div className="p-xl">
+            <EmptyState
+              title="No tax invoices available"
+              description="Official GST-compliant tax invoices will automatically generate here once your orders are successfully delivered."
+            />
+          </div>
         ) : (
           <div className="overflow-x-auto text-xs">
             <table className="w-full text-left border-collapse">
@@ -78,7 +84,10 @@ export const BusinessInvoices: React.FC = () => {
                       <td className="p-md font-bold text-green-700">{formatCurrency(claimableGst)}</td>
                       <td className="p-md text-right">
                         <button
-                          onClick={() => alert(`Downloading Invoice INV-${o.id.split('-').pop()}...`)}
+                          onClick={() => {
+                            const token = localStorage.getItem('arcus_token') || '';
+                            window.open(`/api/documents/${o.id}?format=pdf&download=true&token=${encodeURIComponent(token)}`, '_blank');
+                          }}
                           className="px-md py-1 border border-slate-200 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-[10px] flex items-center gap-xs ml-auto"
                         >
                           <span className="material-symbols-outlined text-[14px]">download</span>

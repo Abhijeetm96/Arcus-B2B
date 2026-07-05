@@ -17,6 +17,7 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({ setActiveS
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [activeTab, setActiveTab] = useState<'catalog' | 'trash'>('catalog');
 
   // Bulk Operations State
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
@@ -43,6 +44,11 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({ setActiveS
   const [newTierMax, setNewTierMax] = useState('');
   const [newTierPrice, setNewTierPrice] = useState('');
   const [newAccessoryId, setNewAccessoryId] = useState('');
+
+  const suggestedProducts = products.filter(p => 
+    p.categoryId === productForm.categoryId && 
+    p.id !== productForm.id
+  );
 
 
   const fetchCatalog = async () => {
@@ -168,7 +174,7 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({ setActiveS
   };
 
   const handleArchiveProduct = async (id: string, name: string) => {
-    if (!window.confirm(`Are you sure you want to archive product "${name}"? Archived products will be hidden from public views but preserved in database.`)) return;
+    if (!window.confirm(`Are you sure you want to move product "${name}" to Trash?`)) return;
     setError(null);
     setSuccess(null);
     try {
@@ -178,11 +184,50 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({ setActiveS
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to archive product');
-      setSuccess(`Product "${name}" archived successfully.`);
+      if (!res.ok) throw new Error(data.error || 'Failed to move product to Trash');
+      setSuccess(`Product "${name}" moved to Trash.`);
       fetchCatalog();
     } catch (err: any) {
-      setError(err.message || 'Error archiving product');
+      setError(err.message || 'Error moving product to Trash');
+    }
+  };
+
+  const handleRestoreProduct = async (p: Product) => {
+    setError(null);
+    setSuccess(null);
+    try {
+      const token = localStorage.getItem('arcus_token');
+      const specsObj: Record<string, string> = {};
+      Object.entries(p.specifications || {}).forEach(([key, value]) => {
+        specsObj[key] = String(value);
+      });
+
+      const body = {
+        ...p,
+        status: 'ACTIVE',
+        price: Number(p.price),
+        specifications: specsObj,
+        priceTiers: p.priceTiers || [],
+        recommendedAccessories: p.recommendedAccessories || [],
+        images: p.images || []
+      };
+
+      const res = await apiFetch(`/admin/products/${p.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(body)
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to restore product');
+
+      setSuccess(`Product "${p.name}" restored to Active Catalog.`);
+      fetchCatalog();
+    } catch (err: any) {
+      setError(err.message || 'Error restoring product');
     }
   };
 
@@ -193,8 +238,8 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({ setActiveS
     try {
       const token = localStorage.getItem('arcus_token');
       const url = editingProduct
-        ? `/api/admin/products/${editingProduct.id}`
-        : '/api/admin/products';
+        ? `/admin/products/${editingProduct.id}`
+        : '/admin/products';
       const method = editingProduct ? 'PUT' : 'POST';
 
       // Reassemble specs
@@ -286,14 +331,20 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({ setActiveS
     setRecommendedAccessories(recommendedAccessories.filter((_, i) => i !== index));
   };
 
-  // Filter Catalog
+  // Filter Catalog based on Tab and Filters
   const filteredProducts = products.filter(p => {
+    // Filter by Active vs Trash tab
+    if (activeTab === 'catalog' && p.status === 'ARCHIVED') return false;
+    if (activeTab === 'trash' && p.status !== 'ARCHIVED') return false;
+
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) ||
                         p.sku.toLowerCase().includes(search.toLowerCase()) ||
                         (p.brand && p.brand.toLowerCase().includes(search.toLowerCase()));
     
     const matchCategory = categoryFilter === 'all' || p.categoryId === categoryFilter;
-    const matchStatus = statusFilter === 'all' || p.status === statusFilter;
+    
+    // Status filter only applies in Catalog tab (since Trash is exclusively ARCHIVED status)
+    const matchStatus = activeTab === 'trash' || statusFilter === 'all' || p.status === statusFilter;
 
     return matchSearch && matchCategory && matchStatus;
   });
@@ -393,6 +444,40 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({ setActiveS
         </div>
       )}
 
+      {/* Tab Switcher */}
+      <div className="flex border-b border-slate-200 gap-xs mb-sm">
+        <button
+          onClick={() => {
+            setActiveTab('catalog');
+            setCategoryFilter('all');
+            setStatusFilter('all');
+          }}
+          className={`px-lg py-sm font-bold text-xs uppercase tracking-wider border-b-2 transition-all flex items-center gap-xs cursor-pointer ${
+            activeTab === 'catalog'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[16px]">inventory_2</span>
+          Active Catalog ({products.filter(p => p.status !== 'ARCHIVED').length})
+        </button>
+        <button
+          onClick={() => {
+            setActiveTab('trash');
+            setCategoryFilter('all');
+            setStatusFilter('all');
+          }}
+          className={`px-lg py-sm font-bold text-xs uppercase tracking-wider border-b-2 transition-all flex items-center gap-xs cursor-pointer ${
+            activeTab === 'trash'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[16px]">delete</span>
+          Trash ({products.filter(p => p.status === 'ARCHIVED').length})
+        </button>
+      </div>
+
       {/* Filters Toolbar */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-md bg-white p-md rounded border border-slate-200 shadow-sm">
         <div className="flex flex-wrap items-center gap-sm w-full md:w-auto">
@@ -421,54 +506,59 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({ setActiveS
           </select>
 
           {/* Status Dropdown */}
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-11 px-md border border-slate-200 rounded text-body-sm bg-slate-50 focus:border-primary focus:ring-0 font-bold"
-          >
-            <option value="all">All Statuses</option>
-            <option value="ACTIVE">Active</option>
-            <option value="OUT_OF_STOCK">Out of Stock</option>
-            <option value="COMING_SOON">Coming Soon</option>
-            <option value="DISCONTINUED">Discontinued</option>
-            <option value="ARCHIVED">Archived</option>
-          </select>
+          {activeTab === 'catalog' && (
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="h-11 px-md border border-slate-200 rounded text-body-sm bg-slate-50 focus:border-primary focus:ring-0 font-bold"
+            >
+              <option value="all">All Statuses</option>
+              <option value="ACTIVE">Active</option>
+              <option value="OUT_OF_STOCK">Out of Stock</option>
+              <option value="COMING_SOON">Coming Soon</option>
+              <option value="DISCONTINUED">Discontinued</option>
+            </select>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-xs w-full md:w-auto mt-2 md:mt-0">
-          {setActiveSection && (
+          {activeTab === 'catalog' && (
             <>
+              {setActiveSection && (
+                <>
+                  <button
+                    onClick={() => setActiveSection('import-products')}
+                    className="flex items-center gap-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-md h-11 rounded font-bold text-xs transition-all shadow-xs justify-center cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">upload_file</span>
+                    Import
+                  </button>
+                  <button
+                    onClick={() => setActiveSection('export-products')}
+                    className="flex items-center gap-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-md h-11 rounded font-bold text-xs transition-all shadow-xs justify-center cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">download</span>
+                    Export
+                  </button>
+                  <button
+                    onClick={() => setActiveSection('bulk-updates')}
+                    className="flex items-center gap-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-md h-11 rounded font-bold text-xs transition-all shadow-xs justify-center cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">published_with_changes</span>
+                    Bulk Updates
+                  </button>
+                </>
+              )}
+              {/* Add Product Button */}
               <button
-                onClick={() => setActiveSection('import-products')}
-                className="flex items-center gap-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-md h-11 rounded font-bold text-xs transition-all shadow-xs justify-center"
+                onClick={openAddEditor}
+                className="flex items-center gap-xs bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-lg h-11 rounded font-bold text-xs transition-all shadow-sm w-full md:w-auto justify-center cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[16px]">upload_file</span>
-                Import
-              </button>
-              <button
-                onClick={() => setActiveSection('export-products')}
-                className="flex items-center gap-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-md h-11 rounded font-bold text-xs transition-all shadow-xs justify-center"
-              >
-                <span className="material-symbols-outlined text-[16px]">download</span>
-                Export
-              </button>
-              <button
-                onClick={() => setActiveSection('bulk-updates')}
-                className="flex items-center gap-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-md h-11 rounded font-bold text-xs transition-all shadow-xs justify-center"
-              >
-                <span className="material-symbols-outlined text-[16px]">published_with_changes</span>
-                Bulk Updates
+                <span className="material-symbols-outlined text-[16px]">add</span>
+                Add New Product
               </button>
             </>
           )}
-          {/* Add Product Button */}
-          <button
-            onClick={openAddEditor}
-            className="flex items-center gap-xs bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-lg h-11 rounded font-bold text-xs transition-all shadow-sm w-full md:w-auto justify-center"
-          >
-            <span className="material-symbols-outlined text-[16px]">add</span>
-            Add New Product
-          </button>
         </div>
       </div>
 
@@ -543,20 +633,31 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({ setActiveS
                     </td>
                     <td className="px-lg py-md text-right">
                       <div className="flex gap-sm justify-end">
-                        <button
-                          onClick={() => openEditEditor(p)}
-                          className="w-8 h-8 rounded border border-slate-200 flex items-center justify-center hover:bg-slate-100 text-slate-600 hover:text-slate-900"
-                          title="Edit"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">edit</span>
-                        </button>
-                        {p.status !== 'ARCHIVED' && (
+                        {activeTab === 'catalog' ? (
+                          <>
+                            <button
+                              onClick={() => openEditEditor(p)}
+                              className="w-8 h-8 rounded border border-slate-200 flex items-center justify-center hover:bg-slate-100 text-slate-600 hover:text-slate-900 cursor-pointer"
+                              title="Edit Product"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">edit</span>
+                            </button>
+                            <button
+                              onClick={() => handleArchiveProduct(p.id, p.name)}
+                              className="w-8 h-8 rounded border border-slate-200 flex items-center justify-center hover:bg-red-50 text-slate-600 hover:text-red-600 cursor-pointer"
+                              title="Move to Trash"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">delete</span>
+                            </button>
+                          </>
+                        ) : (
                           <button
-                            onClick={() => handleArchiveProduct(p.id, p.name)}
-                            className="w-8 h-8 rounded border border-slate-200 flex items-center justify-center hover:bg-red-50 text-slate-600 hover:text-red-600"
-                            title="Archive Product"
+                            onClick={() => handleRestoreProduct(p)}
+                            className="flex items-center gap-xs px-md h-8 rounded border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 text-xs font-bold transition-all cursor-pointer"
+                            title="Restore Product"
                           >
-                            <span className="material-symbols-outlined text-[16px]">archive</span>
+                            <span className="material-symbols-outlined text-[14px]">restore</span>
+                            Restore
                           </button>
                         )}
                       </div>
@@ -940,6 +1041,98 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({ setActiveS
                       Allow B2C
                     </label>
                   </div>
+
+                  {/* Product Images Section */}
+                  <div className="md:col-span-2 border-t border-slate-200 pt-md mt-sm">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-sm">Product Images</label>
+                    
+                    {/* Image Thumbnail Previews */}
+                    <div className="flex flex-wrap gap-sm mb-md">
+                      {images.map((img, idx) => (
+                        <div key={idx} className="relative w-20 h-20 border border-slate-200 rounded overflow-hidden group">
+                          <img src={img} alt="Product" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setImages(images.filter((_, i) => i !== idx))}
+                            className="absolute inset-0 bg-red-600/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-bold"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                      {images.length === 0 && (
+                        <div className="text-xs text-slate-400 font-semibold p-sm border border-dashed border-slate-200 rounded w-full text-center">
+                          No images uploaded yet.
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex gap-sm">
+                      {/* File Upload Button */}
+                      <div className="relative shrink-0">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                if (typeof reader.result === 'string') {
+                                  setImages([...images, reader.result]);
+                                }
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                          title="Upload Image File"
+                        />
+                        <button
+                          type="button"
+                          className="bg-slate-100 hover:bg-slate-200 text-slate-700 h-10 px-md rounded font-bold text-xs flex items-center gap-1.5 border border-slate-200 cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">upload</span>
+                          Upload Image File
+                        </button>
+                      </div>
+
+                      <span className="text-slate-400 self-center text-xs">or</span>
+
+                      {/* URL input */}
+                      <div className="flex-1 flex gap-xs">
+                        <input
+                          type="text"
+                          placeholder="Paste Image URL (e.g., https://...)"
+                          id="new-image-url-input"
+                          className="flex-1 h-10 px-sm border border-slate-200 rounded text-xs focus:ring-1 focus:ring-primary focus:border-primary"
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              const input = e.currentTarget as HTMLInputElement;
+                              if (input.value.trim()) {
+                                setImages([...images, input.value.trim()]);
+                                input.value = '';
+                              }
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const input = document.getElementById('new-image-url-input') as HTMLInputElement;
+                            if (input && input.value.trim()) {
+                              setImages([...images, input.value.trim()]);
+                              input.value = '';
+                            }
+                          }}
+                          className="bg-slate-100 hover:bg-slate-200 text-slate-700 h-10 px-md rounded font-bold text-xs border border-slate-200 cursor-pointer"
+                        >
+                          Add URL
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -952,21 +1145,37 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({ setActiveS
                         type="number"
                         required
                         value={productForm.price || ''}
-                        onChange={e => setProductForm({ ...productForm, price: Number(e.target.value) })}
+                        onChange={e => {
+                          const val = Number(e.target.value);
+                          setProductForm({ ...productForm, price: val });
+                          if (val > 0 && priceTiers.length === 0) {
+                            const t1 = { min: 10, max: 49, price: Math.round(val * 0.95), save: 5 };
+                            const t2 = { min: 50, max: 99, price: Math.round(val * 0.90), save: 10 };
+                            const t3 = { min: 100, max: 999999, price: Math.round(val * 0.85), save: 15 };
+                            setPriceTiers([t1, t2, t3]);
+                          }
+                        }}
                         className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm font-bold"
                       />
                     </div>
 
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-sm">Selling Unit of Measure *</label>
-                      <input
-                        type="text"
+                      <select
                         required
-                        placeholder="Piece, Meter, Box, Bag..."
-                        value={productForm.unitOfMeasure || ''}
-                        onChange={e => setProductForm({ ...productForm, unitOfMeasure: e.target.value })}
+                        value={productForm.unitOfMeasure || 'Piece'}
+                        onChange={e => setProductForm({ ...productForm, unitOfMeasure: e.target.value, minimumOrderUnit: e.target.value })}
                         className="w-full h-11 px-md border border-slate-200 rounded focus:border-primary focus:ring-0 text-body-sm"
-                      />
+                      >
+                        <option value="Piece">Piece</option>
+                        <option value="Meter">Meter</option>
+                        <option value="Box">Box</option>
+                        <option value="Bag">Bag</option>
+                        <option value="Litre">Litre</option>
+                        <option value="Kilogram">Kilogram</option>
+                        <option value="Pack">Pack</option>
+                        <option value="Roll">Roll</option>
+                      </select>
                     </div>
 
                     <div>
@@ -1019,42 +1228,94 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({ setActiveS
                         placeholder="Min Qty"
                         value={newTierMin}
                         onChange={e => setNewTierMin(e.target.value)}
-                        className="h-10 px-sm border border-slate-200 rounded text-xs"
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addPriceTier();
+                          }
+                        }}
+                        className="h-10 px-sm border border-slate-200 rounded text-xs focus:ring-1 focus:ring-primary focus:border-primary"
                       />
                       <input
                         type="number"
                         placeholder="Max Qty"
                         value={newTierMax}
                         onChange={e => setNewTierMax(e.target.value)}
-                        className="h-10 px-sm border border-slate-200 rounded text-xs"
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addPriceTier();
+                          }
+                        }}
+                        className="h-10 px-sm border border-slate-200 rounded text-xs focus:ring-1 focus:ring-primary focus:border-primary"
                       />
                       <input
                         type="number"
                         placeholder="Unit Price"
                         value={newTierPrice}
                         onChange={e => setNewTierPrice(e.target.value)}
-                        className="h-10 px-sm border border-slate-200 rounded text-xs"
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addPriceTier();
+                          }
+                        }}
+                        className="h-10 px-sm border border-slate-200 rounded text-xs focus:ring-1 focus:ring-primary focus:border-primary"
                       />
                       <button
                         type="button"
                         onClick={addPriceTier}
-                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 h-10 rounded font-bold text-xs"
+                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 h-10 rounded font-bold text-xs border border-slate-200 cursor-pointer"
                       >
                         Add Tier
                       </button>
                     </div>
 
-                    {/* Price Tiers List */}
+                    {/* Price Tiers List (Inline Editable) */}
                     <div className="space-y-xs pt-xs">
                       {priceTiers.map((t, idx) => (
-                        <div key={idx} className="flex justify-between items-center bg-slate-50 p-sm rounded border border-slate-100 text-xs font-semibold">
-                          <div>
-                            Qty {t.min} - {t.max === 999999 ? '∞' : t.max} • <span className="text-primary font-bold">₹{t.price}</span> (Save {t.save}%)
-                          </div>
+                        <div key={idx} className="flex gap-sm items-center bg-slate-50 p-xs rounded border border-slate-100 text-xs font-semibold">
+                          <input
+                            type="number"
+                            value={t.min}
+                            onChange={e => {
+                              const updated = [...priceTiers];
+                              updated[idx].min = parseInt(e.target.value, 10) || 0;
+                              setPriceTiers(updated);
+                            }}
+                            className="w-16 h-8 px-xs border border-slate-200 rounded text-center text-xs"
+                          />
+                          <span className="text-slate-400">to</span>
+                          <input
+                            type="number"
+                            value={t.max === 999999 ? '' : t.max}
+                            placeholder="∞"
+                            onChange={e => {
+                              const updated = [...priceTiers];
+                              updated[idx].max = e.target.value ? parseInt(e.target.value, 10) : 999999;
+                              setPriceTiers(updated);
+                            }}
+                            className="w-16 h-8 px-xs border border-slate-200 rounded text-center text-xs"
+                          />
+                          <span className="text-slate-400">at ₹</span>
+                          <input
+                            type="number"
+                            value={t.price}
+                            onChange={e => {
+                              const updated = [...priceTiers];
+                              const pVal = parseFloat(e.target.value) || 0;
+                              updated[idx].price = pVal;
+                              const base = Number(productForm.price || 0);
+                              updated[idx].save = base > 0 ? Math.round(((base - pVal) / base) * 100) : 0;
+                              setPriceTiers(updated);
+                            }}
+                            className="w-20 h-8 px-xs border border-slate-200 rounded text-center text-xs font-bold"
+                          />
+                          <span className="text-slate-400">({t.save}% Save)</span>
                           <button
                             type="button"
                             onClick={() => removePriceTier(idx)}
-                            className="text-red-500 hover:text-red-700"
+                            className="ml-auto text-red-500 hover:text-red-700 pr-sm font-bold border-0 bg-transparent cursor-pointer"
                           >
                             Remove
                           </button>
@@ -1074,19 +1335,31 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({ setActiveS
                       placeholder="Spec Key (e.g., Material)"
                       value={newSpecKey}
                       onChange={e => setNewSpecKey(e.target.value)}
-                      className="flex-1 h-10 px-sm border border-slate-200 rounded text-xs"
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addSpec();
+                        }
+                      }}
+                      className="flex-1 h-10 px-sm border border-slate-200 rounded text-xs focus:ring-1 focus:ring-primary focus:border-primary"
                     />
                     <input
                       type="text"
                       placeholder="Value (e.g., CPVC)"
                       value={newSpecVal}
                       onChange={e => setNewSpecVal(e.target.value)}
-                      className="flex-1 h-10 px-sm border border-slate-200 rounded text-xs"
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addSpec();
+                        }
+                      }}
+                      className="flex-1 h-10 px-sm border border-slate-200 rounded text-xs focus:ring-1 focus:ring-primary focus:border-primary"
                     />
                     <button
                       type="button"
                       onClick={addSpec}
-                      className="bg-slate-100 hover:bg-slate-200 text-slate-700 h-10 px-md rounded font-bold text-xs"
+                      className="bg-slate-100 hover:bg-slate-200 text-slate-700 h-10 px-md rounded font-bold text-xs border border-slate-200 cursor-pointer"
                     >
                       Add Spec
                     </button>
@@ -1113,37 +1386,108 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({ setActiveS
 
               {activeEditorTab === 'accessories' && (
                 <div className="space-y-md">
-                  <h4 className="font-bold text-body-sm text-slate-900 border-b border-slate-100 pb-xs">Cross-Sell Accessories</h4>
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-xs">
+                    <h4 className="font-bold text-body-sm text-slate-900">Cross-Sell Accessories</h4>
+                    <span className="text-[10px] bg-amber-500/10 text-primary px-2 py-0.5 rounded-full font-bold uppercase">
+                      Category Suggestions Active
+                    </span>
+                  </div>
+
+                  {/* Manual input */}
                   <div className="flex gap-sm">
                     <input
                       type="text"
-                      placeholder="Accessory Product ID (e.g., cpvc-solvent-cement)"
+                      placeholder="Or enter custom Product ID..."
                       value={newAccessoryId}
                       onChange={e => setNewAccessoryId(e.target.value)}
-                      className="flex-1 h-10 px-sm border border-slate-200 rounded text-xs"
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addAccessory();
+                        }
+                      }}
+                      className="flex-1 h-10 px-sm border border-slate-200 rounded text-xs focus:ring-1 focus:ring-primary focus:border-primary"
                     />
                     <button
                       type="button"
                       onClick={addAccessory}
-                      className="bg-slate-100 hover:bg-slate-200 text-slate-700 h-10 px-md rounded font-bold text-xs"
+                      className="bg-slate-100 hover:bg-slate-200 text-slate-700 h-10 px-md rounded font-bold text-xs border border-slate-200 cursor-pointer"
                     >
                       Add ID
                     </button>
                   </div>
 
+                  {/* Suggested Products Grid */}
+                  <div className="space-y-sm">
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Suggested Cross-Sells (Same Category)</p>
+                    <div className="border border-slate-200 rounded max-h-60 overflow-y-auto divide-y divide-slate-100 bg-white">
+                      {suggestedProducts.map(p => {
+                        const isAdded = recommendedAccessories.includes(p.id);
+                        return (
+                          <div key={p.id} className="p-sm flex justify-between items-center text-xs hover:bg-slate-50 transition-colors">
+                            <div className="flex gap-sm items-center min-w-0">
+                              <div className="w-8 h-8 rounded bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-[10px] text-slate-400 shrink-0">
+                                {p.images && p.images[0] ? (
+                                  <img src={p.images[0]} alt="" className="w-full h-full object-cover rounded" />
+                                ) : 'IMG'}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-bold text-slate-800 truncate">{p.name}</p>
+                                <p className="text-[10px] text-slate-400 font-medium">{p.brand} • SKU: {p.sku}</p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (isAdded) {
+                                  setRecommendedAccessories(recommendedAccessories.filter(id => id !== p.id));
+                                } else {
+                                  setRecommendedAccessories([...recommendedAccessories, p.id]);
+                                }
+                              }}
+                              className={`px-sm h-8 rounded text-xs font-bold transition-all border cursor-pointer ${
+                                isAdded 
+                                  ? 'bg-amber-500/10 border-amber-500/20 text-primary hover:bg-amber-500/20' 
+                                  : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'
+                              }`}
+                            >
+                              {isAdded ? 'Linked ✓' : 'Link Product'}
+                            </button>
+                          </div>
+                        );
+                      })}
+                      {suggestedProducts.length === 0 && (
+                        <p className="text-center py-md text-xs text-slate-400 font-semibold">
+                          No other products found in this category to suggest.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Selected Linked Accessories List */}
                   <div className="space-y-xs pt-xs">
-                    {recommendedAccessories.map((aId, idx) => (
-                      <div key={idx} className="flex justify-between items-center bg-slate-50 p-sm rounded border border-slate-100 text-xs font-mono">
-                        <span>{aId}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeAccessory(idx)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">All Active Cross-Sells ({recommendedAccessories.length})</p>
+                    <div className="flex flex-wrap gap-xs">
+                      {recommendedAccessories.map((aId, idx) => {
+                        const matchedProd = products.find(p => p.id === aId);
+                        return (
+                          <div key={idx} className="flex items-center gap-xs bg-slate-100 border border-slate-200 rounded-full pl-sm pr-xs py-0.5 text-xs font-semibold text-slate-700">
+                            <span>{matchedProd ? matchedProd.name : aId}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeAccessory(idx)}
+                              className="w-5 h-5 rounded-full hover:bg-slate-200 flex items-center justify-center text-red-500 text-sm font-bold border-0 bg-transparent cursor-pointer"
+                              title="Remove Link"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        );
+                      })}
+                      {recommendedAccessories.length === 0 && (
+                        <p className="text-xs text-slate-400 font-semibold italic">No active cross-sells linked.</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}

@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { apiFetch } from '../../lib/api';
+import { useNotification } from '../../hooks/useNotification';
 
 export function useOrders() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const { success, error: notifyError } = useNotification();
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -45,13 +47,14 @@ export function useOrders() {
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || 'Failed to cancel order.');
+        notifyError(data.error || 'Failed to cancel order.');
         return false;
       }
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'Cancelled' } : o));
+      success('Order cancelled successfully.');
       return true;
     } catch {
-      alert('Network error. Failed to cancel order.');
+      notifyError('Network error. Failed to cancel order.');
       return false;
     }
   };

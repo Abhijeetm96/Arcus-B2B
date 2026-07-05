@@ -353,6 +353,16 @@ export const OrderManagement: React.FC<OrderManagementProps> = ({ type }) => {
                   <span>Total Amount</span>
                   <span className="text-primary">₹{(typeof selectedOrder.amount === 'number' ? selectedOrder.amount : parseFloat(String(selectedOrder.amount).replace(/[^\d.]/g, '')) || 0).toLocaleString('en-IN')}</span>
                 </div>
+                <button
+                  onClick={() => {
+                    const token = localStorage.getItem('arcus_token') || '';
+                    window.open(`/api/documents/${selectedOrder.id}?format=pdf&download=true&token=${encodeURIComponent(token)}`, '_blank');
+                  }}
+                  className="w-full mt-md h-9 border border-slate-200 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all"
+                >
+                  <span className="material-symbols-outlined text-[16px]">download</span>
+                  Download Invoice PDF
+                </button>
               </div>
 
               {/* Status Update */}

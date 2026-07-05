@@ -101,18 +101,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.log('[AUTH CLIENT] Startup: Found local token, restoring session.');
         }
         try {
-          const data = await apiClient('/auth/me');
+          const data = await apiClient('/auth/me', { timeout: 5000 });
           const normalized = normalizeUser(data);
           setUser(normalized);
+          localStorage.setItem('arcus_cached_user', JSON.stringify(normalized));
           if (isDev) {
             console.log('[AUTH CLIENT] Startup: Session restored successfully.', normalized);
           }
         } catch (err: any) {
-          if (isDev) {
-            console.warn('[AUTH CLIENT] Startup: Session restore failed. Cleared token.', err.message);
+          if (err.status === 401 || err.status === 403) {
+            if (isDev) {
+              console.warn('[AUTH CLIENT] Startup: Token invalid or expired. Clearing session.', err.message);
+            }
+            localStorage.removeItem('arcus_token');
+            localStorage.removeItem('arcus_cached_user');
+            setUser(null);
+          } else {
+            // Transient error: attempt to load from local cache to stay logged in during downtime
+            const cached = localStorage.getItem('arcus_cached_user');
+            if (cached) {
+              try {
+                const parsed = JSON.parse(cached);
+                setUser(parsed);
+                console.log('[AUTH CLIENT] Startup: Server unreachable. Restored session from cache.', parsed);
+              } catch {
+                setUser(null);
+              }
+            } else {
+              setUser(null);
+            }
           }
-          localStorage.removeItem('arcus_token');
-          setUser(null);
         }
       } else {
         if (isDev) {
@@ -123,6 +141,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     initAuth();
+  }, []);
+
+  // Listen for reconnection to re-verify session in the background
+  useEffect(() => {
+    const handleReconnect = async () => {
+      const token = localStorage.getItem('arcus_token');
+      if (token) {
+        try {
+          const data = await apiClient('/auth/me', { timeout: 5000, retries: 0 });
+          const normalized = normalizeUser(data);
+          setUser(normalized);
+          localStorage.setItem('arcus_cached_user', JSON.stringify(normalized));
+          console.log('[AUTH CLIENT] Reconnect: Verified session in background.');
+        } catch (err: any) {
+          if (err.status === 401 || err.status === 403) {
+            localStorage.removeItem('arcus_token');
+            localStorage.removeItem('arcus_cached_user');
+            setUser(null);
+          }
+        }
+      }
+    };
+    window.addEventListener('arcus-reconnected', handleReconnect);
+    return () => window.removeEventListener('arcus-reconnected', handleReconnect);
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -147,6 +189,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('arcus_token', data.token);
       const normalized = normalizeUser(data.user);
       setUser(normalized);
+      localStorage.setItem('arcus_cached_user', JSON.stringify(normalized));
 
       return { success: true };
     } catch (err: any) {
@@ -178,6 +221,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('arcus_token', data.token);
         const normalized = normalizeUser(data.user);
         setUser(normalized);
+        localStorage.setItem('arcus_cached_user', JSON.stringify(normalized));
       }
 
       return { success: true, email: data.email, token: data.token, user: normalizeUser(data.user) || undefined };
@@ -199,6 +243,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const data = await apiClient('/auth/me');
         const normalized = normalizeUser(data);
         setUser(normalized);
+        localStorage.setItem('arcus_cached_user', JSON.stringify(normalized));
         if (isDev) {
           console.log('[AUTH CLIENT] Session refreshed successfully.', normalized);
         }
@@ -213,6 +258,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('[AUTH CLIENT] Logging out user, clearing local session.');
     }
     localStorage.removeItem('arcus_token');
+    localStorage.removeItem('arcus_cached_user');
     setUser(null);
   };
 

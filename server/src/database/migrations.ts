@@ -116,6 +116,12 @@ export async function runMigrations(pgPool: Pool): Promise<void> {
       ADD COLUMN IF NOT EXISTS admin_role VARCHAR(100) DEFAULT 'SUPER_ADMIN';
   `);
 
+  // Ensure parent_id column exists on categories
+  await pgPool.query(`
+    ALTER TABLE categories
+      ADD COLUMN IF NOT EXISTS parent_id VARCHAR(50) REFERENCES categories(id) ON DELETE SET NULL;
+  `);
+
   // Validation & data integrity constraints
   await pgPool.query(`
     DROP INDEX IF EXISTS products_link_unique;
