@@ -502,7 +502,7 @@ export const InventoryManagement: React.FC = () => {
                         setPageSize(Number(e.target.value));
                         setCurrentPage(1);
                       }}
-                      className="h-8 border border-slate-200 rounded px-sm bg-white focus:border-primary focus:ring-0 font-bold cursor-pointer text-slate-800"
+                      className="h-8 border border-slate-200 rounded pl-sm pr-8 bg-white focus:border-primary focus:ring-0 font-bold cursor-pointer text-slate-800 text-xs shadow-xs hover:border-slate-300 transition-all outline-none"
                     >
                       <option value={20}>20 items</option>
                       <option value={50}>50 items</option>
