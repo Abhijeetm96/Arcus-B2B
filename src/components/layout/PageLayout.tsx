@@ -36,7 +36,7 @@ const PageLayout = React.forwardRef<HTMLDivElement, PageLayoutProps>(
         `}</style>
         {/* Desktop Left Sidebar */}
         {sidebar && (
-          <aside className="w-64 border-r border-border bg-surface flex-shrink-0 hidden md:block h-full overflow-y-auto scrollbar-none">
+          <aside className="w-fit transition-all duration-300 border-r border-border bg-surface flex-shrink-0 hidden md:block h-full overflow-y-auto scrollbar-none">
             {sidebar}
           </aside>
         )}
@@ -67,7 +67,7 @@ const PageLayout = React.forwardRef<HTMLDivElement, PageLayoutProps>(
 
         {/* Central Workspace Content Pane */}
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto bg-slate-50/50">
-          <div className={cn('p-6 space-y-6 md:p-8 flex-grow', className)}>
+          <div className={cn('p-6 space-y-6 md:p-8 flex-grow flex flex-col min-h-0', className)}>
             {/* 1. Breadcrumbs */}
             {breadcrumbItems && breadcrumbItems.length > 0 && (
               <Breadcrumb items={breadcrumbItems} />
@@ -91,7 +91,7 @@ const PageLayout = React.forwardRef<HTMLDivElement, PageLayoutProps>(
             )}
 
             {/* 5. Central Workspace Slot */}
-            <div className="w-full">
+            <div className="w-full flex-grow flex flex-col min-h-0">
               {children}
             </div>
 

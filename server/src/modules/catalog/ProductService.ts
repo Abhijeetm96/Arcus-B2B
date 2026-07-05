@@ -314,8 +314,8 @@ export async function addProduct(p: Product): Promise<Product> {
           product_id, sku, brand, model, unit_of_measure, hsn_code, gst_rate,
           minimum_order_quantity, minimum_order_unit, order_multiple, allow_b2b,
           allow_b2c, lead_time_days, status, category_id, procurement_price,
-          vendor_name, vendor_product_code
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30)
+          vendor_name, vendor_product_code, price
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31)
       `;
       const values = [
         p.id,
@@ -347,7 +347,8 @@ export async function addProduct(p: Product): Promise<Product> {
         p.categoryId,
         p.procurementPrice !== undefined ? p.procurementPrice : null,
         p.vendorName || null,
-        p.vendorProductCode || null
+        p.vendorProductCode || null,
+        `₹${p.price || 0}`
       ];
       await client.query(query, values);
 
@@ -528,7 +529,8 @@ export async function updateProduct(p: Product): Promise<Product | null> {
           minimum_order_quantity = $19, minimum_order_unit = $20,
           order_multiple = $21, allow_b2b = $22, allow_b2c = $23,
           lead_time_days = $24, status = $25, category_id = $26,
-          procurement_price = $27, vendor_name = $28, vendor_product_code = $29
+          procurement_price = $27, vendor_name = $28, vendor_product_code = $29,
+          price = $31
         WHERE id = $30 RETURNING id
       `;
       const values = [
@@ -561,7 +563,8 @@ export async function updateProduct(p: Product): Promise<Product | null> {
         p.procurementPrice !== undefined ? p.procurementPrice : null,
         p.vendorName || null,
         p.vendorProductCode || null,
-        p.id
+        p.id,
+        `₹${p.price || 0}`
       ];
       const res = await client.query(query, values);
       if (res.rows.length === 0) {

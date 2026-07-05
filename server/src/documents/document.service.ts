@@ -1,6 +1,5 @@
 import { QuotationRenderer } from './renderers/quotation/QuotationRenderer';
 import { InvoiceRenderer } from './renderers/invoice/InvoiceRenderer';
-import { RFQRenderer } from './renderers/rfq/RFQRenderer';
 import { PurchaseOrderRenderer } from './renderers/purchase-order/PurchaseOrderRenderer';
 import { PdfGenerator } from './pdf/PdfGenerator';
 import { DocumentCache } from './pdf/DocumentCache';
@@ -11,7 +10,7 @@ export class DocumentService {
    * Utilizes cache layer.
    */
   public static async renderDocumentHtml(
-    type: 'quotation' | 'invoice' | 'rfq' | 'purchase-order',
+    type: 'quotation' | 'invoice' | 'purchase-order',
     data: any
   ): Promise<string> {
     const cacheKey = `${type}_html_${data.id || data.rfqNumber || 'doc'}`;
@@ -31,9 +30,6 @@ export class DocumentService {
       });
     } else if (type === 'invoice') {
       const renderer = new InvoiceRenderer();
-      html = await renderer.render(data);
-    } else if (type === 'rfq') {
-      const renderer = new RFQRenderer();
       html = await renderer.render(data);
     } else if (type === 'purchase-order') {
       const renderer = new PurchaseOrderRenderer();

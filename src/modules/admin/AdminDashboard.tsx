@@ -8,7 +8,6 @@ import { CategoryManagement } from './CategoryManagement';
 import { BrandManagement } from './BrandManagement';
 import { InventoryManagement } from './InventoryManagement';
 import { OrderManagement } from './OrderManagement';
-import { RFQManagement } from './RFQManagement';
 import { CustomerManagement } from './CustomerManagement';
 import { SearchAnalytics } from './SearchAnalytics';
 import { Reports } from './Reports';
@@ -102,8 +101,7 @@ export const AdminDashboard: React.FC = () => {
         return <OrderManagement type="B2C" />;
       case 'orders-services':
         return <OrderManagement type="SERVICES" />;
-      case 'rfqs':
-        return <RFQManagement />;
+
       case 'customers':
         return <CustomerManagement />;
       case 'search-analytics':

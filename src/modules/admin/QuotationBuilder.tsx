@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { clientQuotationService } from './rfq/services/quotation.service';
-import { CustomerPanel } from './rfq/components/quotation/CustomerPanel';
-import { ItemsGrid } from './rfq/components/quotation/ItemsGrid';
-import type { QuotationItem } from './rfq/components/quotation/ItemsGrid';
-import { PricingSummary } from './rfq/components/quotation/PricingSummary';
-import { TermsPanel } from './rfq/components/quotation/TermsPanel';
-import { InternalNotes } from './rfq/components/quotation/InternalNotes';
-import { CustomerNotes } from './rfq/components/quotation/CustomerNotes';
-import { VersionHistory } from './rfq/components/quotation/VersionHistory';
-import { ApprovalTimeline } from './rfq/components/quotation/ApprovalTimeline';
-import { ActionToolbar } from './rfq/components/quotation/ActionToolbar';
+import { clientQuotationService } from './quotations/services/quotation.service';
+import { CustomerPanel } from './quotations/components/CustomerPanel';
+import { ItemsGrid } from './quotations/components/ItemsGrid';
+import type { QuotationItem } from './quotations/components/ItemsGrid';
+import { PricingSummary } from './quotations/components/PricingSummary';
+import { TermsPanel } from './quotations/components/TermsPanel';
+import { InternalNotes } from './quotations/components/InternalNotes';
+import { CustomerNotes } from './quotations/components/CustomerNotes';
+import { VersionHistory } from './quotations/components/VersionHistory';
+import { ApprovalTimeline } from './quotations/components/ApprovalTimeline';
+import { ActionToolbar } from './quotations/components/ActionToolbar';
 import { DocumentStatusBadge } from '../../components/shared/DocumentStatusBadge';
-import { QuotationVersionCompare } from './rfq/components/quotation/QuotationVersionCompare';
+import { QuotationVersionCompare } from './quotations/components/QuotationVersionCompare';
 import { apiFetch } from '../../lib/api';
 
 export const QuotationBuilder: React.FC = () => {
@@ -614,7 +614,7 @@ export const QuotationBuilder: React.FC = () => {
             <VersionHistory
               versions={versions}
               activeVersion={version}
-              onSelectVersion={async (ver) => {
+              onSelectVersion={async (ver: any) => {
                 window.location.hash = `#/portal/admin/quotations/${ver.id}`;
               }}
               onCompareVersions={handleCompareVersions}

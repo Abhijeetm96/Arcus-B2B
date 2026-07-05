@@ -49,9 +49,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const { logout } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showRoleSelector, setShowRoleSelector] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [hoveredGroupId, setHoveredGroupId] = useState<string | null>(null);
-  const [showWorkspaceSwitcher, setShowWorkspaceSwitcher] = useState(false);
-  const [currentWorkspace, setCurrentWorkspace] = useState('Admin Console');
+  const [hoveredMenuTop, setHoveredMenuTop] = useState<number>(0);
+
 
   // Command Center Search state
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -60,10 +61,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const [searchResults, setSearchResults] = useState<{
     products: any[];
     orders: any[];
-    rfqs: any[];
     customers: any[];
     brands: any[];
-  }>({ products: [], orders: [], rfqs: [], customers: [], brands: [] });
+  }>({ products: [], orders: [], customers: [], brands: [] });
 
   // Handle Ctrl+K / Cmd+K keyboard shortcut
   React.useEffect(() => {
@@ -80,7 +80,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const handleSearch = async (val: string) => {
     setSearchQuery(val);
     if (!val.trim()) {
-      setSearchResults({ products: [], orders: [], rfqs: [], customers: [], brands: [] });
+      setSearchResults({ products: [], orders: [], customers: [], brands: [] });
       return;
     }
 
@@ -105,10 +105,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       let orders: any[] = [];
       if (orderRes.ok) orders = await orderRes.json();
 
-      // 3. Fetch RFQs
-      const rfqRes = await apiFetch('/rfqs');
-      let rfqs: any[] = [];
-      if (rfqRes.ok) rfqs = await rfqRes.json();
+
 
       // 4. Fetch Customers
       const custRes = await apiFetch('/admin/users');
@@ -127,7 +124,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       const query = val.toLowerCase();
       const filteredProds = prods.filter(p => p.name?.toLowerCase().includes(query) || p.sku?.toLowerCase().includes(query)).slice(0, 5);
       const filteredOrders = orders.filter(o => String(o.id).toLowerCase().includes(query) || o.status?.toLowerCase().includes(query) || o.userId?.toLowerCase().includes(query)).slice(0, 5);
-      const filteredRfqs = rfqs.filter(r => String(r.id).toLowerCase().includes(query) || r.title?.toLowerCase().includes(query) || r.status?.toLowerCase().includes(query)).slice(0, 5);
+
       const filteredCustomers = customers.filter(c => {
         const name = c.fullName || c.full_name || c.name || '';
         const email = c.email || '';
@@ -140,7 +137,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       setSearchResults({
         products: filteredProds,
         orders: filteredOrders,
-        rfqs: filteredRfqs,
         customers: filteredCustomers,
         brands: filteredBrands
       });
@@ -195,7 +191,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     },
     {
       id: 'orders-group',
-      name: 'Orders & Bookings',
+      name: 'Orders',
       icon: 'shopping_cart',
       isGroup: true,
       check: (u: any) => perm.canApproveRFQs(u) || perm.canViewInventory(u),
@@ -204,13 +200,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         { id: 'orders-b2c', name: 'B2C Orders', icon: 'group', check: (u: any) => perm.canApproveRFQs(u) || perm.canViewInventory(u) },
         { id: 'orders-services', name: 'Service Bookings', icon: 'settings', check: (u: any) => perm.canApproveRFQs(u) || perm.canViewInventory(u) }
       ]
-    },
-    { 
-      id: 'rfqs', 
-      name: 'Procurement Command Center', 
-      icon: 'request_quote', 
-      isGroup: false,
-      check: (u: any) => perm.canApproveRFQs(u) 
     },
     { 
       id: 'customers', 
@@ -258,7 +247,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
   const notifications = [
     { id: 1, title: 'Low Stock Alert', desc: 'Astral CPVC Pipe 3m is below reorder level (6 left).', time: '10 mins ago', type: 'warning' },
-    { id: 2, title: 'New RFQ Received', desc: 'Cement RFQ (#rfq_9381) submitted by ACC Builders.', time: '1 hour ago', type: 'info' },
     { id: 3, title: 'Order Dispatched', desc: 'Order #ord_7362 has been dispatched to Karan Mehra.', time: '2 hours ago', type: 'success' }
   ];
 
@@ -267,12 +255,18 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   };
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-slate-900 text-slate-200">
+    <div className={`flex flex-col h-full bg-slate-900 text-slate-200 transition-all duration-300 ${isSidebarCollapsed ? 'w-16' : 'w-64'}`}>
       <div className="h-16 flex items-center justify-between px-6 border-b border-slate-800">
-        <div className="flex items-center gap-2">
-          <span className="font-extrabold text-lg tracking-wider text-white">
-            ARCUS <span className="text-primary text-xs font-semibold px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">ADMIN</span>
-          </span>
+        <div className="flex items-center gap-2 mx-auto">
+          {isSidebarCollapsed ? (
+            <span className="font-extrabold text-lg text-primary bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">
+              A
+            </span>
+          ) : (
+            <span className="font-extrabold text-lg tracking-wider text-white">
+              ARCUS <span className="text-primary text-xs font-semibold px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">ADMIN</span>
+            </span>
+          )}
         </div>
       </div>
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 scrollbar-none">
@@ -291,25 +285,38 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                 <div 
                   key={item.id}
                   className="relative"
-                  onMouseEnter={() => setHoveredGroupId(item.id)}
+                  onMouseEnter={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setHoveredGroupId(item.id);
+                    setHoveredMenuTop(rect.top);
+                  }}
                   onMouseLeave={() => setHoveredGroupId(null)}
                 >
                   <button
                     className={cn(
-                      "w-full flex items-center gap-3 px-4 py-2.5 rounded text-sm font-semibold transition-all text-left",
+                      "w-full flex items-center transition-all text-left",
+                      isSidebarCollapsed 
+                        ? 'justify-center py-2.5 rounded-lg' 
+                        : 'gap-3 px-4 py-2.5 rounded',
                       hasActiveSub
                         ? 'bg-primary text-slate-950 font-bold shadow-sm'
                         : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                     )}
+                    title="Orders"
                   >
-                    <GroupIcon className="h-4 w-4" />
-                    <span className="flex-1">Orders</span>
-                    <Lucide.ChevronRight className="h-3.5 w-3.5 text-slate-500 opacity-60 shrink-0" />
+                    <GroupIcon className="h-4 w-4 shrink-0" />
+                    {!isSidebarCollapsed && <span className="flex-1">Orders</span>}
+                    {!isSidebarCollapsed && <Lucide.ChevronRight className="h-3.5 w-3.5 text-slate-500 opacity-60 shrink-0" />}
                   </button>
 
                   {isHovered && (
                     <div 
-                      className="absolute left-full top-0 pl-2 w-44 z-50 text-left animate-in fade-in duration-150"
+                      className="z-50 text-left animate-in fade-in duration-150 pl-5 w-48"
+                      style={{
+                        position: 'fixed',
+                        left: `${isSidebarCollapsed ? 48 : 240}px`,
+                        top: `${hoveredMenuTop}px`
+                      }}
                       onMouseEnter={() => setHoveredGroupId(item.id)}
                       onMouseLeave={() => setHoveredGroupId(null)}
                     >
@@ -317,9 +324,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                         {visibleSubItems.map(sub => {
                           const SubIcon = iconMap[sub.icon] || Lucide.HelpCircle;
                           const displayName = 
-                            sub.name === 'B2C Orders' ? 'B@C' : 
-                            sub.name === 'Service Bookings' ? 'services Order' : 
-                            sub.name === 'B2B Orders' ? 'b2B' : sub.name;
+                            sub.name === 'B2C Orders' ? 'B2C' : 
+                            sub.name === 'Service Bookings' ? 'Services' : 
+                            sub.name === 'B2B Orders' ? 'B2B': sub.name;
                           return (
                             <button
                               key={sub.id}
@@ -348,24 +355,33 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
             return (
               <div key={item.id} className="space-y-1 pt-2">
-                <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                  <GroupIcon className="h-3 w-3" />
-                  {item.name}
-                </div>
+                {!isSidebarCollapsed ? (
+                  <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                    <GroupIcon className="h-3 w-3" />
+                    {item.name}
+                  </div>
+                ) : (
+                  <div className="border-t border-slate-800/60 my-2 mx-1" />
+                )}
                 {visibleSubItems.map((sub) => {
                   const SubIcon = iconMap[sub.icon] || Lucide.HelpCircle;
                   return (
                     <button
                       key={sub.id}
                       onClick={() => setActiveSection(sub.id)}
-                      className={`w-full flex items-center gap-3 px-4 py-2 rounded text-sm font-semibold transition-all ${
+                      className={`w-full flex items-center transition-all ${
+                        isSidebarCollapsed
+                          ? 'justify-center py-2 rounded-lg'
+                          : 'gap-3 px-4 py-2 rounded'
+                      } ${
                         activeSection === sub.id
                           ? 'bg-primary text-slate-950 shadow-sm font-bold'
                           : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                       }`}
+                      title={sub.name}
                     >
-                      <SubIcon className="h-4 w-4" />
-                      {sub.name}
+                      <SubIcon className="h-4 w-4 shrink-0" />
+                      {!isSidebarCollapsed && <span className="truncate">{sub.name}</span>}
                     </button>
                   );
                 })}
@@ -378,27 +394,45 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             <button
               key={item.id}
               onClick={() => setActiveSection(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded text-sm font-semibold transition-all ${
+              className={`w-full flex items-center transition-all ${
+                isSidebarCollapsed
+                  ? 'justify-center py-2.5 rounded-lg'
+                  : 'gap-3 px-4 py-2.5 rounded'
+              } ${
                 activeSection === item.id
                   ? 'bg-primary text-slate-950 shadow-sm font-bold'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
               }`}
+              title={item.name}
             >
-              <ItemIcon className="h-4 w-4" />
-              {item.name}
+              <ItemIcon className="h-4 w-4 shrink-0" />
+              {!isSidebarCollapsed && <span className="truncate">{item.name}</span>}
             </button>
           );
         })}
       </nav>
       <div className="p-4 border-t border-slate-800 bg-slate-950/40">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-primary font-bold text-sm">
+        <div className={`flex items-center ${isSidebarCollapsed ? 'flex-col gap-3 justify-center' : 'gap-3'}`}>
+          <div className="w-9 h-9 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-primary font-bold text-sm shrink-0">
             AD
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-white truncate">Administrator</p>
-            <p className="text-[10px] text-slate-500 font-mono truncate">{getFriendlyRoleName(currentRole)}</p>
-          </div>
+          {!isSidebarCollapsed && (
+            <div className="flex-1 min-w-0 animate-in fade-in duration-200">
+              <p className="text-sm font-bold text-white truncate">Administrator</p>
+              <p className="text-[10px] text-slate-500 font-mono truncate">{getFriendlyRoleName(currentRole)}</p>
+            </div>
+          )}
+          <button
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            className="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-all cursor-pointer border-0 shrink-0"
+            title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          >
+            {isSidebarCollapsed ? (
+              <Lucide.ChevronRight className="h-4 w-4" />
+            ) : (
+              <Lucide.ChevronLeft className="h-4 w-4" />
+            )}
+          </button>
         </div>
       </div>
     </div>
@@ -406,68 +440,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
   const breadcrumbs = [
     { label: 'Admin Portal', href: '#/portal/admin' },
-    { label: activeSection === 'rfqs' ? 'Procurement Command Center' : activeSection.replace('-', ' ') }
+    { label: activeSection === 'rfqs' ? 'RFQ Center' : activeSection.replace('-', ' ') }
   ];
 
   const headerActions = (
     <div className="flex items-center gap-3">
-      {/* Workspace Switcher */}
-      <div className="relative">
-        <button
-          onClick={() => setShowWorkspaceSwitcher(!showWorkspaceSwitcher)}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 text-white rounded text-xs font-bold transition-all hover:bg-slate-700 select-none cursor-pointer"
-        >
-          <Lucide.LayoutGrid className="h-3.5 w-3.5 text-amber-500" />
-          {currentWorkspace}
-          <Lucide.ChevronDown className="h-3 w-3" />
-        </button>
-        {showWorkspaceSwitcher && (
-          <div className="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded shadow-xl z-50 py-1 text-slate-200">
-            <div className="px-3 py-1 text-[9px] font-bold text-slate-500 uppercase tracking-wider">
-              Workspace Switcher
-            </div>
-            {['Admin Console', 'B2B Procurement', 'B@C Distribution', 'Service Operations'].map((ws) => (
-              <button
-                key={ws}
-                onClick={() => {
-                  setCurrentWorkspace(ws);
-                  setShowWorkspaceSwitcher(false);
-                }}
-                className={cn(
-                  "w-full text-left px-3 py-1.5 text-xs font-semibold flex items-center justify-between hover:bg-slate-800 hover:text-white transition-colors cursor-pointer",
-                  currentWorkspace === ws ? 'text-primary font-bold bg-slate-800' : ''
-                )}
-              >
-                {ws}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Quick Create */}
-      <button
-        onClick={() => {
-          if (activeSection === 'rfqs') {
-            window.dispatchEvent(new CustomEvent('arcus-open-create-rfq'));
-          } else {
-            alert('Quick Create is context-aware. Navigate to Procurement Command Center to create RFQ.');
-          }
-        }}
-        className="flex items-center justify-center w-10 h-10 bg-slate-900 text-white hover:bg-slate-850 border border-slate-850 rounded transition-all cursor-pointer"
-        title="Quick Create RFQ"
-      >
-        <Lucide.Plus className="h-5 w-5 text-amber-500" />
-      </button>
-
-      {/* Theme Toggle */}
-      <button
-        onClick={() => alert('Simulating Dark/Light Theme toggler. Theme updated.')}
-        className="w-10 h-10 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center border border-slate-200 cursor-pointer"
-        title="Toggle Theme Mode"
-      >
-        <Lucide.Sun className="h-4.5 w-4.5" />
-      </button>
 
       {/* Command Search Bar Trigger */}
       <button
@@ -565,7 +542,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     <PageLayout
       sidebar={sidebarContent}
       breadcrumbItems={breadcrumbs}
-      title={activeSection === 'rfqs' ? 'Procurement Command Center' : activeSection.replace('-', ' ')}
+      title={activeSection === 'rfqs' ? 'RFQ Center' : activeSection.replace('-', ' ')}
       actions={headerActions}
       className="bg-slate-50"
     >
@@ -611,7 +588,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                 </div>
               ) : (searchResults.products.length === 0 && 
                    searchResults.orders.length === 0 && 
-                   searchResults.rfqs.length === 0 && 
                    searchResults.customers.length === 0 && 
                    searchResults.brands.length === 0) ? (
                 <div className="text-center py-8 text-slate-400 space-y-2">
@@ -648,35 +624,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                     </div>
                   )}
 
-                  {/* RFQs Results */}
-                  {searchResults.rfqs.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5 px-2">
-                        <Lucide.FileText className="h-3.5 w-3.5" />
-                        RFQs ({searchResults.rfqs.length})
-                      </h4>
-                      <div className="divide-y divide-slate-100 border border-slate-100 rounded overflow-hidden shadow-xs">
-                        {searchResults.rfqs.map(r => (
-                          <button
-                            key={r.id}
-                            onClick={() => {
-                              setActiveSection('rfqs');
-                              setIsSearchOpen(false);
-                            }}
-                            className="w-full p-3 bg-white hover:bg-slate-50 transition-colors flex justify-between items-center text-xs text-left cursor-pointer"
-                          >
-                            <div>
-                              <p className="font-bold text-slate-900">{r.title || 'RFQ Worksheet'}</p>
-                              <p className="text-slate-400 text-[10px]">ID: {r.id} | Buyer: {r.buyerId}</p>
-                            </div>
-                            <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-amber-500/10 text-amber-600 border border-amber-500/20">
-                              {r.status}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+
 
                   {/* Orders Results */}
                   {searchResults.orders.length > 0 && (

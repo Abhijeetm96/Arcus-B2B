@@ -54,6 +54,7 @@ export interface Category {
   icon: string;
   count?: string;
   href?: string;
+  parentId?: string | null;
 }
 
 export interface Brand {
@@ -62,6 +63,7 @@ export interface Brand {
   logo?: string;
   description?: string;
   status: 'ACTIVE' | 'ARCHIVED' | string;
+  count?: string;
 }
 
 export interface InventoryAdjustment {

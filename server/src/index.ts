@@ -995,7 +995,7 @@ app.post('/api/admin/categories', async (req, res) => {
     if (!isAdmin) {
       return res.status(403).json({ error: 'Forbidden. Admin access required.' });
     }
-    const { id, name, icon, count, href } = req.body;
+    const { id, name, icon, count, href, parentId } = req.body;
     if (!id || !name || !icon) {
       return res.status(400).json({ error: 'Missing required category fields (id, name, icon).' });
     }
@@ -1004,7 +1004,8 @@ app.post('/api/admin/categories', async (req, res) => {
       name: sanitizeText(name),
       icon: sanitizeText(icon),
       count: count ? sanitizeText(String(count)) : undefined,
-      href: href ? sanitizeText(String(href)) : undefined
+      href: href ? sanitizeText(String(href)) : undefined,
+      parentId: parentId ? sanitizeText(String(parentId)) : undefined
     });
     res.status(201).json(newCategory);
   } catch (err: any) {
@@ -1020,7 +1021,7 @@ app.put('/api/admin/categories/:id', async (req, res) => {
       return res.status(403).json({ error: 'Forbidden. Admin access required.' });
     }
     const id = req.params.id;
-    const { name, icon, count, href } = req.body;
+    const { name, icon, count, href, parentId } = req.body;
     if (!name || !icon) {
       return res.status(400).json({ error: 'Missing required category fields (name, icon).' });
     }
@@ -1029,7 +1030,8 @@ app.put('/api/admin/categories/:id', async (req, res) => {
       name: sanitizeText(name),
       icon: sanitizeText(icon),
       count: count ? sanitizeText(String(count)) : undefined,
-      href: href ? sanitizeText(String(href)) : undefined
+      href: href ? sanitizeText(String(href)) : undefined,
+      parentId: parentId ? sanitizeText(String(parentId)) : undefined
     });
     if (!updated) {
       return res.status(404).json({ error: 'Category not found.' });
@@ -1048,7 +1050,9 @@ app.delete('/api/admin/categories/:id', async (req, res) => {
       return res.status(403).json({ error: 'Forbidden. Admin access required.' });
     }
     const id = req.params.id;
-    const deleted = await deleteCategory(id);
+    const transferTo = req.query.transferTo ? sanitizeText(String(req.query.transferTo)) : undefined;
+    
+    const deleted = await deleteCategory(id, transferTo);
     if (!deleted) {
       return res.status(404).json({ error: 'Category not found.' });
     }
@@ -3239,11 +3243,11 @@ app.get('/api/admin/dashboard-kpis', adminAuthMiddleware, async (req, res) => {
       totalInvValue += price * stock;
     }
 
-    const customers = users.filter(u => u.role !== 'Admin');
+    const customers = users.filter((u: any) => u.role !== 'Admin');
     const totalCustomers = customers.length;
-    const activeCustomersList = customers.filter(c => {
-      const hasOrder = orders.some(o => o.userId === c.id);
-      const hasRfq = rfqs.some(r => r.buyerId === c.id);
+    const activeCustomersList = customers.filter((c: any) => {
+      const hasOrder = orders.some((o: any) => o.userId === c.id);
+      const hasRfq = rfqs.some((r: any) => r.buyerId === c.id);
       return hasOrder || hasRfq;
     });
 
@@ -3404,8 +3408,9 @@ app.put('/api/admin/brands/:id', adminAuthMiddleware, async (req, res) => {
 app.delete('/api/admin/brands/:id', adminAuthMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
+    const transferTo = req.query.transferTo ? sanitizeText(String(req.query.transferTo)) : undefined;
     const brand = await getBrandById(id);
-    const success = await deleteBrand(id);
+    const success = await deleteBrand(id, transferTo);
     if (!success) {
       return res.status(404).json({ error: 'Brand not found.' });
     }

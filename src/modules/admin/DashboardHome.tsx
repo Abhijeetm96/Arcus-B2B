@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { MetricCard, Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/shared/Card';
-import { IndianRupee, ShoppingBag, FileText, Package, Users, UserCheck, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { IndianRupee, ShoppingBag, Package, Users, UserCheck, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { apiFetch } from '../../lib/api';
 
 interface KPIData {
@@ -76,7 +76,7 @@ export const DashboardHome: React.FC = () => {
   return (
     <div className="space-y-6 text-left">
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {/* Revenue */}
         <MetricCard
           title="Monthly Revenue"
@@ -95,22 +95,31 @@ export const DashboardHome: React.FC = () => {
           trend={{ value: `${Math.abs(kpis.orders.trend)}%`, isPositive: kpis.orders.trend >= 0 }}
         />
 
-        {/* RFQs */}
+        {/* Total Customers */}
         <MetricCard
-          title="Active RFQs"
-          value={kpis.rfqs.thisMonth}
-          description="vs last month"
-          icon={<FileText className="h-4 w-4" />}
-          trend={{ value: `${Math.abs(kpis.rfqs.trend)}%`, isPositive: kpis.rfqs.trend >= 0 }}
+          title="Total Customers"
+          value={kpis.customers.total}
+          description="Registered buyers"
+          icon={<Users className="h-4 w-4" />}
+          trend={{ value: 'Active', isPositive: true }}
         />
 
-        {/* Inventory */}
+        {/* Low Stock Items */}
+        <MetricCard
+          title="Low Stock Items"
+          value={kpis.inventory.lowStockCount}
+          description="Critical warnings"
+          icon={<AlertTriangle className="h-4 w-4" />}
+          trend={{ value: kpis.inventory.lowStockCount > 0 ? 'Warning' : 'Healthy', isPositive: kpis.inventory.lowStockCount === 0 }}
+        />
+
+        {/* Inventory Value */}
         <MetricCard
           title="Inventory Value"
           value={`₹${kpis.inventory.totalValue.toLocaleString('en-IN')}`}
-          description={`${kpis.inventory.lowStockCount} Low stock items`}
+          description="Total active stock"
           icon={<Package className="h-4 w-4" />}
-          trend={{ value: kpis.inventory.lowStockCount > 0 ? 'Reorder' : 'Healthy', isPositive: kpis.inventory.lowStockCount === 0 }}
+          trend={{ value: 'Asset Value', isPositive: true }}
         />
       </div>
 

@@ -53,13 +53,9 @@ const WorkspaceLayout = React.forwardRef<HTMLDivElement, WorkspaceLayoutProps>(
         )}
         {...props}
       >
-        {/* 1. Workspace Toolbar Header */}
         {toolbar && (
           <div
-            className={cn(
-              'flex flex-col gap-4 p-4 md:p-6 border-b border-border bg-surface-secondary/10 md:flex-row md:items-center md:justify-between flex-shrink-0',
-              stickyHeader && 'sticky top-0 z-20 backdrop-blur bg-surface/90'
-            )}
+            className="flex flex-col gap-4 p-4 md:p-6 border-b border-border bg-surface-secondary/10 md:flex-row md:items-center md:justify-between flex-shrink-0"
           >
             {toolbar}
           </div>

@@ -1,20 +1,17 @@
 import { Request, Response } from 'express';
 import { QuotationService } from '../../services/quotation.service';
-import { RFQRepository } from '../../database/repositories/rfq.repository';
 import { getOrderById } from '../../modules/orders/OrderService';
 import { DocumentService } from '../document.service';
 import { pgPool } from '../../database/db';
 
 export class DocumentController {
   private quoteService: QuotationService;
-  private rfqRepository: RFQRepository;
 
   constructor() {
     if (!pgPool) {
       throw new Error('[DocumentController] PostgreSQL pool is not initialized.');
     }
     this.quoteService = new QuotationService(pgPool);
-    this.rfqRepository = new RFQRepository(pgPool);
   }
 
   public async renderDocument(req: Request, res: Response) {
@@ -55,45 +52,7 @@ export class DocumentController {
         }
       }
 
-      // 3. Resolve RFQ Brief
-      if (!documentData) {
-        try {
-          const rfq = await this.rfqRepository.findById(id);
-          if (rfq) {
-            documentData = rfq;
-            // Map database row keys to template props
-            documentData.rfqNumber = documentData.id;
-            documentData.lastUpdated = documentData.updated_at || documentData.timestamp;
-            documentData.dueDate = documentData.due_date;
-            documentData.description = documentData.details;
-            
-            if (documentData.customer_json) {
-              documentData.customer = typeof documentData.customer_json === 'string'
-                ? JSON.parse(documentData.customer_json)
-                : documentData.customer_json;
-            }
 
-            // Fetch items
-            const items = await this.rfqRepository.findItemsByRfqId(id);
-            documentData.items = items.map((i: any) => {
-              const specs = typeof i.specification_requirements === 'string'
-                ? JSON.parse(i.specification_requirements)
-                : i.specification_requirements || {};
-              return {
-                itemName: i.item_name,
-                quantity: i.quantity,
-                unit: specs.unit || 'pcs',
-                targetPrice: specs.targetPrice
-              };
-            });
-
-            docType = 'rfq';
-            filename = `RFQ-Brief-${id}.pdf`;
-          }
-        } catch (e) {
-          console.warn(`[DocumentController] RFQ resolution failed for ID ${id}:`, e);
-        }
-      }
 
       if (!documentData) {
         return res.status(404).json({ error: `Document not found with ID: ${id}` });
@@ -109,7 +68,10 @@ export class DocumentController {
       }
 
       if (format === 'pdf') {
-        const cacheKey = `${docType}_pdf_${id}`;
+        const lastUpdated = documentData && (documentData.updated_at || documentData.lastUpdated)
+          ? new Date(documentData.updated_at || documentData.lastUpdated).getTime()
+          : (documentData?.version || '1');
+        const cacheKey = `${docType}_pdf_${id}_v${lastUpdated}`;
         const pdfBuffer = await DocumentService.generatePdf(htmlContent, cacheKey);
         
         res.setHeader('Content-Type', 'application/pdf');
