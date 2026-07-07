@@ -39,7 +39,7 @@ export { getAllCategories, addCategory, updateCategory, deleteCategory } from '.
 export { addRfq, getAllRfqs, updateRfqStatus, addBooking, getAllBookings, addQuote, getAllQuotes } from './modules/rfq/RFQService';
 export { addOrder, getOrdersByUserId, getOrderById, updateOrderStatus, getAllOrders } from './modules/orders/OrderService';
 export { getAllBrands, getBrandById, addBrand, updateBrand, deleteBrand } from './modules/catalog/BrandService';
-export { logAction, getAllAuditLogs } from './modules/analytics/AuditLogService';
+export { logAction, getAllAuditLogs, requestClearAuditLogs, getClearRequestTime, cancelClearAuditLogs } from './modules/analytics/AuditLogService';
 
 // Import / Export / Sync / History Services
 export { validateImportSheet, matchZipImages, HEADER_MAPPING } from './modules/catalog/ProductImportService';

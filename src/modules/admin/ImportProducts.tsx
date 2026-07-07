@@ -551,7 +551,7 @@ export const ImportProducts: React.FC = () => {
           <div className="space-y-lg">
             {/* Download Template Card */}
             <div className="bg-white text-slate-900 p-lg rounded border border-slate-200 shadow-sm space-y-md">
-              <span className="material-symbols-outlined text-primary text-[40px]">download_sheet</span>
+              <span className="material-symbols-outlined text-primary text-[40px]">download</span>
               <h3 className="font-extrabold text-md text-slate-900">Import Templates</h3>
               <p className="text-xs text-slate-500">Download the pre-formatted Excel or CSV spreadsheet template to prepare your catalog data.</p>
               

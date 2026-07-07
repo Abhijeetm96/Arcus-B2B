@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import type { Product } from './types';
 import { apiFetch } from '../../lib/api';
+import { exportToCSV } from '../../utils/csvHelpers';
+import { ImportModal, type ImportField } from '../../components/ImportModal';
 
 export const InventoryManagement: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -29,6 +31,126 @@ export const InventoryManagement: React.FC = () => {
     quantity: 0,
     reason: ''
   });
+
+  // Import/Export States & Handlers
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+  const inventoryImportFields: ImportField[] = [
+    { label: 'SKU or Product ID', key: 'sku', required: true },
+    { label: 'Adjustment Type', key: 'adjustmentType', required: true },
+    { label: 'Quantity', key: 'quantity', required: true },
+    { label: 'Reason', key: 'reason' }
+  ];
+
+  const handleExportStockLevels = () => {
+    const headers = [
+      { label: 'Product ID', key: 'id' },
+      { label: 'Product Name', key: 'name' },
+      { label: 'SKU', key: 'sku' },
+      { label: 'Brand', key: 'brand' },
+      { label: 'Available Stock', key: 'available' },
+      { label: 'Reserved Stock', key: 'reserved' },
+      { label: 'Safety Limit', key: 'reorderLevel' },
+      { label: 'Unit', key: 'unitOfMeasure' }
+    ];
+    const data = products.map(p => ({
+      id: p.id,
+      name: p.name,
+      sku: p.sku,
+      brand: p.brand || '',
+      available: p.inventory?.available ?? p.stock ?? 0,
+      reserved: p.inventory?.reserved ?? 0,
+      reorderLevel: p.inventory?.reorderLevel ?? 10,
+      unitOfMeasure: p.unitOfMeasure || 'pcs'
+    }));
+    exportToCSV(data, headers, 'arcus_inventory_stock_levels.csv');
+  };
+
+  const handleExportAdjustmentHistory = async () => {
+    try {
+      setError(null);
+      const token = localStorage.getItem('arcus_token');
+      const res = await apiFetch('/admin/inventory/adjustments', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to load adjustment history.');
+      const history = await res.json();
+      
+      const headers = [
+        { label: 'Adjustment ID', key: 'id' },
+        { label: 'Product ID', key: 'productId' },
+        { label: 'Product Name', key: 'productName' },
+        { label: 'Adjustment Type', key: 'adjustmentType' },
+        { label: 'Quantity', key: 'quantity' },
+        { label: 'Previous Stock', key: 'prevStock' },
+        { label: 'New Stock', key: 'newStock' },
+        { label: 'Reason', key: 'reason' },
+        { label: 'Performed By', key: 'performedBy' },
+        { label: 'Timestamp', key: 'timestamp' }
+      ];
+      
+      const data = history.map((h: any) => ({
+        id: h.id,
+        productId: h.productId,
+        productName: getProductName(h.productId),
+        adjustmentType: h.adjustmentType,
+        quantity: h.quantity,
+        prevStock: h.prevStock,
+        newStock: h.newStock,
+        reason: h.reason || '',
+        performedBy: h.performedBy || '',
+        timestamp: h.timestamp || ''
+      }));
+      
+      exportToCSV(data, headers, 'arcus_inventory_adjustments_history.csv');
+      setSuccess('Inventory adjustment logs exported successfully!');
+    } catch (err: any) {
+      setError(err.message || 'Error exporting adjustment history.');
+    }
+  };
+
+  const handleImportAdjustmentRow = async (row: Record<string, any>) => {
+    const token = localStorage.getItem('arcus_token');
+    
+    // Match by SKU or ID
+    const product = products.find(p => 
+      (p.sku && p.sku.toLowerCase() === row.sku.toLowerCase()) || 
+      p.id.toLowerCase() === row.sku.toLowerCase()
+    );
+    
+    if (!product) {
+      throw new Error(`Product SKU/ID "${row.sku}" not found in database.`);
+    }
+
+    const qtyVal = parseInt(row.quantity, 10);
+    if (isNaN(qtyVal) || qtyVal <= 0) {
+      throw new Error(`Quantity must be a positive integer. Got: "${row.quantity}"`);
+    }
+
+    const type = (row.adjustmentType || 'INCOMING').toUpperCase();
+    if (!['INCOMING', 'SHIPPED', 'DISCREPANCY', 'MANUAL'].includes(type)) {
+      throw new Error(`Invalid Adjustment Type "${row.adjustmentType}". Must be INCOMING, SHIPPED, DISCREPANCY, or MANUAL.`);
+    }
+
+    const res = await apiFetch('/admin/inventory/adjustments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        productId: product.id,
+        adjustmentType: type,
+        quantity: qtyVal,
+        reason: row.reason || 'Bulk Adjust CSV'
+      })
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || `Adjustment failed for ${product.name}`);
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -411,7 +533,7 @@ export const InventoryManagement: React.FC = () => {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-lg">
         {/* Left Column: Product Stock List */}
         <div className="xl:col-span-2 space-y-md">
-          <div className="flex justify-between items-center bg-white p-md rounded border border-slate-200 shadow-sm">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-md bg-white p-md rounded border border-slate-200 shadow-sm">
             <div className="relative w-full max-w-xs">
               <span className="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
               <input
@@ -422,8 +544,34 @@ export const InventoryManagement: React.FC = () => {
                 className="w-full h-11 pl-xxl pr-md border border-slate-200 rounded text-body-sm focus:border-primary focus:ring-0 bg-slate-50"
               />
             </div>
-            <div className="text-xs bg-slate-100 text-slate-500 rounded px-md py-sm font-extrabold font-label-caps uppercase tracking-wide">
-              {filteredProducts.length} Items Listed
+            <div className="flex flex-wrap items-center gap-sm">
+              <button
+                onClick={handleExportStockLevels}
+                className="flex items-center gap-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-md h-11 rounded font-bold text-xs transition-all shadow-xs cursor-pointer"
+                title="Export Stock Levels to CSV"
+              >
+                <span className="material-symbols-outlined text-[16px]">download</span>
+                Export Stock
+              </button>
+              <button
+                onClick={handleExportAdjustmentHistory}
+                className="flex items-center gap-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-md h-11 rounded font-bold text-xs transition-all shadow-xs cursor-pointer"
+                title="Export Adjustment History to CSV"
+              >
+                <span className="material-symbols-outlined text-[16px]">history</span>
+                Export Logs
+              </button>
+              <button
+                onClick={() => setIsImportModalOpen(true)}
+                className="flex items-center gap-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-md h-11 rounded font-bold text-xs transition-all shadow-xs cursor-pointer"
+                title="Import Stock Adjustments from CSV"
+              >
+                <span className="material-symbols-outlined text-[16px]">upload_file</span>
+                Import Adjustments
+              </button>
+              <div className="text-xs bg-slate-100 text-slate-500 rounded px-md py-sm font-extrabold font-label-caps uppercase tracking-wide">
+                {filteredProducts.length} Items Listed
+              </div>
             </div>
           </div>
 
@@ -808,6 +956,20 @@ export const InventoryManagement: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Import Modal */}
+      <ImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        title="Import Stock Adjustments"
+        fields={inventoryImportFields}
+        templateFileName="stock_adjustments_template.csv"
+        onImportRow={handleImportAdjustmentRow}
+        onSuccess={(msg) => {
+          setSuccess(msg);
+          fetchData();
+        }}
+      />
     </div>
   );
 };

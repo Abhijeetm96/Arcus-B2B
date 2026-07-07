@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
-import { getCachedSearch, setCachedSearch } from '../core/config/searchCache'
+import { getCachedSuggest, setCachedSuggest } from '../core/config/searchCache'
 import { apiFetch } from '../lib/api';
 
 const materialsCategories = [
@@ -132,7 +132,7 @@ export default function Navbar() {
       return
     }
 
-    const cached = getCachedSearch(searchQuery)
+    const cached = getCachedSuggest(searchQuery)
     if (cached) {
       setSearchResults({
         products: Array.isArray(cached.products) ? cached.products.slice(0, 5) : [],
@@ -147,10 +147,12 @@ export default function Navbar() {
 
     const handler = setTimeout(async () => {
       try {
-        const res = await apiFetch(`/search?q=${encodeURIComponent(searchQuery)}`)
+        const locationQuery = user?.city ? `&location=${encodeURIComponent(user.city)}` : '';
+        const stateQuery = user?.state ? `&state=${encodeURIComponent(user.state)}` : '';
+        const res = await apiFetch(`/search?q=${encodeURIComponent(searchQuery)}${locationQuery}${stateQuery}&suggest=true`)
         if (res.ok) {
           const data = await res.json()
-          setCachedSearch(searchQuery, data)
+          setCachedSuggest(searchQuery, data)
           setSearchResults({
             products: Array.isArray(data?.products) ? data.products.slice(0, 5) : [],
             brands: Array.isArray(data?.brands) ? data.brands.slice(0, 3) : [],

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '../../lib/api';
+import { exportToCSV } from '../../utils/csvHelpers';
 
 interface AuditLog {
   id?: number;
@@ -7,12 +8,19 @@ interface AuditLog {
   details: string;
   performedBy: string;
   timestamp?: string;
+  pendingDeletion?: boolean;
+  deleteScheduledAt?: string;
 }
 
-export const AuditLogs: React.FC = () => {
+interface AuditLogsProps {
+  currentRole?: string;
+}
+
+export const AuditLogs: React.FC<AuditLogsProps> = ({ currentRole }) => {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   // Clickable log detail states
   const [selectedEntity, setSelectedEntity] = useState<{ type: string; id: string } | null>(null);
@@ -23,11 +31,129 @@ export const AuditLogs: React.FC = () => {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
 
+  // Clear Logs States
+  const [isClearModalOpen, setIsClearModalOpen] = useState(false);
+  const [clearPassword, setClearPassword] = useState('');
+  const [clearLoading, setClearLoading] = useState(false);
+  const [clearError, setClearError] = useState<string | null>(null);
+  const [clearRequestedAt, setClearRequestedAt] = useState<string | null>(null);
+  const [restoreLoading, setRestoreLoading] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleRestoreLogs = async () => {
+    setRestoreLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const token = localStorage.getItem('arcus_token');
+      const res = await apiFetch('/admin/audit-logs/restore', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'X-Simulated-Role': currentRole || 'SUPER_ADMIN'
+        }
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to restore audit logs.');
+      }
+      setClearRequestedAt(null);
+      
+      // Trigger logs refetch
+      const updatedRes = await apiFetch('/admin/audit-logs', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (updatedRes.ok) {
+        const updatedData = await updatedRes.json();
+        const sorted = updatedData.sort((a: AuditLog, b: AuditLog) => {
+          if (!a.timestamp || !b.timestamp) return 0;
+          return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        });
+        setLogs(sorted);
+      }
+      setSuccess('Audit logs schedule cancelled. All logs have been successfully restored.');
+    } catch (err: any) {
+      setError(err.message || 'Error restoring logs.');
+    } finally {
+      setRestoreLoading(false);
+    }
+  };
+
+  const handleClearLogs = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!clearPassword) {
+      setClearError('Password is required.');
+      return;
+    }
+    setClearLoading(true);
+    setClearError(null);
+    try {
+      const token = localStorage.getItem('arcus_token');
+      const res = await apiFetch('/admin/audit-logs/clear', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'X-Simulated-Role': currentRole || 'SUPER_ADMIN'
+        },
+        body: JSON.stringify({ password: clearPassword })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to clear audit logs.');
+      }
+      setIsClearModalOpen(false);
+      setClearPassword('');
+      // Trigger logs and schedule refetch
+      const schedRes = await apiFetch('/admin/audit-logs/clear-schedule', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (schedRes.ok) {
+        const schedData = await schedRes.json();
+        setClearRequestedAt(schedData.clearRequestedAt || null);
+      }
+
+      const updatedRes = await apiFetch('/admin/audit-logs', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (updatedRes.ok) {
+        const updatedData = await updatedRes.json();
+        const sorted = updatedData.sort((a: AuditLog, b: AuditLog) => {
+          if (!a.timestamp || !b.timestamp) return 0;
+          return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        });
+        setLogs(sorted);
+      }
+      setSuccess('Audit logs clear request scheduled successfully. Deletion scheduled in 48 hours.');
+    } catch (err: any) {
+      setClearError(err.message || 'Error clearing logs.');
+    } finally {
+      setClearLoading(false);
+    }
+  };
+
   useEffect(() => {
     const fetchLogs = async () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('arcus_token');
+
+        // Fetch clear schedule
+        const schedRes = await apiFetch('/admin/audit-logs/clear-schedule', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (schedRes.ok) {
+          const schedData = await schedRes.json();
+          setClearRequestedAt(schedData.clearRequestedAt || null);
+        }
+
         const res = await apiFetch('/admin/audit-logs', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -61,6 +187,27 @@ export const AuditLogs: React.FC = () => {
 
     return matchSearch && matchType;
   });
+
+  const handleExportLogs = () => {
+    const headers = [
+      { label: 'Timestamp', key: 'timestamp' },
+      { label: 'Action Type', key: 'actionType' },
+      { label: 'Activity Details', key: 'details' },
+      { label: 'Performed By', key: 'performedBy' }
+    ];
+    exportToCSV(filteredLogs, headers, 'arcus_audit_logs.csv');
+  };
+
+  const getDeletionCountdown = (deleteScheduledAt?: string) => {
+    if (!deleteScheduledAt) return '';
+    const diff = new Date(deleteScheduledAt).getTime() - currentTime.getTime();
+    if (diff <= 0) return 'Deleting...';
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    const pad = (num: number) => String(num).padStart(2, '0');
+    return `Purging in ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  };
 
   const getActionBadgeClass = (type: string) => {
     switch (type) {
@@ -176,8 +323,51 @@ export const AuditLogs: React.FC = () => {
     <div className="space-y-md text-left">
       {/* Notifications */}
       {error && (
-        <div className="bg-red-50 text-red-800 p-md rounded border border-red-200">
-          <p className="font-semibold">Error: {error}</p>
+        <div className="bg-red-50 text-red-800 p-md rounded border border-red-200 flex justify-between items-center">
+          <span>Error: {error}</span>
+          <button onClick={() => setError(null)} className="material-symbols-outlined text-[18px] cursor-pointer">close</button>
+        </div>
+      )}
+      {success && (
+        <div className="bg-green-50 text-green-800 p-md rounded border border-green-200 flex justify-between items-center">
+          <span>{success}</span>
+          <button onClick={() => setSuccess(null)} className="material-symbols-outlined text-[18px] cursor-pointer">close</button>
+        </div>
+      )}
+
+      {clearRequestedAt && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-900 p-md rounded flex flex-col sm:flex-row justify-between items-start sm:items-center gap-md shadow-xs animate-in slide-in-from-top-4 duration-200">
+          <div className="flex items-center gap-sm">
+            <span className="material-symbols-outlined text-[24px] text-amber-500">warning</span>
+            <div>
+              <p className="font-extrabold text-xs uppercase tracking-wide">Audit Logs Deletion Scheduled</p>
+              <p className="text-xs font-semibold text-amber-700 mt-0.5 flex flex-wrap items-center gap-xs">
+                <span>Logs created before {formatTimestamp(clearRequestedAt)} will be permanently purged in</span>
+                <span className="font-mono font-black text-red-600 bg-red-50 border border-red-200 px-sm py-0.5 rounded text-[11px] animate-pulse">
+                  {getDeletionCountdown(new Date(new Date(clearRequestedAt).getTime() + 48 * 60 * 60 * 1000).toISOString()).replace('Purging in ', '')}
+                </span>.
+              </p>
+            </div>
+          </div>
+          {currentRole === 'SUPER_ADMIN' && (
+            <button
+              onClick={handleRestoreLogs}
+              disabled={restoreLoading}
+              className="flex items-center gap-xs bg-amber-600 hover:bg-amber-700 text-white px-lg h-9 rounded font-bold text-xs transition-all shadow-xs cursor-pointer disabled:opacity-60 shrink-0"
+            >
+              {restoreLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-white"></div>
+                  Restoring...
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-[14px]">restore</span>
+                  Restore Logs
+                </>
+              )}
+            </button>
+          )}
         </div>
       )}
 
@@ -210,8 +400,32 @@ export const AuditLogs: React.FC = () => {
           </select>
         </div>
 
-        <div className="text-xs bg-slate-100 text-slate-500 rounded px-md py-sm font-extrabold font-label-caps uppercase tracking-wide">
-          {filteredLogs.length} Events logged
+        <div className="flex items-center gap-sm">
+          {currentRole === 'SUPER_ADMIN' && (
+            <button
+              onClick={() => {
+                setClearError(null);
+                setClearPassword('');
+                setIsClearModalOpen(true);
+              }}
+              className="flex items-center gap-xs bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 px-md h-9 rounded font-bold text-xs transition-all shadow-xs cursor-pointer"
+              title="Clear all logs"
+            >
+              <span className="material-symbols-outlined text-[16px] text-red-500">delete_forever</span>
+              Clear Logs
+            </button>
+          )}
+          <button
+            onClick={handleExportLogs}
+            className="flex items-center gap-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-md h-9 rounded font-bold text-xs transition-all shadow-xs cursor-pointer"
+            title="Export logs to CSV"
+          >
+            <span className="material-symbols-outlined text-[16px]">download</span>
+            Export CSV
+          </button>
+          <div className="text-xs bg-slate-100 text-slate-500 rounded px-md py-sm font-extrabold font-label-caps uppercase tracking-wide">
+            {filteredLogs.length} Events logged
+          </div>
         </div>
       </div>
 
@@ -239,10 +453,18 @@ export const AuditLogs: React.FC = () => {
                       {formatTimestamp(log.timestamp)}
                     </td>
                     <td className="px-lg py-md">
-                      <span className={`text-[10px] font-bold px-md py-1 rounded-full border inline-flex items-center gap-xs capitalize ${getActionBadgeClass(log.actionType)}`}>
-                        <span className="material-symbols-outlined text-[12px]">{getActionIcon(log.actionType)}</span>
-                        {log.actionType.replace('_', ' ').toLowerCase()}
-                      </span>
+                      <div className="flex flex-col gap-xs items-start">
+                        <span className={`text-[10px] font-bold px-md py-1 rounded-full border inline-flex items-center gap-xs capitalize ${getActionBadgeClass(log.actionType)}`}>
+                          <span className="material-symbols-outlined text-[12px]">{getActionIcon(log.actionType)}</span>
+                          {log.actionType.replace('_', ' ').toLowerCase()}
+                        </span>
+                        {log.pendingDeletion && (
+                          <span className="text-[9px] font-extrabold text-red-500 bg-red-50 border border-red-200 px-sm py-0.5 rounded flex items-center gap-xs mt-1 animate-pulse" title="This log will be permanently deleted after the 48h grace period.">
+                            <span className="material-symbols-outlined text-[11px]">delete_clock</span>
+                            {getDeletionCountdown(log.deleteScheduledAt)}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-lg py-md font-medium text-slate-700 break-words leading-relaxed">
                       {(() => {
@@ -498,6 +720,88 @@ export const AuditLogs: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Clear Logs Confirmation Modal */}
+      {isClearModalOpen && (
+        <div className="fixed inset-0 overflow-hidden z-[60] flex items-center justify-center">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity" 
+            onClick={() => !clearLoading && setIsClearModalOpen(false)}
+          ></div>
+
+          {/* Modal Container */}
+          <div className="relative bg-white rounded-lg shadow-2xl border border-slate-200 w-full max-w-md p-lg space-y-md text-left z-10 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-sm text-red-600">
+              <span className="material-symbols-outlined text-[32px]">warning</span>
+              <h3 className="font-extrabold text-body-md">Schedule Audit Logs Clear</h3>
+            </div>
+
+            <div className="text-xs text-slate-500 space-y-sm leading-relaxed">
+              <p>
+                You are requesting to clear all administrative audit logs. Under platform compliance guidelines:
+              </p>
+              <ul className="list-disc pl-md space-y-xs font-semibold text-slate-600">
+                <li className="text-red-600">The logs will NOT be deleted immediately.</li>
+                <li>They are scheduled for permanent purging and will be deleted after a <strong>48-hour grace period</strong>.</li>
+                <li>During this window, logs will remain visible but marked as pending deletion.</li>
+              </ul>
+            </div>
+
+            {clearError && (
+              <div className="bg-red-50 text-red-800 p-sm rounded border border-red-200 text-xs flex justify-between items-center">
+                <span>{clearError}</span>
+                <button onClick={() => setClearError(null)} className="material-symbols-outlined text-[16px] cursor-pointer">close</button>
+              </div>
+            )}
+
+            <form onSubmit={handleClearLogs} className="space-y-sm">
+              <div className="space-y-xs">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                  Confirm Super Admin Password
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Enter your login password"
+                  value={clearPassword}
+                  onChange={(e) => setClearPassword(e.target.value)}
+                  disabled={clearLoading}
+                  className="w-full h-11 px-md border border-slate-200 rounded text-body-sm focus:border-primary focus:ring-0 bg-slate-50 disabled:opacity-60"
+                />
+              </div>
+
+              <div className="flex gap-sm justify-end pt-sm border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsClearModalOpen(false)}
+                  disabled={clearLoading}
+                  className="px-lg h-10 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs rounded transition-all cursor-pointer disabled:opacity-60"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={clearLoading}
+                  className="px-lg h-10 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded shadow-sm transition-all cursor-pointer flex items-center gap-xs disabled:opacity-60"
+                >
+                  {clearLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-white"></div>
+                      Scheduling...
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-[14px]">delete_forever</span>
+                      Confirm Clear
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

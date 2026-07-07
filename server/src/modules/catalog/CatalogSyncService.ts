@@ -60,8 +60,14 @@ export async function executeImport(
   const brandNames = new Set(existingBrands.map(b => b.name.toLowerCase()));
   
   const productBySku = new Map<string, Product>();
+  const productById = new Map<string, Product>();
   existingProducts.forEach(p => {
-    productBySku.set(p.sku.toLowerCase(), p);
+    if (p.sku) {
+      productBySku.set(p.sku.toLowerCase(), p);
+    }
+    if (p.id) {
+      productById.set(p.id.toLowerCase(), p);
+    }
   });
 
   let addedCount = 0;
@@ -116,7 +122,8 @@ export async function executeImport(
 
     const lowerSku = sku.toLowerCase();
     processedSkus.add(lowerSku);
-    const existing = productBySku.get(lowerSku);
+    const generatedId = r.productId || slugify(r.name);
+    const existing = productBySku.get(lowerSku) || (generatedId ? productById.get(generatedId.toLowerCase()) : undefined);
 
     // Apply Import Mode Logic
     if (mode === 'ADD_NEW') {
@@ -135,6 +142,11 @@ export async function executeImport(
       if (existing) {
         // Update product fields
         const updatedFields: Partial<Product> = {};
+
+        // Update SKU if different
+        if (existing.sku && existing.sku.toLowerCase() !== lowerSku) {
+          updatedFields.sku = sku;
+        }
         
         // Update pricing
         if (r.price !== undefined) {

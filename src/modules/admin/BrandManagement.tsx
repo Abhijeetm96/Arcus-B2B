@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import type { Brand } from './types';
 import { apiFetch } from '../../lib/api';
+import { exportToCSV } from '../../utils/csvHelpers';
+import { ImportModal, type ImportField } from '../../components/ImportModal';
 
 
 
@@ -18,6 +20,55 @@ export const BrandManagement: React.FC = () => {
   const [deleteConfirmBrand, setDeleteConfirmBrand] = useState<Brand | null>(null);
   const [transferTargetBrandId, setTransferTargetBrandId] = useState<string>('');
   const [shouldTransferBrand, setShouldTransferBrand] = useState<boolean>(true);
+
+  // Import/Export State & Handlers
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+  const brandImportFields: ImportField[] = [
+    { label: 'Brand ID', key: 'id', required: true },
+    { label: 'Brand Name', key: 'name', required: true },
+    { label: 'Logo URL', key: 'logo' },
+    { label: 'Description', key: 'description' },
+    { label: 'Status', key: 'status' }
+  ];
+
+  const handleExportBrands = () => {
+    const headers = [
+      { label: 'Brand ID', key: 'id' },
+      { label: 'Brand Name', key: 'name' },
+      { label: 'Logo URL', key: 'logo' },
+      { label: 'Description', key: 'description' },
+      { label: 'Status', key: 'status' }
+    ];
+    exportToCSV(brands, headers, 'arcus_brands.csv');
+  };
+
+  const handleImportBrandRow = async (row: Record<string, any>) => {
+    const token = localStorage.getItem('arcus_token');
+    const exists = brands.some(b => b.id === row.id);
+    const method = exists ? 'PUT' : 'POST';
+    const url = exists ? `/api/admin/brands/${row.id}` : '/api/admin/brands';
+
+    const res = await apiFetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        id: row.id,
+        name: row.name,
+        logo: row.logo || '',
+        description: row.description || '',
+        status: row.status || 'ACTIVE'
+      })
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || `Failed to import brand ${row.name}`);
+    }
+  };
 
   const fetchBrands = async () => {
     setLoading(true);
@@ -143,13 +194,31 @@ export const BrandManagement: React.FC = () => {
           <h4 className="font-extrabold text-slate-900 text-body-md">Manufacturer Brands Hub</h4>
           <p className="text-xs text-slate-400 font-medium mt-0.5">Manage brand metadata linked to platform products</p>
         </div>
-        <button
-          onClick={openAddModal}
-          className="flex items-center gap-xs bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-lg h-11 rounded font-bold text-xs transition-all shadow-sm"
-        >
-          <span className="material-symbols-outlined text-[16px]">add</span>
-          Add Brand Entity
-        </button>
+        <div className="flex items-center gap-sm">
+          <button
+            onClick={handleExportBrands}
+            className="flex items-center gap-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-md h-11 rounded font-bold text-xs transition-all shadow-xs cursor-pointer"
+            title="Export Brands to CSV"
+          >
+            <span className="material-symbols-outlined text-[16px]">download</span>
+            Export
+          </button>
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="flex items-center gap-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-md h-11 rounded font-bold text-xs transition-all shadow-xs cursor-pointer"
+            title="Import Brands from CSV"
+          >
+            <span className="material-symbols-outlined text-[16px]">upload_file</span>
+            Import
+          </button>
+          <button
+            onClick={openAddModal}
+            className="flex items-center gap-xs bg-primary text-slate-950 hover:bg-[#fabd00] px-lg h-11 rounded font-bold text-xs transition-all shadow-sm cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[16px]">add</span>
+            Add Brand Entity
+          </button>
+        </div>
       </div>
 
       {/* Brands Table */}
@@ -158,7 +227,7 @@ export const BrandManagement: React.FC = () => {
           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded overflow-hidden shadow-sm max-w-4xl">
+        <div className="bg-white border border-slate-200 rounded overflow-hidden shadow-sm w-full">
           <table className="w-full text-body-sm text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
@@ -425,6 +494,20 @@ export const BrandManagement: React.FC = () => {
           </div>
         );
       })()}
+
+      {/* Import Modal */}
+      <ImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        title="Import Brands"
+        fields={brandImportFields}
+        templateFileName="brands_import_template.csv"
+        onImportRow={handleImportBrandRow}
+        onSuccess={(msg) => {
+          setSuccess(msg);
+          fetchBrands();
+        }}
+      />
     </div>
   );
 };

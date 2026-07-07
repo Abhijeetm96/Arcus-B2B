@@ -122,6 +122,33 @@ export async function runMigrations(pgPool: Pool): Promise<void> {
       ADD COLUMN IF NOT EXISTS parent_id VARCHAR(50) REFERENCES categories(id) ON DELETE SET NULL;
   `);
 
+  // Ensure location and telemetry columns exist on search_queries
+  await pgPool.query(`
+    ALTER TABLE search_queries
+      ADD COLUMN IF NOT EXISTS location VARCHAR(100) DEFAULT 'Unknown',
+      ADD COLUMN IF NOT EXISTS state VARCHAR(100) DEFAULT 'Unknown',
+      ADD COLUMN IF NOT EXISTS categories VARCHAR(255) DEFAULT 'None',
+      ADD COLUMN IF NOT EXISTS page_browsed VARCHAR(255) DEFAULT 'None';
+  `);
+
+  // Create carts table if it does not exist
+  await pgPool.query(`
+    CREATE TABLE IF NOT EXISTS carts (
+      id VARCHAR(100) PRIMARY KEY,
+      user_id VARCHAR(100) REFERENCES users(id) ON DELETE CASCADE,
+      items JSONB NOT NULL DEFAULT '[]',
+      total_value DECIMAL(12, 2) NOT NULL DEFAULT 0,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      status VARCHAR(20) DEFAULT 'ACTIVE',
+      reminder_sent_at TIMESTAMP WITH TIME ZONE
+    );
+  `);
+
+  // Ensure reminder_sent_at column exists on carts
+  await pgPool.query(`
+    ALTER TABLE carts ADD COLUMN IF NOT EXISTS reminder_sent_at TIMESTAMP WITH TIME ZONE;
+  `);
+
   // Validation & data integrity constraints
   await pgPool.query(`
     DROP INDEX IF EXISTS products_link_unique;

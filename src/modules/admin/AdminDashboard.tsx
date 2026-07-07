@@ -17,6 +17,7 @@ import { AuditLogs } from './AuditLogs';
 import { ImportProducts } from './ImportProducts';
 import { ExportProducts } from './ExportProducts';
 import { BulkUpdates } from './BulkUpdates';
+import { AbandonedCarts } from './AbandonedCarts';
 
 export const AdminDashboard: React.FC = () => {
   const { user, loading } = useAuth();
@@ -105,11 +106,16 @@ export const AdminDashboard: React.FC = () => {
       case 'customers':
         return <CustomerManagement />;
       case 'search-analytics':
-        return <SearchAnalytics />;
+      case 'search-queries':
+        return <SearchAnalytics view="queries" />;
+      case 'search-locations':
+        return <SearchAnalytics view="locations" />;
+      case 'abandoned-carts':
+        return <AbandonedCarts />;
       case 'reports':
         return <Reports />;
       case 'audit-logs':
-        return <AuditLogs />;
+        return <AuditLogs currentRole={currentRole} />;
       case 'role-mgmt':
         return <RoleManagement currentRole={currentRole} setCurrentRole={setCurrentRole} />;
       case 'settings':

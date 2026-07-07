@@ -740,6 +740,10 @@ async function initDb() {
           id SERIAL PRIMARY KEY,
           query VARCHAR(255) NOT NULL,
           results_count INTEGER NOT NULL,
+          location VARCHAR(100) DEFAULT 'Unknown',
+          state VARCHAR(100) DEFAULT 'Unknown',
+          categories VARCHAR(255) DEFAULT 'None',
+          page_browsed VARCHAR(255) DEFAULT 'None',
           timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
 
@@ -748,6 +752,16 @@ async function initDb() {
           query VARCHAR(255) NOT NULL,
           product_id VARCHAR(50) NOT NULL,
           timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS carts (
+          id VARCHAR(100) PRIMARY KEY,
+          user_id VARCHAR(100) REFERENCES users(id) ON DELETE CASCADE,
+          items JSONB NOT NULL DEFAULT '[]',
+          total_value DECIMAL(12, 2) NOT NULL DEFAULT 0,
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          status VARCHAR(20) DEFAULT 'ACTIVE',
+          reminder_sent_at TIMESTAMP WITH TIME ZONE
         );
       `);
 

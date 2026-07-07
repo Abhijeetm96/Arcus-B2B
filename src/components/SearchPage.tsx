@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
-import { getCachedSearch, setCachedSearch } from '../core/config/searchCache'
+import { getCachedSearch, setCachedSearch, getPendingSearch, setPendingSearch } from '../core/config/searchCache'
 import { apiFetch } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 
 interface Product {
   id: string
@@ -67,6 +68,7 @@ interface SearchCategory {
 }
 
 export default function SearchPage() {
+  const { user } = useAuth()
   const [query, setQuery] = useState('')
   const [products, setProducts] = useState<Product[]>([])
   const [services, setServices] = useState<ServiceItem[]>([])
@@ -152,11 +154,32 @@ export default function SearchPage() {
       return
     }
 
-    apiFetch(`/search?q=${encodeURIComponent(query)}`)
+    const pendingPromise = getPendingSearch(query)
+    if (pendingPromise) {
+      pendingPromise.then((data) => {
+        setProducts(Array.isArray(data?.products) ? data.products : [])
+        setServices(Array.isArray(data?.services) ? data.services : [])
+        setProfessionals(Array.isArray(data?.professionals) ? data.professionals : [])
+        setCategories(Array.isArray(data?.categories) ? data.categories : [])
+        setLoading(false)
+      }).catch(() => {
+        setLoading(false)
+      })
+      return
+    }
+
+    const locationQuery = user?.city ? `&location=${encodeURIComponent(user.city)}` : '';
+    const stateQuery = user?.state ? `&state=${encodeURIComponent(user.state)}` : '';
+    
+    const fetchPromise = apiFetch(`/search?q=${encodeURIComponent(query)}${locationQuery}${stateQuery}`)
       .then((res) => {
         if (!res.ok) throw new Error('Search failed. Server error.')
         return res.json()
-      })
+      });
+
+    setPendingSearch(query, fetchPromise);
+
+    fetchPromise
       .then((data) => {
         setCachedSearch(query, data)
         setProducts(Array.isArray(data?.products) ? data.products : [])
