@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import type { User } from './types';
 import { apiFetch } from '../../lib/api';
+import { exportToCSV } from '../../utils/csvHelpers';
+import { ImportModal, type ImportField } from '../../components/ImportModal';
 
 
 export const CustomerManagement: React.FC = () => {
@@ -12,25 +14,96 @@ export const CustomerManagement: React.FC = () => {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
 
+  // Import/Export States & Handlers
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const customerImportFields: ImportField[] = [
+    { label: 'Full Name', key: 'name', required: true },
+    { label: 'Email Address', key: 'email', required: true },
+    { label: 'Phone Number', key: 'phone', required: true },
+    { label: 'Customer Type', key: 'customerType', required: true }, // INDIVIDUAL or BUSINESS
+    { label: 'Company Name', key: 'companyName' },
+    { label: 'GSTIN Number', key: 'gstNumber' },
+    { label: 'Default Password', key: 'password' }
+  ];
+
+  const fetchCustomers = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('arcus_token');
+      const res = await apiFetch('/admin/users', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to load user accounts.');
+      const data = await res.json();
+      // Filter out admin users
+      const clientUsers = data.filter((u: any) => u.role !== 'Admin' && u.role !== 'ADMIN');
+      setCustomers(clientUsers);
+    } catch (err: any) {
+      setError(err.message || 'Error fetching clients list');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleExportCustomers = () => {
+    const headers = [
+      { label: 'Customer ID', key: 'id' },
+      { label: 'Full Name', key: 'name' },
+      { label: 'Email Address', key: 'email' },
+      { label: 'Phone Number', key: 'phone' },
+      { label: 'Customer Type', key: 'customerType' },
+      { label: 'Company Name', key: 'companyName' },
+      { label: 'GSTIN Number', key: 'gstNumber' },
+      { label: 'Order Count', key: 'orderCount' },
+      { label: 'RFQ Count', key: 'rfqCount' },
+      { label: 'Lifetime Value (INR)', key: 'lifetimeValue' },
+      { label: 'BuildPoints', key: 'buildPoints' }
+    ];
+    const data = customers.map(c => ({
+      id: c.id,
+      name: c.fullName || c.full_name || c.name || '',
+      email: c.email || '',
+      phone: c.phone || c.phoneNumber || '',
+      customerType: c.customerType || 'INDIVIDUAL',
+      companyName: c.companyName || '',
+      gstNumber: c.gstNumber || '',
+      orderCount: c.orderCount || 0,
+      rfqCount: c.rfqCount || 0,
+      lifetimeValue: c.lifetimeValue || 0,
+      buildPoints: c.buildPoints || 0
+    }));
+    exportToCSV(data, headers, 'arcus_customers.csv');
+  };
+
+  const handleImportCustomerRow = async (row: Record<string, any>) => {
+    const token = localStorage.getItem('arcus_token');
+    const res = await apiFetch('/admin/users', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        name: row.name,
+        email: row.email,
+        phone: row.phone,
+        customerType: (row.customerType || 'INDIVIDUAL').toUpperCase(),
+        companyName: row.companyName || undefined,
+        gstNumber: row.gstNumber || undefined,
+        password: row.password || undefined,
+        role: 'USER'
+      })
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || `Failed to import customer ${row.name}`);
+    }
+  };
+
   useEffect(() => {
-    const fetchCustomers = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem('arcus_token');
-        const res = await apiFetch('/admin/users', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error('Failed to load user accounts.');
-        const data = await res.json();
-        // Filter out admin users
-        const clientUsers = data.filter((u: any) => u.role !== 'Admin');
-        setCustomers(clientUsers);
-      } catch (err: any) {
-        setError(err.message || 'Error fetching clients list');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchCustomers();
   }, []);
 
@@ -87,8 +160,34 @@ export const CustomerManagement: React.FC = () => {
           </select>
         </div>
 
-        <div className="text-xs bg-slate-100 text-slate-500 rounded px-md py-sm font-extrabold font-label-caps uppercase tracking-wide">
-          {filteredCustomers.length} Client Profiles
+        {/* Success message */}
+        {success && (
+          <div className="bg-green-50 text-green-800 p-md rounded border border-green-200 w-full mb-sm flex justify-between items-center text-xs font-semibold">
+            <span>{success}</span>
+            <button onClick={() => setSuccess(null)} className="material-symbols-outlined text-[16px] hover:text-slate-900">close</button>
+          </div>
+        )}
+
+        <div className="flex items-center gap-sm">
+          <button
+            onClick={handleExportCustomers}
+            className="flex items-center gap-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-md h-9 rounded font-bold text-xs transition-all shadow-xs cursor-pointer"
+            title="Export list to CSV"
+          >
+            <span className="material-symbols-outlined text-[16px]">download</span>
+            Export CSV
+          </button>
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="flex items-center gap-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-md h-9 rounded font-bold text-xs transition-all shadow-xs cursor-pointer"
+            title="Import from CSV"
+          >
+            <span className="material-symbols-outlined text-[16px]">upload_file</span>
+            Import CSV
+          </button>
+          <div className="text-xs bg-slate-100 text-slate-500 rounded px-md py-sm font-extrabold font-label-caps uppercase tracking-wide">
+            {filteredCustomers.length} Client Profiles
+          </div>
         </div>
       </div>
 
@@ -162,6 +261,20 @@ export const CustomerManagement: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Import Modal */}
+      <ImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        title="Import Customers"
+        fields={customerImportFields}
+        templateFileName="customers_import_template.csv"
+        onImportRow={handleImportCustomerRow}
+        onSuccess={(msg) => {
+          setSuccess(msg);
+          fetchCustomers();
+        }}
+      />
     </div>
   );
 };

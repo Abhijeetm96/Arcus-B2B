@@ -110,9 +110,12 @@ export const searchService = {
    * Logs query analytics (zero-result query flags and total matches) in the background.
    * 
    * @param {string} query - The search query term.
+   * @param {string} [location] - The location city of the user.
+   * @param {string} [state] - The location state of the user.
+   * @param {boolean} [logQuery=true] - Whether to write telemetry logs to the database.
    * @returns {Promise<{ products: Product[]; brands: string[]; categories: string[]; services: any[]; professionals: any[] }>} Grouped matching properties.
    */
-  async search(query: string): Promise<{
+  async search(query: string, location?: string, state?: string, logQuery: boolean = true): Promise<{
     products: Product[];
     brands: { brand: string; productCount: number }[];
     categories: { id: string; name: string; path: string }[];
@@ -361,20 +364,64 @@ export const searchService = {
       };
     });
 
-    try {
-      if (usePostgres && pgPool) {
-        await pgPool.query(
-          "INSERT INTO search_queries (query, results_count) VALUES ($1, $2)",
-          [query, results.length + matchedServices.length + matchingPros.length]
-        );
-      } else {
-        const db = await readJsonDb();
-        db.searchAnalytics = db.searchAnalytics || [];
-        db.searchAnalytics.push({ query, resultsCount: results.length, timestamp: new Date().toISOString() });
-        await writeJsonDb(db);
+    if (logQuery) {
+      try {
+        const resolvedCity = location || 'Unknown';
+        const cityStateMap: Record<string, string> = {
+          'bangalore': 'Karnataka',
+          'mumbai': 'Maharashtra',
+          'delhi ncr': 'Delhi',
+          'chennai': 'Tamil Nadu',
+          'hyderabad': 'Telangana',
+          'kolkata': 'West Bengal',
+          'pune': 'Maharashtra'
+        };
+        const resolvedState = state || cityStateMap[resolvedCity.toLowerCase()] || 'Unknown';
+        const matchedCategoryNames = categories.map(c => c.name).join(', ') || 'None';
+        const pageBrowsed = `#/search?q=${encodeURIComponent(query)}`;
+
+        let isDuplicate = false;
+        if (usePostgres && pgPool) {
+          const dupCheck = await pgPool.query(
+            "SELECT id FROM search_queries WHERE query = $1 AND timestamp > NOW() - INTERVAL '3 seconds' LIMIT 1",
+            [query]
+          );
+          isDuplicate = dupCheck.rows.length > 0;
+        } else {
+          const db = await readJsonDb();
+          const existing = db.searchAnalytics || [];
+          const last = existing
+            .filter((x: any) => (x.query || '').toLowerCase() === query.toLowerCase())
+            .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
+          if (last && (new Date().getTime() - new Date(last.timestamp).getTime()) < 3000) {
+            isDuplicate = true;
+          }
+        }
+
+        if (!isDuplicate) {
+          if (usePostgres && pgPool) {
+            await pgPool.query(
+              "INSERT INTO search_queries (query, results_count, location, state, categories, page_browsed) VALUES ($1, $2, $3, $4, $5, $6)",
+              [query, results.length + matchedServices.length + matchingPros.length, resolvedCity, resolvedState, matchedCategoryNames, pageBrowsed]
+            );
+          } else {
+            const db = await readJsonDb();
+            db.searchAnalytics = db.searchAnalytics || [];
+            db.searchAnalytics.push({
+              query,
+              resultsCount: results.length,
+              location: resolvedCity,
+              state: resolvedState,
+              categories: matchedCategoryNames,
+              pageBrowsed,
+              timestamp: new Date().toISOString()
+            });
+            await writeJsonDb(db);
+          }
+        }
+      } catch (err) {
+        console.error('Error logging search query:', err);
       }
-    } catch (err) {
-      console.error('Error logging search query:', err);
     }
 
     const brandsMap = new Map<string, number>();
@@ -427,14 +474,16 @@ export const searchService = {
   /**
    * Generates search analytics reports for the Admin dashboard.
    * 
-   * @returns {Promise<{ totalSearches: number; uniqueQueriesCount: number; totalClicks: number; topQueries: any[]; zeroResults: any[] }>} Search insights collections.
+   * @returns {Promise<{ totalSearches: number; uniqueQueriesCount: number; totalClicks: number; topQueries: any[]; zeroResults: any[]; locationMetrics: any[]; detailedLogs: any[] }>} Search insights collections.
    */
   async getAnalytics(): Promise<{
     totalSearches: number;
     uniqueQueriesCount: number;
     totalClicks: number;
-    topQueries: { query: string; count: number; clickedCount?: number }[];
+    topQueries: { query: string; count: number; clickedCount?: number; locations?: string }[];
     zeroResults: { query: string; count: number }[];
+    locationMetrics: { city: string; count: number }[];
+    detailedLogs: { id: number | string; timestamp: string; query: string; resultsCount: number; city: string; state: string; categories: string; pageBrowsed: string }[];
   }> {
     if (usePostgres && pgPool) {
       const totalSearchesRes = await pgPool.query("SELECT COUNT(*)::integer as count FROM search_queries");
@@ -443,7 +492,8 @@ export const searchService = {
 
       const topRes = await pgPool.query(`
         SELECT q.query, COUNT(*)::integer as count,
-               (SELECT COUNT(*)::integer FROM search_clicks c WHERE LOWER(c.query) = LOWER(q.query))::integer as "clickedCount"
+               (SELECT COUNT(*)::integer FROM search_clicks c WHERE LOWER(c.query) = LOWER(q.query))::integer as "clickedCount",
+               string_agg(DISTINCT COALESCE(q.location, 'Unknown'), ', ') as locations
         FROM search_queries q
         GROUP BY q.query
         ORDER BY count DESC
@@ -459,12 +509,42 @@ export const searchService = {
         LIMIT 10
       `);
 
+      const locRes = await pgPool.query(`
+        SELECT COALESCE(location, 'Unknown') as city, COUNT(*)::integer as count
+        FROM search_queries
+        GROUP BY location
+        ORDER BY count DESC
+        LIMIT 10
+      `);
+
+      const detailedRes = await pgPool.query(`
+        SELECT q.id, q.timestamp::text as timestamp, q.query, q.results_count as "resultsCount",
+               COALESCE(q.location, 'Unknown') as city,
+               COALESCE(q.state, 'Unknown') as state,
+               COALESCE(q.categories, 'None') as categories,
+               COALESCE(
+                 (SELECT p.name FROM search_clicks c JOIN products p ON c.product_id = p.id WHERE LOWER(c.query) = LOWER(q.query) ORDER BY c.timestamp DESC LIMIT 1),
+                 q.page_browsed,
+                 'None'
+               ) as "pageBrowsed"
+        FROM search_queries q
+        ORDER BY q.timestamp DESC
+        LIMIT 50
+      `);
+
       return {
         totalSearches: totalSearchesRes.rows[0]?.count || 0,
         uniqueQueriesCount: uniqueQueriesRes.rows[0]?.count || 0,
         totalClicks: totalClicksRes.rows[0]?.count || 0,
-        topQueries: topRes.rows,
-        zeroResults: zeroRes.rows
+        topQueries: topRes.rows.map(row => ({
+          query: row.query,
+          count: row.count,
+          clickedCount: row.clickedCount,
+          locations: row.locations
+        })),
+        zeroResults: zeroRes.rows,
+        locationMetrics: locRes.rows,
+        detailedLogs: detailedRes.rows
       };
     } else {
       const db = await readJsonDb();
@@ -482,29 +562,71 @@ export const searchService = {
 
       const qCount: Record<string, number> = {};
       const zeroQCount: Record<string, number> = {};
+      const locationsMap: Record<string, Set<string>> = {};
+      const cityCount: Record<string, number> = {};
       
       queries.forEach((q: any) => {
         if (!q) return;
         const key = q.query ?? 'Unknown';
         qCount[key] = (qCount[key] || 0) + 1;
+        
         if (q.resultsCount === 0) {
           zeroQCount[key] = (zeroQCount[key] || 0) + 1;
         }
+
+        const normKey = key.toLowerCase();
+        if (!locationsMap[normKey]) {
+          locationsMap[normKey] = new Set();
+        }
+        locationsMap[normKey].add(q.location || 'Unknown');
+
+        const loc = q.location || 'Unknown';
+        cityCount[loc] = (cityCount[loc] || 0) + 1;
       });
 
       const topQueries = Object.entries(qCount).map(([query, count]) => {
         const clickedCount = clicks.filter((c: any) => (c?.query ?? '').toLowerCase() === query.toLowerCase()).length;
-        return { query, count, clickedCount };
+        const locations = Array.from(locationsMap[query.toLowerCase()] || []).join(', ');
+        return { query, count, clickedCount, locations };
       }).sort((a, b) => b.count - a.count).slice(0, 10);
 
       const zeroResults = Object.entries(zeroQCount).map(([query, count]) => ({ query, count })).sort((a, b) => b.count - a.count).slice(0, 10);
+
+      const locationMetrics = Object.entries(cityCount).map(([city, count]) => ({
+        city,
+        count
+      })).sort((a, b) => b.count - a.count).slice(0, 10);
+
+      const allProducts = await getAllProducts();
+      const detailedLogs = queries.map((q: any, index: number) => {
+        const click = clicks.find((c: any) => c.query.toLowerCase() === q.query.toLowerCase());
+        let pageBrowsed = q.pageBrowsed || `#/search?q=${encodeURIComponent(q.query)}`;
+        if (click) {
+          const prod = allProducts.find((p: any) => p.id === click.productId);
+          if (prod) {
+            pageBrowsed = `Product: ${prod.name}`;
+          }
+        }
+        return {
+          id: q.id || index,
+          timestamp: q.timestamp || new Date().toISOString(),
+          query: q.query || 'Unknown',
+          resultsCount: q.resultsCount || 0,
+          city: q.location || 'Unknown',
+          state: q.state || 'Unknown',
+          categories: q.categories || 'None',
+          pageBrowsed
+        };
+      }).sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 50);
 
       return {
         totalSearches,
         uniqueQueriesCount,
         totalClicks,
         topQueries,
-        zeroResults
+        zeroResults,
+        locationMetrics,
+        detailedLogs
       };
     }
   }

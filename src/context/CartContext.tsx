@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { useNotification } from '../hooks/useNotification';
+import { apiFetch } from '../lib/api';
 
 export interface CartItem {
   id: string;
@@ -67,7 +68,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     // Dispatch event for components that still listen to simulated cart count
     window.dispatchEvent(new Event('arcus-cart-updated'));
-  }, [cartItems]);
+
+    if (user) {
+      apiFetch('/cart/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: cartItems })
+      }).catch((err) => {
+        console.warn('Could not sync cart to backend:', err);
+      });
+    }
+  }, [cartItems, user]);
 
   const getPriceForQty = (priceTiers: any[] | undefined, basePrice: number, qty: number): number => {
     if (!priceTiers || priceTiers.length === 0) return basePrice;

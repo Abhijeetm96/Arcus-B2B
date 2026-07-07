@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import type { Category } from './types';
 import { apiFetch } from '../../lib/api';
+import { exportToCSV } from '../../utils/csvHelpers';
+import { ImportModal, type ImportField } from '../../components/ImportModal';
 
 export const CategoryManagement: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -15,6 +17,55 @@ export const CategoryManagement: React.FC = () => {
   const [deleteConfirmCategory, setDeleteConfirmCategory] = useState<Category | null>(null);
   const [transferTargetId, setTransferTargetId] = useState<string>('');
   const [shouldTransfer, setShouldTransfer] = useState<boolean>(true);
+
+  // Import/Export State & Handlers
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+  const categoryImportFields: ImportField[] = [
+    { label: 'Category ID', key: 'id', required: true },
+    { label: 'Category Name', key: 'name', required: true },
+    { label: 'Icon Code', key: 'icon' },
+    { label: 'Total Products count', key: 'count' },
+    { label: 'Parent ID', key: 'parentId' }
+  ];
+
+  const handleExportCategories = () => {
+    const headers = [
+      { label: 'Category ID', key: 'id' },
+      { label: 'Category Name', key: 'name' },
+      { label: 'Icon Code', key: 'icon' },
+      { label: 'Total Products count', key: 'count' },
+      { label: 'Parent ID', key: 'parentId' }
+    ];
+    exportToCSV(categories, headers, 'arcus_categories.csv');
+  };
+
+  const handleImportCategoryRow = async (row: Record<string, any>) => {
+    const token = localStorage.getItem('arcus_token');
+    const exists = categories.some(c => c.id === row.id);
+    const method = exists ? 'PUT' : 'POST';
+    const url = exists ? `/admin/categories/${row.id}` : '/admin/categories';
+
+    const res = await apiFetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        id: row.id,
+        name: row.name,
+        icon: row.icon || 'folder',
+        count: row.count || '0 products',
+        parentId: row.parentId || null
+      })
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || `Failed to import category ${row.name}`);
+    }
+  };
 
   const fetchCategories = async () => {
     setLoading(true);
@@ -173,13 +224,31 @@ export const CategoryManagement: React.FC = () => {
           <h4 className="font-extrabold text-slate-900 text-body-md">Procurement Categories Tree</h4>
           <p className="text-xs text-slate-400 font-medium mt-0.5">Manage category tree mapping for catalog browsing</p>
         </div>
-        <button
-          onClick={openAddModal}
-          className="flex items-center gap-xs bg-primary-container text-on-primary-container hover:bg-[#fabd00] px-lg h-11 rounded font-bold text-xs transition-all shadow-sm cursor-pointer"
-        >
-          <span className="material-symbols-outlined text-[16px]">add</span>
-          Add Category
-        </button>
+        <div className="flex items-center gap-sm">
+          <button
+            onClick={handleExportCategories}
+            className="flex items-center gap-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-md h-11 rounded font-bold text-xs transition-all shadow-xs cursor-pointer"
+            title="Export Categories to CSV"
+          >
+            <span className="material-symbols-outlined text-[16px]">download</span>
+            Export
+          </button>
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="flex items-center gap-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-md h-11 rounded font-bold text-xs transition-all shadow-xs cursor-pointer"
+            title="Import Categories from CSV"
+          >
+            <span className="material-symbols-outlined text-[16px]">upload_file</span>
+            Import
+          </button>
+          <button
+            onClick={openAddModal}
+            className="flex items-center gap-xs bg-primary text-slate-950 hover:bg-[#fabd00] px-lg h-11 rounded font-bold text-xs transition-all shadow-sm cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[16px]">add</span>
+            Add Category
+          </button>
+        </div>
       </div>
 
       {/* Categories List */}
@@ -188,7 +257,7 @@ export const CategoryManagement: React.FC = () => {
           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded overflow-hidden shadow-sm max-w-4xl">
+        <div className="bg-white border border-slate-200 rounded overflow-hidden shadow-sm w-full">
           <table className="w-full text-body-sm text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
@@ -533,6 +602,20 @@ export const CategoryManagement: React.FC = () => {
           </div>
         );
       })()}
+
+      {/* Import Modal */}
+      <ImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        title="Import Categories"
+        fields={categoryImportFields}
+        templateFileName="categories_import_template.csv"
+        onImportRow={handleImportCategoryRow}
+        onSuccess={(msg) => {
+          setSuccess(msg);
+          fetchCategories();
+        }}
+      />
     </div>
   );
 };

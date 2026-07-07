@@ -35,6 +35,8 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   analytics: Lucide.BarChart,
   description: Lucide.FileCode,
   history: Lucide.History,
+  search: Lucide.Search,
+  pin_drop: Lucide.MapPin,
   admin_panel_settings: Lucide.ShieldAlert,
   settings: Lucide.Settings,
 };
@@ -179,15 +181,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       ]
     },
     {
-      id: 'inventory-group',
+      id: 'inventory-overview',
       name: 'Inventory',
       icon: 'warehouse',
-      isGroup: true,
-      check: (u: any) => perm.canViewInventory(u),
-      subItems: [
-        { id: 'inventory-overview', name: 'Overview', icon: 'dashboard_customize', check: (u: any) => perm.canViewInventory(u) },
-        { id: 'stock-adjustments', name: 'Stock Adjustments', icon: 'settings_backup_restore', check: (u: any) => perm.canEditInventory(u) }
-      ]
+      isGroup: false,
+      check: (u: any) => perm.canViewInventory(u)
     },
     {
       id: 'orders-group',
@@ -209,11 +207,22 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       check: (u: any) => perm.canManageCustomers(u) 
     },
     { 
-      id: 'search-analytics', 
+      id: 'search-group', 
       name: 'Search Analytics', 
-      icon: 'analytics', 
+      icon: 'search', 
+      isGroup: true,
+      check: (u: any) => perm.canManageProducts(u),
+      subItems: [
+        { id: 'search-queries', name: 'Search Queries', icon: 'analytics', check: (u: any) => perm.canManageProducts(u) },
+        { id: 'search-locations', name: 'Geographic Demand', icon: 'pin_drop', check: (u: any) => perm.canManageProducts(u) }
+      ]
+    },
+    { 
+      id: 'abandoned-carts', 
+      name: 'Abandoned Carts', 
+      icon: 'shopping_cart', 
       isGroup: false,
-      check: (u: any) => perm.canManageProducts(u) 
+      check: (u: any) => perm.canViewReports(u) 
     },
     { 
       id: 'reports', 
@@ -399,7 +408,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   ? 'justify-center py-2.5 rounded-lg'
                   : 'gap-3 px-4 py-2.5 rounded'
               } ${
-                activeSection === item.id
+                activeSection === item.id || (item.id === 'inventory-overview' && activeSection === 'stock-adjustments')
                   ? 'bg-primary text-slate-950 shadow-sm font-bold'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
               }`}

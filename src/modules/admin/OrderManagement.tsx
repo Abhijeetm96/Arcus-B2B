@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import type { Order } from './types';
 import { apiFetch } from '../../lib/api';
+import { exportToCSV } from '../../utils/csvHelpers';
 
 interface OrderManagementProps {
   type: 'B2B' | 'B2C' | 'SERVICES';
@@ -139,6 +140,36 @@ export const OrderManagement: React.FC<OrderManagementProps> = ({ type }) => {
     return matchSearch;
   });
 
+  const handleExport = () => {
+    if (type === 'SERVICES') {
+      const headers = [
+        { label: 'Booking ID', key: 'id' },
+        { label: 'Client Name', key: 'name' },
+        { label: 'Phone', key: 'phone' },
+        { label: 'Service Booked', key: 'service_name' },
+        { label: 'Preferred Date', key: 'date' },
+        { label: 'Client Notes', key: 'notes' },
+        { label: 'Timestamp', key: 'timestamp' }
+      ];
+      exportToCSV(filteredBookings, headers, `arcus_service_bookings.csv`);
+    } else {
+      const headers = [
+        { label: 'Order ID', key: 'id' },
+        { label: 'Customer ID', key: 'userId' },
+        { label: 'Order Timestamp', key: 'timestamp' },
+        { label: 'Date', key: 'date' },
+        { label: 'Items Summary', key: 'products' },
+        { label: 'Status', key: 'status' },
+        { label: 'Total Amount (INR)', key: 'amount' },
+        { label: 'Shipping Address', key: 'shippingAddress' },
+        { label: 'Billing Address', key: 'billingAddress' },
+        { label: 'GST Number', key: 'gstNumber' },
+        { label: 'Payment Method', key: 'paymentMethod' }
+      ];
+      exportToCSV(filteredOrders, headers, `arcus_orders_${type.toLowerCase()}.csv`);
+    }
+  };
+
   return (
     <div className="space-y-md text-left">
       {/* Notifications */}
@@ -187,8 +218,18 @@ export const OrderManagement: React.FC<OrderManagementProps> = ({ type }) => {
           )}
         </div>
 
-        <div className="text-xs bg-slate-100 text-slate-500 rounded px-md py-sm font-extrabold font-label-caps uppercase tracking-wide">
-          {type === 'SERVICES' ? `${filteredBookings.length} Bookings` : `${filteredOrders.length} Orders`}
+        <div className="flex items-center gap-sm">
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-md h-9 rounded font-bold text-xs transition-all shadow-xs cursor-pointer"
+            title="Export list to CSV"
+          >
+            <span className="material-symbols-outlined text-[16px]">download</span>
+            Export CSV
+          </button>
+          <div className="text-xs bg-slate-100 text-slate-500 rounded px-md py-sm font-extrabold font-label-caps uppercase tracking-wide">
+            {type === 'SERVICES' ? `${filteredBookings.length} Bookings` : `${filteredOrders.length} Orders`}
+          </div>
         </div>
       </div>
 

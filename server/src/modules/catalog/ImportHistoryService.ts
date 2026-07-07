@@ -13,6 +13,15 @@ export async function addImportHistory(log: ImportHistory): Promise<ImportHistor
         id, import_date, imported_by, file_name, mode,
         products_added, products_updated, products_failed, error_report
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      ON CONFLICT (id) DO UPDATE SET
+        import_date = EXCLUDED.import_date,
+        imported_by = EXCLUDED.imported_by,
+        file_name = EXCLUDED.file_name,
+        mode = EXCLUDED.mode,
+        products_added = EXCLUDED.products_added,
+        products_updated = EXCLUDED.products_updated,
+        products_failed = EXCLUDED.products_failed,
+        error_report = EXCLUDED.error_report
     `;
     const values = [
       log.id,

@@ -4,4 +4,6 @@ export interface AuditLog {
   details: string;
   performedBy: string;
   timestamp?: string;
+  pendingDeletion?: boolean;
+  deleteScheduledAt?: string;
 }

@@ -53,7 +53,7 @@ export const ExportProducts: React.FC = () => {
       });
 
       // Simple browser download trigger
-      const downloadUrl = `/api/admin/catalog/export?${params.toString()}`;
+      const downloadUrl = `/admin/catalog/export?${params.toString()}`;
       
       const response = await apiFetch(downloadUrl, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -186,7 +186,7 @@ export const ExportProducts: React.FC = () => {
             </>
           ) : (
             <>
-              <span className="material-symbols-outlined text-[18px]">download_sheet</span>
+              <span className="material-symbols-outlined text-[18px]">download</span>
               Generate & Download Catalog
             </>
           )}

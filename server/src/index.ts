@@ -12,7 +12,7 @@ import {
   getOtpByUserId, incrementOtpAttempts, deleteOtp, deleteOtpsByUserId, getOrderById, updateOrderStatus, deleteUserByEmail, 
   deleteUserByGst, searchService, getAppSettings, updateAppSettings, getAllCategories, addCategory, updateCategory, 
   deleteCategory, addProduct, updateProduct, deleteProduct, updateProductInventory, updateRfqStatus, Order,
-  getAllBrands, getBrandById, addBrand, updateBrand, deleteBrand, logAction, getAllAuditLogs, recordAdjustment, getAdjustmentHistory,
+  getAllBrands, getBrandById, addBrand, updateBrand, deleteBrand, logAction, getAllAuditLogs, requestClearAuditLogs, getClearRequestTime, cancelClearAuditLogs, recordAdjustment, getAdjustmentHistory,
   getAllOrders, getAllUsers,
   validateImportSheet, matchZipImages, generateTemplate, exportCatalog, executeImport, executeBulkUpdates, getAllImportHistory, getImportHistoryById, HEADER_MAPPING
 } from './db';
@@ -23,6 +23,7 @@ import adminRoutes from './routes';
 import { registerEventHandlers } from './events/registerHandlers';
 import { dashboardRepo } from './controllers/dashboard.controller';
 import { MockNotificationProvider } from './domain/shared/NotificationProvider';
+import { CartService } from './modules/cart/CartService';
 
 import { authenticateUser, requireAdmin } from './middlewares/auth.middleware';
 import * as fs from 'fs';
@@ -268,6 +269,28 @@ app.post('/api/products/:id/sync-inventory', async (req, res) => {
   }
 });
 
+function getClientLocationDetails(req: any): { city: string; state: string } {
+  const ip = getClientIp(req);
+  const cityStateMap: Record<string, string> = {
+    'Bangalore': 'Karnataka',
+    'Mumbai': 'Maharashtra',
+    'Delhi NCR': 'Delhi',
+    'Chennai': 'Tamil Nadu',
+    'Hyderabad': 'Telangana',
+    'Kolkata': 'West Bengal',
+    'Pune': 'Maharashtra'
+  };
+
+  if (!ip || ip === '::1' || ip === '127.0.0.1' || ip.startsWith('192.168.') || ip.startsWith('10.') || ip.startsWith('172.')) {
+    const mockCities = ['Bangalore', 'Mumbai', 'Delhi NCR', 'Chennai', 'Hyderabad', 'Kolkata', 'Pune'];
+    const randomIndex = Math.floor(Math.random() * mockCities.length);
+    const city = mockCities[randomIndex];
+    return { city, state: cityStateMap[city] || 'Unknown' };
+  }
+
+  return { city: 'Mumbai', state: 'Maharashtra' }; // Default fallback
+}
+
 app.get('/api/search', async (req, res) => {
   try {
     const query = String(req.query.q || '').trim();
@@ -275,7 +298,11 @@ app.get('/api/search', async (req, res) => {
       return res.json({ products: [], brands: [], categories: [], services: [], professionals: [] });
     }
 
-    const searchResults = await searchService.search(query);
+    const resolvedLoc = getClientLocationDetails(req);
+    const location = req.query.location ? String(req.query.location).trim() : resolvedLoc.city;
+    const state = req.query.state ? String(req.query.state).trim() : resolvedLoc.state;
+    const suggest = req.query.suggest === 'true';
+    const searchResults = await searchService.search(query, location, state, !suggest);
     const isAdmin = await checkIsAdmin(req);
 
     // Sanitize products to remove procurement fields unless user is Admin
@@ -812,6 +839,9 @@ app.post('/api/orders', async (req, res) => {
       pointsEarned: pointsEarned,
       createdAt: new Date().toISOString()
     });
+
+    // Complete the user's cart upon checking out
+    await CartService.completeCart(userId);
 
     res.status(201).json(newOrder);
   } catch (err: any) {
@@ -2320,6 +2350,26 @@ app.post('/api/auth/verify-email', async (req, res) => {
   }
 });
 
+app.post('/api/cart/sync', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized. No session token found.' });
+    }
+    const token = authHeader.split(' ')[1];
+    const userId = verifyToken(token);
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized. Session expired or invalid.' });
+    }
+    const { items } = req.body;
+    await CartService.syncCart(userId, items || []);
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error('Error in POST /api/cart/sync:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.post('/api/users/update-profile', async (req, res) => {
   try {
     const ip = getClientIp(req);
@@ -3327,6 +3377,87 @@ app.get('/api/admin/users', adminAuthMiddleware, async (req, res) => {
   }
 });
 
+app.post('/api/admin/users', adminAuthMiddleware, async (req, res) => {
+  try {
+    const { name, email, phone, password, companyName, customerType, gstNumber, role, adminRole } = req.body;
+
+    if (!name || !email || !phone) {
+      return res.status(400).json({ error: 'Name, email, and phone are required.' });
+    }
+
+    // Default password if not provided
+    const plainPassword = password || 'Arcus@123';
+
+    // Name validation
+    const nameV = validateName(name, 'Name');
+    if (!nameV.valid) return res.status(400).json({ error: nameV.error });
+
+    // Email validation
+    const emailV = validateEmail(email);
+    if (!emailV.valid) return res.status(400).json({ error: emailV.error });
+
+    // Phone validation
+    const phoneV = validatePhone(phone);
+    if (!phoneV.valid) return res.status(400).json({ error: phoneV.error });
+    const cleanPhone = normalizePhone(phone);
+
+    // Uniqueness checks
+    const cleanEmail = email.trim().toLowerCase();
+    const existingEmail = await getUserByEmail(cleanEmail);
+    if (existingEmail) {
+      return res.status(400).json({ error: `A user with email ${cleanEmail} already exists.` });
+    }
+    const existingPhone = await getUserByPhone(cleanPhone);
+    if (existingPhone) {
+      return res.status(400).json({ error: `A user with phone number ${cleanPhone} already exists.` });
+    }
+
+    const targetCustomerType = customerType || 'INDIVIDUAL';
+    const isB2B = targetCustomerType === 'BUSINESS';
+
+    if (isB2B) {
+      if (!companyName || companyName.trim().length < 3) {
+        return res.status(400).json({ error: 'Business name must be at least 3 characters.' });
+      }
+      if (gstNumber) {
+        const gstV = validateGST(gstNumber);
+        if (!gstV.valid) return res.status(400).json({ error: gstV.error });
+        const existingGst = await getUserByGst(gstNumber);
+        if (existingGst) {
+          return res.status(400).json({ error: 'An account with this GST number already exists.' });
+        }
+      }
+    }
+
+    const salt = generateSalt();
+    const hash = hashPassword(plainPassword, salt);
+
+    const newUser = await addUser({
+      name: sanitizeText(name),
+      email: cleanEmail,
+      phone: cleanPhone,
+      passwordHash: hash,
+      passwordSalt: salt,
+      companyName: companyName ? sanitizeText(companyName) : undefined,
+      role: role || 'USER',
+      customerType: targetCustomerType,
+      gstNumber: gstNumber ? gstNumber.trim().toUpperCase() : undefined,
+      adminRole: adminRole || 'CUSTOMER_SUPPORT',
+      email_verified: true
+    });
+
+    // Write audit log
+    const adminUser = (req as any).adminUser;
+    const performedBy = adminUser.fullName || adminUser.name || 'Admin';
+    await logAction('SETTINGS_CHANGE', `User created via admin portal: ${newUser.email} (Type: ${newUser.customerType}, Role: ${newUser.role})`, performedBy);
+
+    res.status(201).json(newUser);
+  } catch (err: any) {
+    console.error('Error creating user via admin:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.get('/api/admin/products', adminAuthMiddleware, async (req, res) => {
   try {
     const products = await getAllProducts();
@@ -3684,6 +3815,76 @@ app.get('/api/admin/audit-logs', adminAuthMiddleware, async (req, res) => {
   }
 });
 
+app.post('/api/admin/audit-logs/clear', adminAuthMiddleware, async (req, res) => {
+  try {
+    const adminUser = (req as any).adminUser;
+    const { password } = req.body;
+    const simulatedRole = req.headers['x-simulated-role'] || adminUser.adminRole || 'SUPER_ADMIN';
+
+    if (simulatedRole !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: 'Forbidden. Only Super Admins can clear audit logs.' });
+    }
+
+    if (!password) {
+      return res.status(400).json({ error: 'Password is required to clear audit logs.' });
+    }
+
+    const computedHash = hashPassword(password, adminUser.passwordSalt);
+    if (computedHash !== adminUser.passwordHash) {
+      return res.status(401).json({ error: 'Incorrect password.' });
+    }
+
+    const timestamp = new Date().toISOString();
+    await requestClearAuditLogs(timestamp);
+
+    // Immutable settings change log entry
+    await logAction(
+      'SETTINGS_CHANGE',
+      `Audit logs deletion scheduled by Super Admin (${adminUser.email}). Permanently purging in 48 hours.`,
+      adminUser.email
+    );
+
+    res.json({ message: 'Audit logs clear request scheduled successfully. Deletion will occur in 48 hours.' });
+  } catch (err) {
+    console.error('Error clearing audit logs:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/admin/audit-logs/clear-schedule', adminAuthMiddleware, async (req, res) => {
+  try {
+    const clearRequestedAt = await getClearRequestTime();
+    res.json({ clearRequestedAt });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/admin/audit-logs/restore', adminAuthMiddleware, async (req, res) => {
+  try {
+    const adminUser = (req as any).adminUser;
+    const simulatedRole = req.headers['x-simulated-role'] || adminUser.adminRole || 'SUPER_ADMIN';
+
+    if (simulatedRole !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: 'Forbidden. Only Super Admins can restore audit logs.' });
+    }
+
+    await cancelClearAuditLogs();
+
+    // Log the restore action
+    await logAction(
+      'SETTINGS_CHANGE',
+      `Audit logs deletion schedule cancelled & restored by Super Admin (${adminUser.email}).`,
+      adminUser.email
+    );
+
+    res.json({ message: 'Audit logs cleared status restored successfully.' });
+  } catch (err) {
+    console.error('Error restoring audit logs:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Inventory Adjustments Endpoints
 app.get('/api/admin/inventory/adjustments', adminAuthMiddleware, async (req, res) => {
   try {
@@ -3857,6 +4058,27 @@ app.post('/api/admin/rfqs/:id/convert-to-order', adminAuthMiddleware, async (req
     res.status(201).json({ success: true, order: newOrder });
   } catch (err: any) {
     console.error('Error converting RFQ to order:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/admin/abandoned-carts', adminAuthMiddleware, async (req, res) => {
+  try {
+    const carts = await CartService.getAbandonedCarts();
+    res.json(carts);
+  } catch (err: any) {
+    console.error('Error in GET /api/admin/abandoned-carts:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/admin/abandoned-carts/:id/remind', adminAuthMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    await CartService.setReminderSent(id);
+    res.json({ success: true, message: 'Recovery reminder notification sent successfully.' });
+  } catch (err: any) {
+    console.error('Error in POST /api/admin/abandoned-carts/:id/remind:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
