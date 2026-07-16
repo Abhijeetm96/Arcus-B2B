@@ -42,8 +42,17 @@ app.use('/api', adminRoutes);
 // Attachment secure download endpoint
 app.get('/api/attachments/download/:filename', authenticateUser, requireAdmin, (req: any, res: express.Response) => {
   const { filename } = req.params;
-  const uploadsDir = path.join(__dirname, '../uploads');
-  const filePath = path.join(uploadsDir, filename);
+
+  if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+    return res.status(400).json({ error: 'Invalid filename: Path traversal characters detected.' });
+  }
+
+  const uploadsDir = path.resolve(path.join(__dirname, '../uploads'));
+  const filePath = path.resolve(path.join(uploadsDir, filename));
+
+  if (!filePath.startsWith(uploadsDir + path.sep)) {
+    return res.status(400).json({ error: 'Access denied: Path traversal attempt detected.' });
+  }
 
   console.log(`[Attachment Download] Request for file: ${filename}, filePath: ${filePath}`);
 
