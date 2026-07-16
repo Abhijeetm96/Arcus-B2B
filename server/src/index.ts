@@ -36,7 +36,30 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+const allowedOriginsStr = process.env.ALLOWED_ORIGINS || '';
+if (!process.env.ALLOWED_ORIGINS) {
+  console.warn('\x1b[33m%s\x1b[0m', 'WARNING: ALLOWED_ORIGINS environment variable is not set. All cross-origin requests will be rejected (fail closed).');
+}
+
+const allowedOrigins = allowedOriginsStr
+  .split(',')
+  .map(o => o.trim())
+  .filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // If request has no origin (like curl, postman, or server-to-server calls), allow it
+    if (!origin) {
+      return callback(null, true);
+    }
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    // Fail closed: reject request if origin is not explicitly allowlisted
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true
+}));
 app.use(express.json({ limit: '1mb' }));
 app.use('/api', adminRoutes);
 
