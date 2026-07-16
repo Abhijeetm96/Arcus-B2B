@@ -395,9 +395,20 @@ export const OrderManagement: React.FC<OrderManagementProps> = ({ type }) => {
                   <span className="text-primary">₹{(typeof selectedOrder.amount === 'number' ? selectedOrder.amount : parseFloat(String(selectedOrder.amount).replace(/[^\d.]/g, '')) || 0).toLocaleString('en-IN')}</span>
                 </div>
                 <button
-                  onClick={() => {
-                    const token = localStorage.getItem('arcus_token') || '';
-                    window.open(`/api/documents/${selectedOrder.id}?format=pdf&download=true&token=${encodeURIComponent(token)}`, '_blank');
+                  onClick={async () => {
+                    try {
+                      const response = await apiFetch(`/api/documents/${selectedOrder.id}?format=pdf&download=true`);
+                      if (!response.ok) throw new Error('Failed to fetch invoice');
+                      const blob = await response.blob();
+                      const fileURL = URL.createObjectURL(blob);
+                      window.open(fileURL, '_blank');
+                      setTimeout(() => {
+                        URL.revokeObjectURL(fileURL);
+                      }, 10000);
+                    } catch (err) {
+                      console.error('Invoice download failed:', err);
+                      alert('Failed to download invoice PDF.');
+                    }
                   }}
                   className="w-full mt-md h-9 border border-slate-200 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all"
                 >

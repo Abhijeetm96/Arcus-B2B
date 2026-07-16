@@ -428,10 +428,21 @@ export const QuotationBuilder: React.FC = () => {
     }
   };
 
-  const handlePrintPdf = () => {
+  const handlePrintPdf = async () => {
     if (!quoteId) return;
-    const token = localStorage.getItem('arcus_token') || '';
-    window.open(`/api/documents/${quoteId}?format=pdf&download=true&token=${encodeURIComponent(token)}`, '_blank');
+    try {
+      const response = await apiFetch(`/api/documents/${quoteId}?format=pdf&download=true`);
+      if (!response.ok) throw new Error('Failed to fetch quotation');
+      const blob = await response.blob();
+      const fileURL = URL.createObjectURL(blob);
+      window.open(fileURL, '_blank');
+      setTimeout(() => {
+        URL.revokeObjectURL(fileURL);
+      }, 10000);
+    } catch (err) {
+      console.error('Quotation download failed:', err);
+      alert('Failed to download quotation PDF.');
+    }
   };
 
   const handleCompareVersions = async (v1Num: number, v2Num: number) => {

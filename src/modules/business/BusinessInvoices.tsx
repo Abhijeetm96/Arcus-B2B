@@ -3,6 +3,7 @@ import { useOrders } from '../../core/hooks/useOrders';
 import { formatCurrency, formatDate } from '../../core/config/format';
 import { useAuth } from '../../context/AuthContext';
 import { EmptyState } from '../../components/feedback/EmptyState/EmptyState';
+import { apiFetch } from '../../lib/api';
 
 export const BusinessInvoices: React.FC = () => {
   const { user } = useAuth();
@@ -84,9 +85,20 @@ export const BusinessInvoices: React.FC = () => {
                       <td className="p-md font-bold text-green-700">{formatCurrency(claimableGst)}</td>
                       <td className="p-md text-right">
                         <button
-                          onClick={() => {
-                            const token = localStorage.getItem('arcus_token') || '';
-                            window.open(`/api/documents/${o.id}?format=pdf&download=true&token=${encodeURIComponent(token)}`, '_blank');
+                          onClick={async () => {
+                            try {
+                              const response = await apiFetch(`/api/documents/${o.id}?format=pdf&download=true`);
+                              if (!response.ok) throw new Error('Failed to fetch invoice');
+                              const blob = await response.blob();
+                              const fileURL = URL.createObjectURL(blob);
+                              window.open(fileURL, '_blank');
+                              setTimeout(() => {
+                                URL.revokeObjectURL(fileURL);
+                              }, 10000);
+                            } catch (err) {
+                              console.error('Invoice download failed:', err);
+                              alert('Failed to download invoice PDF.');
+                            }
                           }}
                           className="px-md py-1 border border-slate-200 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-[10px] flex items-center gap-xs ml-auto"
                         >

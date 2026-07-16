@@ -10,8 +10,6 @@ export async function authenticateUser(req: any, res: Response, next: NextFuncti
     
     if (authHeader && authHeader.startsWith('Bearer ')) {
       token = authHeader.split(' ')[1];
-    } else if (req.query.token) {
-      token = req.query.token as string;
     }
 
     if (!token) {

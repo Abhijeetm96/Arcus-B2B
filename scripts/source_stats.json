@@ -1,0 +1,2511 @@
+[
+  {
+    "path": "server/src/index.ts",
+    "lineCount": 4175,
+    "sizeBytes": 153087,
+    "importLines": [
+      "import express from 'express';\r",
+      "import cors from 'cors';\r",
+      "import dotenv from 'dotenv';\r",
+      "import crypto from 'crypto';\r",
+      "import argon2 from 'argon2';\r",
+      "import https from 'https';\r",
+      "import multer from 'multer';\r",
+      "import * as XLSX from 'xlsx';\r",
+      "import { \r",
+      "import { validateEmail, validatePhone, validatePassword, validateName, validateBusinessName, validateGST, validateExperience, validateURL, normalizePhone, sanitizeText, trimAndClean, RateLimiter } from '../../shared/validation';\r",
+      "import { createQuotation, getQuotationById, getQuotationsForRfq, updateQuotationStatus, convertQuotationToOrder } from './modules/rfq/QuotationService';\r",
+      "import { checkAndSeedDevUsers } from './database/seedRunner';\r",
+      "import adminRoutes from './routes';\r",
+      "import { registerEventHandlers } from './events/registerHandlers';\r",
+      "import { dashboardRepo } from './controllers/dashboard.controller';\r",
+      "import { MockNotificationProvider } from './domain/shared/NotificationProvider';\r",
+      "import { CartService } from './modules/cart/CartService';\r",
+      "import { authenticateUser, requireAdmin } from './middlewares/auth.middleware';\r",
+      "import { generateToken, verifyToken } from './utils/jwt';\r",
+      "import * as fs from 'fs';\r",
+      "import * as path from 'path';\r"
+    ]
+  },
+  {
+    "path": "src/components/ServicesHub.tsx",
+    "lineCount": 3385,
+    "sizeBytes": 190971,
+    "importLines": [
+      "import { useState, useEffect } from 'react'\r",
+      "import { sanitizeText } from '../../shared/validation'\r",
+      "import { apiFetch } from '../lib/api';"
+    ]
+  },
+  {
+    "path": "scripts/populate_products.cjs",
+    "lineCount": 2682,
+    "sizeBytes": 119912,
+    "importLines": [
+      "const fs = require('fs');",
+      "const path = require('path');"
+    ]
+  },
+  {
+    "path": "src/components/ProductDetail.tsx",
+    "lineCount": 2002,
+    "sizeBytes": 100633,
+    "importLines": [
+      "import { useState, useEffect } from 'react'\r",
+      "import { useCart } from '../context/CartContext'\r",
+      "import { useAuth } from '../context/AuthContext'\r",
+      "import { validateQuantity } from '../../shared/validation'\r",
+      "import { apiFetch } from '../lib/api';"
+    ]
+  },
+  {
+    "path": "src/components/AuthPage.tsx",
+    "lineCount": 1712,
+    "sizeBytes": 90101,
+    "importLines": [
+      "import React, { useState, useEffect, useRef } from 'react';\r",
+      "import { useAuth, type User } from '../context/AuthContext';\r",
+      "import { apiFetch } from '../lib/api';\r",
+      "import {\r"
+    ]
+  },
+  {
+    "path": "src/components/Checkout.tsx",
+    "lineCount": 1597,
+    "sizeBytes": 75024,
+    "importLines": [
+      "import React, { useState, useEffect } from 'react';\r",
+      "import { useCart } from '../context/CartContext';\r",
+      "import { useAuth } from '../context/AuthContext';\r",
+      "import { validateCheckoutForm } from '../../shared/validation';\r",
+      "import { apiFetch } from '../lib/api';\r"
+    ]
+  },
+  {
+    "path": "src/modules/admin/ProductManagement.tsx",
+    "lineCount": 1519,
+    "sizeBytes": 74475,
+    "importLines": [
+      "import React, { useEffect, useState } from 'react';\r",
+      "import type { Product, PriceTier, Category } from './types';\r",
+      "import { apiFetch } from '../../lib/api';\r"
+    ]
+  },
+  {
+    "path": "server/src/seed/products.ts",
+    "lineCount": 1465,
+    "sizeBytes": 106666,
+    "importLines": []
+  },
+  {
+    "path": "src/components/MaterialsHub.tsx",
+    "lineCount": 1445,
+    "sizeBytes": 73210,
+    "importLines": [
+      "import { useState, useEffect } from 'react'\r",
+      "import { apiFetch } from '../lib/api';"
+    ]
+  },
+  {
+    "path": "src/components/SearchPage.tsx",
+    "lineCount": 1305,
+    "sizeBytes": 64779,
+    "importLines": [
+      "import React, { useState, useEffect } from 'react'\r",
+      "import { useCart } from '../context/CartContext'\r",
+      "import { getCachedSearch, setCachedSearch, getPendingSearch, setPendingSearch } from '../core/config/searchCache'\r",
+      "import { apiFetch } from '../lib/api';\r",
+      "import { useAuth } from '../context/AuthContext';\r"
+    ]
+  },
+  {
+    "path": "src/components/BulkOrders.tsx",
+    "lineCount": 1066,
+    "sizeBytes": 50010,
+    "importLines": [
+      "import React, { useState, useEffect } from 'react';\r",
+      "import { useCart } from '../context/CartContext';\r",
+      "import { useAuth } from '../context/AuthContext';\r",
+      "import { sanitizeText } from '../../shared/validation';\r",
+      "import { apiFetch } from '../lib/api';"
+    ]
+  },
+  {
+    "path": "src/components/Navbar.tsx",
+    "lineCount": 1050,
+    "sizeBytes": 57650,
+    "importLines": [
+      "import { useState, useEffect, useRef } from 'react'\r",
+      "import { useAuth } from '../context/AuthContext'\r",
+      "import { useCart } from '../context/CartContext'\r",
+      "import { getCachedSuggest, setCachedSuggest } from '../core/config/searchCache'\r",
+      "import { apiFetch } from '../lib/api';\r"
+    ]
+  },
+  {
+    "path": "src/components/shared/UIPlayground.tsx",
+    "lineCount": 987,
+    "sizeBytes": 49104,
+    "importLines": [
+      "import * as React from 'react';",
+      "import { ShieldCheck, Home, Wrench, Sparkles, Star, Bell, Award } from 'lucide-react';",
+      "import { cn } from '../ui/utils';",
+      "import { Button } from '../ui/Button';",
+      "import { Input } from '../ui/Input';",
+      "import { Select } from '../ui/Select';",
+      "import { Checkbox } from '../ui/Checkbox';",
+      "import { Radio } from '../ui/Radio';",
+      "import { Switch } from '../ui/Switch';",
+      "import { Avatar } from '../ui/Avatar';",
+      "import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '../ui/Dialog';",
+      "import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from '../ui/Sheet';",
+      "import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerClose, DrawerTrigger } from '../ui/Drawer';",
+      "import { Popover, PopoverTrigger, PopoverContent } from '../ui/Popover';",
+      "import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../ui/Tooltip';",
+      "import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '../ui/DropdownMenu';",
+      "import { StatusBadge } from '../ui/StatusBadge';",
+      "import { Card, CardHeader, CardTitle, CardDescription, CardContent, MetricCard } from './Card';",
+      "import { Skeleton, EmptyState } from './States';",
+      "import { Breadcrumb } from '../navigation/Breadcrumb';",
+      "import { Pagination } from '../navigation/Pagination';",
+      "import { WorkspaceLayout } from '../layout/WorkspaceLayout';",
+      "import { toast, Toaster } from 'sonner';",
+      "import { DataTable } from '../ui/Table';",
+      "import { type ColumnDef } from '@tanstack/react-table';",
+      "import { useForm } from 'react-hook-form';",
+      "import { zodResolver } from '@hookform/resolvers/zod';",
+      "import * as z from 'zod';",
+      "import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '../ui/Form';"
+    ]
+  },
+  {
+    "path": "src/modules/admin/InventoryManagement.tsx",
+    "lineCount": 976,
+    "sizeBytes": 48013,
+    "importLines": [
+      "import React, { useEffect, useState } from 'react';\r",
+      "import type { Product } from './types';\r",
+      "import { apiFetch } from '../../lib/api';\r",
+      "import { exportToCSV } from '../../utils/csvHelpers';\r",
+      "import { ImportModal, type ImportField } from '../../components/ImportModal';\r"
+    ]
+  },
+  {
+    "path": "server/src/modules/users/UserService.ts",
+    "lineCount": 972,
+    "sizeBytes": 40783,
+    "importLines": [
+      "import { pgPool, usePostgres, readJsonDb, writeJsonDb } from '../../database/db';",
+      "import { User, OtpRecord } from './User';",
+      "  const { getAllOrders } = require('../orders/OrderService');",
+      "  const { getAllRfqs } = require('../rfq/RFQService');"
+    ]
+  },
+  {
+    "path": "server/src/database/initDb.ts",
+    "lineCount": 966,
+    "sizeBytes": 42268,
+    "importLines": [
+      "import fs from 'fs';\r",
+      "import { Pool } from 'pg';\r",
+      "import { pgPool, usePostgres, setUsePostgres, DB_DIR, DB_FILE, readJsonDb, writeJsonDb } from './db';\r",
+      "import { runMigrations } from './migrations';\r",
+      "import { defaultCategories } from '../seed/categories';\r",
+      "import { defaultProducts } from '../seed/products';\r",
+      "import { Product } from '../modules/catalog/Product';\r",
+      "import { Category } from '../modules/catalog/Category';\r"
+    ]
+  },
+  {
+    "path": "src/modules/business/BusinessRFQs.tsx",
+    "lineCount": 905,
+    "sizeBytes": 44206,
+    "importLines": [
+      "import React, { useState, useEffect } from 'react';\r",
+      "import { useRFQs } from '../../core/hooks/useRFQs';\r",
+      "import { formatDate } from '../../core/config/format';\r",
+      "import { useAuth } from '../../context/AuthContext';\r",
+      "import { apiFetch } from '../../lib/api';"
+    ]
+  },
+  {
+    "path": "src/modules/admin/AuditLogs.tsx",
+    "lineCount": 811,
+    "sizeBytes": 40320,
+    "importLines": [
+      "import React, { useEffect, useState } from 'react';\r",
+      "import { apiFetch } from '../../lib/api';\r",
+      "import { exportToCSV } from '../../utils/csvHelpers';\r"
+    ]
+  },
+  {
+    "path": "src/modules/admin/QuotationBuilder.tsx",
+    "lineCount": 787,
+    "sizeBytes": 31038,
+    "importLines": [
+      "import React, { useState, useEffect } from 'react';\r",
+      "import { clientQuotationService } from './quotations/services/quotation.service';\r",
+      "import { CustomerPanel } from './quotations/components/CustomerPanel';\r",
+      "import { ItemsGrid } from './quotations/components/ItemsGrid';\r",
+      "import type { QuotationItem } from './quotations/components/ItemsGrid';\r",
+      "import { PricingSummary } from './quotations/components/PricingSummary';\r",
+      "import { TermsPanel } from './quotations/components/TermsPanel';\r",
+      "import { InternalNotes } from './quotations/components/InternalNotes';\r",
+      "import { CustomerNotes } from './quotations/components/CustomerNotes';\r",
+      "import { VersionHistory } from './quotations/components/VersionHistory';\r",
+      "import { ApprovalTimeline } from './quotations/components/ApprovalTimeline';\r",
+      "import { ActionToolbar } from './quotations/components/ActionToolbar';\r",
+      "import { DocumentStatusBadge } from '../../components/shared/DocumentStatusBadge';\r",
+      "import { QuotationVersionCompare } from './quotations/components/QuotationVersionCompare';\r",
+      "import { apiFetch } from '../../lib/api';\r"
+    ]
+  },
+  {
+    "path": "src/components/BrandsHub.tsx",
+    "lineCount": 766,
+    "sizeBytes": 44677,
+    "importLines": [
+      "import { useState, useEffect } from 'react'\r",
+      "import { useCart } from '../context/CartContext'\r",
+      "import { useAuth } from '../context/AuthContext'\r",
+      "import { sanitizeText } from '../../shared/validation'\r",
+      "import { apiFetch } from '../lib/api';\r"
+    ]
+  },
+  {
+    "path": "server/src/modules/catalog/ProductService.ts",
+    "lineCount": 765,
+    "sizeBytes": 32291,
+    "importLines": [
+      "import { pgPool, usePostgres, readJsonDb, writeJsonDb } from '../../database/db';\r",
+      "import { Product } from './Product';\r"
+    ]
+  },
+  {
+    "path": "src/modules/admin/AdminLayout.tsx",
+    "lineCount": 739,
+    "sizeBytes": 33441,
+    "importLines": [
+      "import React, { useState } from 'react';\r",
+      "import { apiFetch } from '../../lib/api';\r",
+      "import * as perm from '../../core/permissions/permissions';\r",
+      "import { PageLayout } from '../../components/layout/PageLayout';\r",
+      "import { Button } from '../../components/ui/Button';\r",
+      "import { cn } from '../../components/ui/utils';\r",
+      "import * as Lucide from 'lucide-react';\r",
+      "import { useAuth } from '../../context/AuthContext';\r"
+    ]
+  },
+  {
+    "path": "src/components/RfqForm.tsx",
+    "lineCount": 731,
+    "sizeBytes": 37763,
+    "importLines": [
+      "import React, { useState, useEffect } from 'react';\r",
+      "import { useAuth } from '../context/AuthContext';\r",
+      "import { validateRfqForm } from '../../shared/validation';\r",
+      "import { apiFetch } from '../lib/api';\r"
+    ]
+  },
+  {
+    "path": "server/src/database/migrations.ts",
+    "lineCount": 690,
+    "sizeBytes": 31851,
+    "importLines": [
+      "import { Pool } from 'pg';\r"
+    ]
+  },
+  {
+    "path": "src/modules/admin/ImportProducts.tsx",
+    "lineCount": 681,
+    "sizeBytes": 34874,
+    "importLines": [
+      "import React, { useState, useEffect } from 'react';\r",
+      "import { apiFetch } from '../../lib/api';\r"
+    ]
+  },
+  {
+    "path": "server/src/modules/orders/OrderService.ts",
+    "lineCount": 654,
+    "sizeBytes": 25532,
+    "importLines": [
+      "import { pgPool, usePostgres, readJsonDb, writeJsonDb } from '../../database/db';",
+      "import { Order } from './Order';",
+      "import { sanitizeText } from '../../../../shared/validation';"
+    ]
+  },
+  {
+    "path": "server/src/modules/search/SearchService.ts",
+    "lineCount": 634,
+    "sizeBytes": 32461,
+    "importLines": [
+      "import { pgPool, usePostgres, readJsonDb, writeJsonDb } from '../../database/db';\r",
+      "import { Product } from '../catalog/Product';\r",
+      "import { getAllProducts, mapRowToProduct } from '../catalog/ProductService';\r"
+    ]
+  },
+  {
+    "path": "src/modules/admin/CategoryManagement.tsx",
+    "lineCount": 622,
+    "sizeBytes": 29252,
+    "importLines": [
+      "import React, { useEffect, useState } from 'react';\r",
+      "import type { Category } from './types';\r",
+      "import { apiFetch } from '../../lib/api';\r",
+      "import { exportToCSV } from '../../utils/csvHelpers';\r",
+      "import { ImportModal, type ImportField } from '../../components/ImportModal';\r"
+    ]
+  },
+  {
+    "path": "server/src/modules/rfq/QuotationService.ts",
+    "lineCount": 517,
+    "sizeBytes": 18028,
+    "importLines": [
+      "import { pgPool, usePostgres, readJsonDb, writeJsonDb } from '../../database/db';\r",
+      "import { Quotation, QuotationItem } from './RFQ';\r",
+      "import { addOrder } from '../orders/OrderService';\r",
+      "import { Order } from '../orders/Order';\r"
+    ]
+  },
+  {
+    "path": "src/modules/admin/BrandManagement.tsx",
+    "lineCount": 514,
+    "sizeBytes": 23412,
+    "importLines": [
+      "import React, { useEffect, useState } from 'react';\r",
+      "import type { Brand } from './types';\r",
+      "import { apiFetch } from '../../lib/api';\r",
+      "import { exportToCSV } from '../../utils/csvHelpers';\r",
+      "import { ImportModal, type ImportField } from '../../components/ImportModal';\r"
+    ]
+  },
+  {
+    "path": "server/src/modules/catalog/ProductImportService.ts",
+    "lineCount": 492,
+    "sizeBytes": 17497,
+    "importLines": [
+      "import * as XLSX from 'xlsx';",
+      "import path from 'path';",
+      "import fs from 'fs';",
+      "import { getAllCategories } from './CategoryService';",
+      "import { getAllBrands } from './BrandService';",
+      "import { getAllProducts } from './ProductService';",
+      "import { Product } from './Product';",
+      "  const AdmZip = require('adm-zip');"
+    ]
+  },
+  {
+    "path": "src/components/Resources.tsx",
+    "lineCount": 478,
+    "sizeBytes": 25990,
+    "importLines": [
+      "import { useState } from 'react';\r",
+      "import { useCart } from '../context/CartContext';\r"
+    ]
+  },
+  {
+    "path": "src/modules/admin/OrderManagement.tsx",
+    "lineCount": 461,
+    "sizeBytes": 22339,
+    "importLines": [
+      "import React, { useEffect, useState } from 'react';\r",
+      "import type { Order } from './types';\r",
+      "import { apiFetch } from '../../lib/api';\r",
+      "import { exportToCSV } from '../../utils/csvHelpers';\r"
+    ]
+  },
+  {
+    "path": "server/src/modules/catalog/CatalogSyncService.ts",
+    "lineCount": 438,
+    "sizeBytes": 14220,
+    "importLines": [
+      "import { getAllProducts, addProduct, updateProduct } from './ProductService';\r",
+      "import { getAllBrands, addBrand } from './BrandService';\r",
+      "import { addImportHistory } from './ImportHistoryService';\r",
+      "import { logAction } from '../analytics/AuditLogService';\r",
+      "import { Product } from './Product';\r",
+      "import { Brand } from './Brand';\r"
+    ]
+  },
+  {
+    "path": "src/components/Projects.tsx",
+    "lineCount": 420,
+    "sizeBytes": 22371,
+    "importLines": [
+      "import React, { useState } from 'react';\r",
+      "import { apiFetch } from '../lib/api';"
+    ]
+  },
+  {
+    "path": "src/modules/admin/SearchAnalytics.tsx",
+    "lineCount": 391,
+    "sizeBytes": 19958,
+    "importLines": [
+      "import React, { useEffect, useState } from 'react';\r",
+      "import { apiFetch } from '../../lib/api';\r",
+      "import { exportToCSV } from '../../utils/csvHelpers';\r"
+    ]
+  },
+  {
+    "path": "src/components/ImportModal.tsx",
+    "lineCount": 380,
+    "sizeBytes": 14019,
+    "importLines": [
+      "import React, { useState, useRef } from 'react';\r",
+      "import { exportToCSV, parseCSV } from '../utils/csvHelpers';\r"
+    ]
+  },
+  {
+    "path": "shared/validation.ts",
+    "lineCount": 369,
+    "sizeBytes": 16313,
+    "importLines": []
+  },
+  {
+    "path": "server/src/documents/shared/CorporateTheme.ts",
+    "lineCount": 357,
+    "sizeBytes": 6611,
+    "importLines": []
+  },
+  {
+    "path": "src/components/AuthModals.tsx",
+    "lineCount": 344,
+    "sizeBytes": 15302,
+    "importLines": [
+      "import React, { useState } from 'react';\r",
+      "import { useAuth } from '../context/AuthContext';\r"
+    ]
+  },
+  {
+    "path": "server/src/documents/renderers/quotation/QuotationRenderer.ts",
+    "lineCount": 329,
+    "sizeBytes": 14987,
+    "importLines": [
+      "import { DocumentRenderer } from '../DocumentRenderer';\r",
+      "import { DocumentLayout } from '../../shared/DocumentLayout';\r",
+      "import { Header } from '../../shared/Header';\r",
+      "import { SignatureBlock } from '../../shared/SignatureBlock';\r"
+    ]
+  },
+  {
+    "path": "src/modules/admin/Settings.tsx",
+    "lineCount": 315,
+    "sizeBytes": 15372,
+    "importLines": [
+      "import React, { useEffect, useState } from 'react';\r",
+      "import type { AppSettings } from './types';\r",
+      "import { apiFetch } from '../../lib/api';"
+    ]
+  },
+  {
+    "path": "src/components/Hero.tsx",
+    "lineCount": 314,
+    "sizeBytes": 17849,
+    "importLines": []
+  },
+  {
+    "path": "src/components/Products.tsx",
+    "lineCount": 308,
+    "sizeBytes": 16089,
+    "importLines": [
+      "import { useState, useEffect } from 'react'\r",
+      "import { useCart } from '../context/CartContext'\r",
+      "import { useAuth } from '../context/AuthContext'\r",
+      "import { apiFetch } from '../lib/api';\r"
+    ]
+  },
+  {
+    "path": "src/modules/admin/AbandonedCarts.tsx",
+    "lineCount": 307,
+    "sizeBytes": 13963,
+    "importLines": [
+      "import React, { useState, useEffect } from 'react';\r",
+      "import { apiFetch } from '../../lib/api';\r"
+    ]
+  },
+  {
+    "path": "src/lib/recoveryManager.ts",
+    "lineCount": 306,
+    "sizeBytes": 9399,
+    "importLines": [
+      "import { API_BASE } from '../config/api';\r"
+    ]
+  },
+  {
+    "path": "server/src/services/quotation.service.ts",
+    "lineCount": 305,
+    "sizeBytes": 9900,
+    "importLines": [
+      "import { Pool, PoolClient } from 'pg';",
+      "import { QuotationRepository } from '../database/repositories/quotation.repository';",
+      "import { ActivityRepository } from '../database/repositories/activity.repository';",
+      "import { ApprovalEngine } from '../domain/shared/approval/ApprovalEngine';",
+      "import { EventBus } from '../domain/shared/EventBus';"
+    ]
+  },
+  {
+    "path": "server/src/database/repositories/quotation.repository.ts",
+    "lineCount": 293,
+    "sizeBytes": 10079,
+    "importLines": [
+      "import { Pool, PoolClient } from 'pg';\r"
+    ]
+  },
+  {
+    "path": "server/src/modules/inventory/InventoryService.ts",
+    "lineCount": 284,
+    "sizeBytes": 10160,
+    "importLines": [
+      "import { pgPool, usePostgres, readJsonDb, writeJsonDb } from '../../database/db';",
+      "import { getProductById, mapRowToProduct } from '../catalog/ProductService';",
+      "import { Product } from '../catalog/Product';",
+      "import { InventoryAdjustment } from './Inventory';"
+    ]
+  },
+  {
+    "path": "src/context/CartContext.tsx",
+    "lineCount": 282,
+    "sizeBytes": 10354,
+    "importLines": [
+      "import React, { createContext, useContext, useState, useEffect } from 'react';\r",
+      "import { useAuth } from './AuthContext';\r",
+      "import { useNotification } from '../hooks/useNotification';\r",
+      "import { apiFetch } from '../lib/api';\r"
+    ]
+  },
+  {
+    "path": "src/modules/admin/CustomerManagement.tsx",
+    "lineCount": 281,
+    "sizeBytes": 12562,
+    "importLines": [
+      "import React, { useEffect, useState } from 'react';\r",
+      "import type { User } from './types';\r",
+      "import { apiFetch } from '../../lib/api';\r",
+      "import { exportToCSV } from '../../utils/csvHelpers';\r",
+      "import { ImportModal, type ImportField } from '../../components/ImportModal';\r"
+    ]
+  },
+  {
+    "path": "src/context/AuthContext.tsx",
+    "lineCount": 280,
+    "sizeBytes": 9153,
+    "importLines": [
+      "import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';\r",
+      "import { apiClient } from '../lib/api';\r"
+    ]
+  },
+  {
+    "path": "src/modules/admin/DashboardHome.tsx",
+    "lineCount": 270,
+    "sizeBytes": 10984,
+    "importLines": [
+      "import React, { useEffect, useState } from 'react';\r",
+      "import { MetricCard, Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/shared/Card';\r",
+      "import { IndianRupee, ShoppingBag, Package, Users, UserCheck, AlertTriangle, ShieldCheck } from 'lucide-react';\r",
+      "import { apiFetch } from '../../lib/api';\r"
+    ]
+  },
+  {
+    "path": "src/components/ui/Table.tsx",
+    "lineCount": 269,
+    "sizeBytes": 8455,
+    "importLines": [
+      "import * as React from 'react';",
+      "import * as TableBase from './table-base';",
+      "import { cn } from './utils';",
+      "import { Button } from './Button';",
+      "import { Input } from './Input';",
+      "import { Skeleton, EmptyState } from '../shared/States';",
+      "import {"
+    ]
+  },
+  {
+    "path": "src/modules/admin/quotations/components/ItemsGrid.tsx",
+    "lineCount": 265,
+    "sizeBytes": 11780,
+    "importLines": [
+      "import React from 'react';\r"
+    ]
+  },
+  {
+    "path": "src/modules/individual/IndividualOrders.tsx",
+    "lineCount": 261,
+    "sizeBytes": 12135,
+    "importLines": [
+      "import React, { useState } from 'react';\r",
+      "import { useOrders } from '../../core/hooks/useOrders';\r",
+      "import { formatCurrency, formatDate } from '../../core/config/format';\r"
+    ]
+  },
+  {
+    "path": "src/modules/admin/BulkUpdates.tsx",
+    "lineCount": 260,
+    "sizeBytes": 11256,
+    "importLines": [
+      "import React, { useState } from 'react';\r",
+      "import { apiFetch } from '../../lib/api';"
+    ]
+  },
+  {
+    "path": "src/lib/api.ts",
+    "lineCount": 258,
+    "sizeBytes": 8817,
+    "importLines": [
+      "import { API_BASE } from '../config/api';\r",
+      "import { notification } from './notification';\r",
+      "import { RecoveryManager } from './recoveryManager';\r"
+    ]
+  },
+  {
+    "path": "scripts/update-health-dashboard.cjs",
+    "lineCount": 246,
+    "sizeBytes": 9422,
+    "importLines": [
+      "const fs = require('fs');",
+      "const path = require('path');"
+    ]
+  },
+  {
+    "path": "scripts/seedDevelopmentUsers.ts",
+    "lineCount": 237,
+    "sizeBytes": 7429,
+    "importLines": [
+      "import * as path from 'path';",
+      "import * as fs from 'fs';",
+      "import { Client } from 'pg';",
+      "import * as dotenv from 'dotenv';"
+    ]
+  },
+  {
+    "path": "server/src/scripts/seedDevelopmentUsers.ts",
+    "lineCount": 237,
+    "sizeBytes": 7437,
+    "importLines": [
+      "import * as path from 'path';",
+      "import * as fs from 'fs';",
+      "import { Client } from 'pg';",
+      "import * as dotenv from 'dotenv';"
+    ]
+  },
+  {
+    "path": "src/lib/notification.ts",
+    "lineCount": 237,
+    "sizeBytes": 7143,
+    "importLines": [
+      "import { toast } from 'sonner';\r"
+    ]
+  },
+  {
+    "path": "src/modules/admin/quotations/components/PricingSummary.tsx",
+    "lineCount": 229,
+    "sizeBytes": 10527,
+    "importLines": [
+      "import React, { useState } from 'react';\r"
+    ]
+  },
+  {
+    "path": "src/modules/admin/NegotiationCenter.tsx",
+    "lineCount": 224,
+    "sizeBytes": 10721,
+    "importLines": [
+      "import React, { useState } from 'react';"
+    ]
+  },
+  {
+    "path": "src/core/components/WorkspaceLeftSidebar.tsx",
+    "lineCount": 223,
+    "sizeBytes": 8074,
+    "importLines": [
+      "import * as React from 'react';\r",
+      "import { \r",
+      "import { Button } from '../../components/ui/Button';\r"
+    ]
+  },
+  {
+    "path": "src/App.tsx",
+    "lineCount": 217,
+    "sizeBytes": 8447,
+    "importLines": [
+      "import { useState, useEffect, lazy, Suspense } from 'react'\r",
+      "import { StartupGuard } from './components/StartupGuard'\r",
+      "import Navbar from './components/Navbar'\r",
+      "import Hero from './components/Hero'\r",
+      "import Categories from './components/Categories'\r",
+      "import Products from './components/Products'\r",
+      "import Services from './components/Services'\r",
+      "import RfqForm from './components/RfqForm'\r",
+      "import Trust from './components/Trust'\r",
+      "import Footer from './components/Footer'\r",
+      "import MaterialsHub from './components/MaterialsHub'\r",
+      "import ServicesHub from './components/ServicesHub'\r",
+      "import ProductDetail from './components/ProductDetail'\r",
+      "import { Agentation } from 'agentation'\r",
+      "import { AuthProvider, useAuth } from './context/AuthContext'\r",
+      "import { CartProvider } from './context/CartContext'\r",
+      "import { NotificationProvider as InboxNotificationProvider } from './context/NotificationContext'\r",
+      "import { NotificationProvider } from './providers/NotificationProvider'\r",
+      "import { AuthPage } from './components/AuthPage'\r",
+      "import { IndividualDashboard } from './modules/individual/IndividualDashboard'\r",
+      "import { PortalResolver } from './core/auth/PortalResolver'\r",
+      "import { Checkout, CheckoutSuccess } from './components/Checkout'\r",
+      "import SearchPage from './components/SearchPage'\r",
+      "import ErrorBoundary from './components/ErrorBoundary'\r",
+      "import { UIPlayground } from './components/shared/UIPlayground'\r"
+    ]
+  },
+  {
+    "path": "src/modules/admin/Reports.tsx",
+    "lineCount": 216,
+    "sizeBytes": 9575,
+    "importLines": [
+      "import React, { useState } from 'react';\r",
+      "import { apiFetch } from '../../lib/api';"
+    ]
+  },
+  {
+    "path": "server/src/database/seedDevelopmentUsers.ts",
+    "lineCount": 210,
+    "sizeBytes": 7245,
+    "importLines": [
+      "import { pgPool, usePostgres, readJsonDb, writeJsonDb } from './db';"
+    ]
+  },
+  {
+    "path": "src/components/ui/Input.tsx",
+    "lineCount": 205,
+    "sizeBytes": 6355,
+    "importLines": [
+      "import * as React from 'react';",
+      "import { Input as InputBase } from './input-base';",
+      "import { Textarea as TextareaBase } from './textarea-base';",
+      "import { cn } from './utils';",
+      "import { Eye, EyeOff, Loader2 } from 'lucide-react';"
+    ]
+  },
+  {
+    "path": "server/src/documents/shared/styles/corporate-theme.ts",
+    "lineCount": 201,
+    "sizeBytes": 4116,
+    "importLines": []
+  },
+  {
+    "path": "src/components/ui/dropdown-menu-base.tsx",
+    "lineCount": 199,
+    "sizeBytes": 7639,
+    "importLines": [
+      "import * as React from \"react\"",
+      "import * as DropdownMenuPrimitive from \"@radix-ui/react-dropdown-menu\"",
+      "import { Check, ChevronRight, Circle } from \"lucide-react\"",
+      "import { cn } from \"src/components/ui/utils\""
+    ]
+  },
+  {
+    "path": "src/modules/admin/ExportProducts.tsx",
+    "lineCount": 198,
+    "sizeBytes": 7603,
+    "importLines": [
+      "import React, { useState, useEffect } from 'react';\r",
+      "import type { Category } from './types';\r",
+      "import { apiFetch } from '../../lib/api';\r"
+    ]
+  },
+  {
+    "path": "src/components/Footer.tsx",
+    "lineCount": 197,
+    "sizeBytes": 7684,
+    "importLines": []
+  },
+  {
+    "path": "server/src/modules/rfq/RFQService.ts",
+    "lineCount": 192,
+    "sizeBytes": 6052,
+    "importLines": [
+      "import { pgPool, usePostgres, readJsonDb, writeJsonDb } from '../../database/db';\r",
+      "import { RFQ, Booking, DirectQuote } from './RFQ';\r"
+    ]
+  },
+  {
+    "path": "src/modules/individual/IndividualDashboard.tsx",
+    "lineCount": 180,
+    "sizeBytes": 7845,
+    "importLines": [
+      "import React, { useState, useEffect } from 'react';\r",
+      "import { IndividualLayout } from './layouts/IndividualLayout';\r",
+      "import { IndividualOrders } from './IndividualOrders';\r",
+      "import { IndividualAddresses } from './IndividualAddresses';\r",
+      "import { IndividualProfile } from './IndividualProfile';\r",
+      "import { useAuth } from '../../context/AuthContext';\r",
+      "import { useNotification } from '../../hooks/useNotification';\r",
+      "import { useOrders } from '../../core/hooks/useOrders';\r",
+      "import { formatCurrency, formatDate } from '../../core/config/format';\r",
+      "import { MetricCard, Card, CardHeader, CardTitle, CardContent } from '../../components/shared/Card';\r",
+      "import { Button } from '../../components/ui/Button';\r",
+      "import { Award, TrendingUp, Sparkles, Heart } from 'lucide-react';\r"
+    ]
+  },
+  {
+    "path": "src/components/ui/form-base.tsx",
+    "lineCount": 179,
+    "sizeBytes": 4191,
+    "importLines": [
+      "import * as React from \"react\"",
+      "import * as LabelPrimitive from \"@radix-ui/react-label\"",
+      "import { Slot } from \"@radix-ui/react-slot\"",
+      "import {",
+      "import { cn } from \"src/components/ui/utils\"",
+      "import { Label } from \"src/components/ui/label\""
+    ]
+  },
+  {
+    "path": "src/modules/admin/RoleManagement.tsx",
+    "lineCount": 176,
+    "sizeBytes": 7202,
+    "importLines": [
+      "import React from 'react';",
+      "import type { AdminRole } from './AdminLayout';"
+    ]
+  },
+  {
+    "path": "src/modules/professional/ProfessionalDashboard.tsx",
+    "lineCount": 175,
+    "sizeBytes": 7822,
+    "importLines": [
+      "import React, { useState } from 'react';",
+      "import { ProfessionalLayout } from './layouts/ProfessionalLayout';",
+      "import { useAuth } from '../../context/AuthContext';",
+      "import { MetricCard, Card, CardHeader, CardTitle, CardContent } from '../../components/shared/Card';",
+      "import { Wrench, Star, Briefcase, ShieldCheck, Award, FileText } from 'lucide-react';"
+    ]
+  },
+  {
+    "path": "src/providers/NotificationProvider.tsx",
+    "lineCount": 171,
+    "sizeBytes": 5567,
+    "importLines": [
+      "import React, { createContext, useState, useEffect, useCallback } from 'react';\r",
+      "import { Toaster } from 'sonner';\r",
+      "import { ConfirmDialog } from '../components/feedback/ConfirmDialog/ConfirmDialog';\r",
+      "import { OfflineIndicator } from '../components/feedback/OfflineIndicator/OfflineIndicator';\r",
+      "import { Banner } from '../components/feedback/Banner/Banner';\r",
+      "import { RecoveryManager } from '../lib/recoveryManager';\r",
+      "import type { ConnectionState } from '../lib/recoveryManager';\r"
+    ]
+  },
+  {
+    "path": "server/src/database/verifyApiContracts.ts",
+    "lineCount": 169,
+    "sizeBytes": 12121,
+    "importLines": [
+      "import * as fs from 'fs';",
+      "import * as path from 'path';",
+      "import 'dotenv/config';",
+      "import { getAllUsers, getAllProducts, getAllOrders } from '../db';"
+    ]
+  },
+  {
+    "path": "src/modules/admin/types.ts",
+    "lineCount": 169,
+    "sizeBytes": 3740,
+    "importLines": []
+  },
+  {
+    "path": "server/src/controllers/quotation.controller.ts",
+    "lineCount": 168,
+    "sizeBytes": 6935,
+    "importLines": [
+      "import { Request, Response } from 'express';\r",
+      "import { pgPool } from '../database/db';\r",
+      "import { QuotationService } from '../services/quotation.service';\r",
+      "import { PermissionEngine } from '../domain/shared/PermissionEngine';\r"
+    ]
+  },
+  {
+    "path": "src/components/StartupGuard.tsx",
+    "lineCount": 163,
+    "sizeBytes": 6791,
+    "importLines": [
+      "import React, { useEffect, useState } from 'react';\r",
+      "import { RecoveryManager } from '../lib/recoveryManager';\r",
+      "import type { ConnectionState } from '../lib/recoveryManager';\r"
+    ]
+  },
+  {
+    "path": "src/components/ui/DropdownMenu.tsx",
+    "lineCount": 163,
+    "sizeBytes": 5128,
+    "importLines": [
+      "import * as React from 'react';",
+      "import * as DropdownMenuBase from './dropdown-menu-base';",
+      "import { cn } from './utils';"
+    ]
+  },
+  {
+    "path": "server/src/database/verifyInventory.ts",
+    "lineCount": 160,
+    "sizeBytes": 6068,
+    "importLines": [
+      "import { Pool } from 'pg';",
+      "import * as fs from 'fs';",
+      "import * as path from 'path';",
+      "import 'dotenv/config';",
+      "import { readJsonDb, usePostgres } from './db';"
+    ]
+  },
+  {
+    "path": "server/src/documents/renderers/invoice/InvoiceRenderer.ts",
+    "lineCount": 160,
+    "sizeBytes": 7164,
+    "importLines": [
+      "import { DocumentRenderer } from '../DocumentRenderer';\r",
+      "import { DocumentLayout } from '../../shared/DocumentLayout';\r",
+      "import { Header } from '../../shared/Header';\r",
+      "import { SignatureBlock } from '../../shared/SignatureBlock';\r"
+    ]
+  },
+  {
+    "path": "server/src/modules/catalog/BrandService.ts",
+    "lineCount": 160,
+    "sizeBytes": 5249,
+    "importLines": [
+      "import { pgPool, usePostgres, readJsonDb, writeJsonDb } from '../../database/db';\r",
+      "import { Brand } from './Brand';\r"
+    ]
+  },
+  {
+    "path": "src/components/ui/select-base.tsx",
+    "lineCount": 159,
+    "sizeBytes": 5758,
+    "importLines": [
+      "import * as React from \"react\"",
+      "import * as SelectPrimitive from \"@radix-ui/react-select\"",
+      "import { Check, ChevronDown, ChevronUp } from \"lucide-react\"",
+      "import { cn } from \"src/components/ui/utils\""
+    ]
+  },
+  {
+    "path": "server/src/database/executeCleanup.ts",
+    "lineCount": 152,
+    "sizeBytes": 5609,
+    "importLines": [
+      "import { Pool } from 'pg';",
+      "import * as fs from 'fs';",
+      "import * as path from 'path';",
+      "import 'dotenv/config';"
+    ]
+  },
+  {
+    "path": "src/modules/admin/quotations/components/QuotationVersionCompare.tsx",
+    "lineCount": 149,
+    "sizeBytes": 7349,
+    "importLines": [
+      "import React from 'react';\r"
+    ]
+  },
+  {
+    "path": "src/modules/business/BusinessDashboard.tsx",
+    "lineCount": 148,
+    "sizeBytes": 6080,
+    "importLines": [
+      "import React, { useState } from 'react';",
+      "import { BusinessLayout } from './layouts/BusinessLayout';",
+      "import { BusinessRFQs } from './BusinessRFQs';",
+      "import { BusinessProjects } from './BusinessProjects';",
+      "import { BusinessInvoices } from './BusinessInvoices';",
+      "import { IndividualOrders } from '../individual/IndividualOrders';",
+      "import { IndividualAddresses } from '../individual/IndividualAddresses';",
+      "import { useAuth } from '../../context/AuthContext';",
+      "import { useOrders } from '../../core/hooks/useOrders';",
+      "import { formatCurrency } from '../../core/config/format';",
+      "import { MetricCard, Card, CardHeader, CardTitle, CardContent } from '../../components/shared/Card';",
+      "import { Building, Percent, FileSpreadsheet, TrendingUp, ShieldAlert, Bookmark, Users } from 'lucide-react';"
+    ]
+  },
+  {
+    "path": "server/src/modules/catalog/ProductExportService.ts",
+    "lineCount": 146,
+    "sizeBytes": 3724,
+    "importLines": [
+      "import * as XLSX from 'xlsx';",
+      "import { getAllProducts } from './ProductService';",
+      "import { Product } from './Product';"
+    ]
+  },
+  {
+    "path": "server/src/database/healthCheck.ts",
+    "lineCount": 144,
+    "sizeBytes": 5888,
+    "importLines": [
+      "import { Pool } from 'pg';",
+      "import * as fs from 'fs';",
+      "import * as path from 'path';",
+      "import 'dotenv/config';",
+      "import { readJsonDb, usePostgres } from './db';"
+    ]
+  },
+  {
+    "path": "server/src/modules/analytics/AuditLogService.ts",
+    "lineCount": 144,
+    "sizeBytes": 5014,
+    "importLines": [
+      "import { pgPool, usePostgres, readJsonDb, writeJsonDb } from '../../database/db';\r",
+      "import { AuditLog } from './AuditLog';\r"
+    ]
+  },
+  {
+    "path": "src/components/Services.tsx",
+    "lineCount": 143,
+    "sizeBytes": 6599,
+    "importLines": []
+  },
+  {
+    "path": "server/src/modules/catalog/CategoryService.ts",
+    "lineCount": 140,
+    "sizeBytes": 4793,
+    "importLines": [
+      "import { pgPool, usePostgres, readJsonDb, writeJsonDb } from '../../database/db';\r",
+      "import { Category } from './Category';\r",
+      "import { defaultCategories } from '../../seed/categories';\r"
+    ]
+  },
+  {
+    "path": "src/components/ui/sheet-base.tsx",
+    "lineCount": 139,
+    "sizeBytes": 4279,
+    "importLines": [
+      "import * as React from \"react\"",
+      "import * as SheetPrimitive from \"@radix-ui/react-dialog\"",
+      "import { cva, type VariantProps } from \"class-variance-authority\"",
+      "import { X } from \"lucide-react\"",
+      "import { cn } from \"src/components/ui/utils\""
+    ]
+  },
+  {
+    "path": "src/modules/admin/AdminDashboard.tsx",
+    "lineCount": 139,
+    "sizeBytes": 5120,
+    "importLines": [
+      "import React, { useState, useEffect } from 'react';\r",
+      "import { AdminLayout, type AdminRole } from './AdminLayout';\r",
+      "import { useAuth } from '../../context/AuthContext';\r",
+      "import { DashboardHome } from './DashboardHome';\r",
+      "import { ProductManagement } from './ProductManagement';\r",
+      "import { CategoryManagement } from './CategoryManagement';\r",
+      "import { BrandManagement } from './BrandManagement';\r",
+      "import { InventoryManagement } from './InventoryManagement';\r",
+      "import { OrderManagement } from './OrderManagement';\r",
+      "import { CustomerManagement } from './CustomerManagement';\r",
+      "import { SearchAnalytics } from './SearchAnalytics';\r",
+      "import { Reports } from './Reports';\r",
+      "import { RoleManagement } from './RoleManagement';\r",
+      "import { Settings } from './Settings';\r",
+      "import { AuditLogs } from './AuditLogs';\r",
+      "import { ImportProducts } from './ImportProducts';\r",
+      "import { ExportProducts } from './ExportProducts';\r",
+      "import { BulkUpdates } from './BulkUpdates';\r",
+      "import { AbandonedCarts } from './AbandonedCarts';\r"
+    ]
+  },
+  {
+    "path": "server/src/modules/cart/CartService.ts",
+    "lineCount": 137,
+    "sizeBytes": 5037,
+    "importLines": [
+      "import { pgPool, usePostgres, readJsonDb, writeJsonDb } from '../../database/db';\r"
+    ]
+  },
+  {
+    "path": "src/components/ui/Select.tsx",
+    "lineCount": 135,
+    "sizeBytes": 3761,
+    "importLines": [
+      "import * as React from 'react';",
+      "import * as SelectBase from './select-base';",
+      "import { cn } from './utils';"
+    ]
+  },
+  {
+    "path": "src/components/ui/Card.tsx",
+    "lineCount": 131,
+    "sizeBytes": 4135,
+    "importLines": [
+      "import * as React from 'react';",
+      "import * as CardBase from './card-base';",
+      "import { cn } from './utils';"
+    ]
+  },
+  {
+    "path": "server/src/domain/shared/PricingEngine.ts",
+    "lineCount": 128,
+    "sizeBytes": 3887,
+    "importLines": [
+      "import { Money } from './Money';",
+      "import { TaxStrategy } from './tax/TaxStrategy';"
+    ]
+  },
+  {
+    "path": "src/components/shared/UploadComponent.tsx",
+    "lineCount": 125,
+    "sizeBytes": 4674,
+    "importLines": [
+      "import * as React from 'react';",
+      "import { Upload, X, FileText } from 'lucide-react';",
+      "import { cn } from '../ui/utils';"
+    ]
+  },
+  {
+    "path": "src/modules/admin/quotations/components/ActionToolbar.tsx",
+    "lineCount": 124,
+    "sizeBytes": 4754,
+    "importLines": [
+      "import React from 'react';\r"
+    ]
+  },
+  {
+    "path": "src/components/ui/Sheet.tsx",
+    "lineCount": 123,
+    "sizeBytes": 4141,
+    "importLines": [
+      "import * as React from 'react';",
+      "import * as SheetPrimitive from '@radix-ui/react-dialog';",
+      "import { X } from 'lucide-react';",
+      "import * as SheetBase from './sheet-base';",
+      "import { cn } from './utils';"
+    ]
+  },
+  {
+    "path": "src/components/ui/dialog-base.tsx",
+    "lineCount": 121,
+    "sizeBytes": 3846,
+    "importLines": [
+      "import * as React from \"react\"",
+      "import * as DialogPrimitive from \"@radix-ui/react-dialog\"",
+      "import { X } from \"lucide-react\"",
+      "import { cn } from \"src/components/ui/utils\""
+    ]
+  },
+  {
+    "path": "src/components/ui/Dialog.tsx",
+    "lineCount": 121,
+    "sizeBytes": 3939,
+    "importLines": [
+      "import * as React from 'react';",
+      "import * as DialogPrimitive from '@radix-ui/react-dialog';",
+      "import { X } from 'lucide-react';",
+      "import * as DialogBase from './dialog-base';",
+      "import { cn } from './utils';"
+    ]
+  },
+  {
+    "path": "src/modules/business/BusinessInvoices.tsx",
+    "lineCount": 121,
+    "sizeBytes": 6159,
+    "importLines": [
+      "import React from 'react';\r",
+      "import { useOrders } from '../../core/hooks/useOrders';\r",
+      "import { formatCurrency, formatDate } from '../../core/config/format';\r",
+      "import { useAuth } from '../../context/AuthContext';\r",
+      "import { EmptyState } from '../../components/feedback/EmptyState/EmptyState';\r",
+      "import { apiFetch } from '../../lib/api';\r"
+    ]
+  },
+  {
+    "path": "tailwind.config.js",
+    "lineCount": 121,
+    "sizeBytes": 5108,
+    "importLines": [
+      "import forms from '@tailwindcss/forms'\r",
+      "import containerQueries from '@tailwindcss/container-queries'\r"
+    ]
+  },
+  {
+    "path": "src/components/layout/PageLayout.tsx",
+    "lineCount": 120,
+    "sizeBytes": 4363,
+    "importLines": [
+      "import * as React from 'react';\r",
+      "import { Menu } from 'lucide-react';\r",
+      "import { cn } from '../ui/utils';\r",
+      "import { Breadcrumb, type BreadcrumbItem } from '../navigation/Breadcrumb';\r",
+      "import { PageHeader } from '../navigation/PageHeader';\r",
+      "import { Sheet, SheetContent } from '../ui/Drawer';\r"
+    ]
+  },
+  {
+    "path": "src/components/ui/Pagination.tsx",
+    "lineCount": 120,
+    "sizeBytes": 4237,
+    "importLines": [
+      "import * as React from 'react';",
+      "import * as PaginationBase from './pagination-base';",
+      "import { cn } from './utils';"
+    ]
+  },
+  {
+    "path": "src/components/ui/Breadcrumb.tsx",
+    "lineCount": 119,
+    "sizeBytes": 4151,
+    "importLines": [
+      "import * as React from 'react';",
+      "import * as BreadcrumbBase from './breadcrumb-base';",
+      "import { cn } from './utils';"
+    ]
+  },
+  {
+    "path": "src/components/ui/pagination-base.tsx",
+    "lineCount": 118,
+    "sizeBytes": 2728,
+    "importLines": [
+      "import * as React from \"react\"",
+      "import { ChevronLeft, ChevronRight, MoreHorizontal } from \"lucide-react\"",
+      "import { cn } from \"./utils\"",
+      "import { type ButtonProps, buttonVariants } from \"./Button\""
+    ]
+  },
+  {
+    "path": "src/components/ui/table-base.tsx",
+    "lineCount": 118,
+    "sizeBytes": 2777,
+    "importLines": [
+      "import * as React from \"react\"",
+      "import { cn } from \"src/components/ui/utils\""
+    ]
+  },
+  {
+    "path": "src/modules/individual/IndividualProfile.tsx",
+    "lineCount": 118,
+    "sizeBytes": 4414,
+    "importLines": [
+      "import React, { useState, useEffect } from 'react';\r",
+      "import { useAuth } from '../../context/AuthContext';\r",
+      "import { useNotification } from '../../hooks/useNotification';\r",
+      "import { apiFetch } from '../../lib/api';\r"
+    ]
+  },
+  {
+    "path": "src/components/ui/breadcrumb-base.tsx",
+    "lineCount": 116,
+    "sizeBytes": 2708,
+    "importLines": [
+      "import * as React from \"react\"",
+      "import { Slot } from \"@radix-ui/react-slot\"",
+      "import { ChevronRight, MoreHorizontal } from \"lucide-react\"",
+      "import { cn } from \"./utils\""
+    ]
+  },
+  {
+    "path": "src/modules/business/layouts/BusinessLayout.tsx",
+    "lineCount": 116,
+    "sizeBytes": 3846,
+    "importLines": [
+      "import React from 'react';",
+      "import { useAuth } from '../../../context/AuthContext';",
+      "import { PageLayout } from '../../../components/layout/PageLayout';",
+      "import { Button } from '../../../components/ui/Button';",
+      "import { "
+    ]
+  },
+  {
+    "path": "src/modules/individual/IndividualAddresses.tsx",
+    "lineCount": 116,
+    "sizeBytes": 4613,
+    "importLines": [
+      "import React, { useState, useEffect } from 'react';\r",
+      "import { useAuth } from '../../context/AuthContext';\r",
+      "import { useNotification } from '../../hooks/useNotification';\r"
+    ]
+  },
+  {
+    "path": "server/src/documents/renderers/purchase-order/PurchaseOrderRenderer.ts",
+    "lineCount": 112,
+    "sizeBytes": 4523,
+    "importLines": [
+      "import { DocumentRenderer } from '../DocumentRenderer';\r",
+      "import { DocumentLayout } from '../../shared/DocumentLayout';\r",
+      "import { Header } from '../../shared/Header';\r",
+      "import { SignatureBlock } from '../../shared/SignatureBlock';\r"
+    ]
+  },
+  {
+    "path": "src/modules/professional/layouts/ProfessionalLayout.tsx",
+    "lineCount": 112,
+    "sizeBytes": 3699,
+    "importLines": [
+      "import React from 'react';",
+      "import { useAuth } from '../../../context/AuthContext';",
+      "import { PageLayout } from '../../../components/layout/PageLayout';",
+      "import { Button } from '../../../components/ui/Button';",
+      "import { "
+    ]
+  },
+  {
+    "path": "src/modules/individual/layouts/IndividualLayout.tsx",
+    "lineCount": 110,
+    "sizeBytes": 3594,
+    "importLines": [
+      "import React from 'react';",
+      "import { useAuth } from '../../../context/AuthContext';",
+      "import { PageLayout } from '../../../components/layout/PageLayout';",
+      "import { Button } from '../../../components/ui/Button';",
+      "import { "
+    ]
+  },
+  {
+    "path": "src/modules/admin/quotations/components/TermsPanel.tsx",
+    "lineCount": 107,
+    "sizeBytes": 4503,
+    "importLines": [
+      "import React from 'react';\r"
+    ]
+  },
+  {
+    "path": "server/src/database/repositories/dashboard.repository.ts",
+    "lineCount": 106,
+    "sizeBytes": 3804,
+    "importLines": [
+      "import { Pool } from 'pg';"
+    ]
+  },
+  {
+    "path": "src/components/layout/WorkspaceLayout.tsx",
+    "lineCount": 105,
+    "sizeBytes": 3228,
+    "importLines": [
+      "import * as React from 'react';\r",
+      "import { cn } from '../ui/utils';\r"
+    ]
+  },
+  {
+    "path": "server/src/database/verifyBuildPoints.ts",
+    "lineCount": 104,
+    "sizeBytes": 3760,
+    "importLines": [
+      "import { Pool } from 'pg';",
+      "import * as fs from 'fs';",
+      "import * as path from 'path';",
+      "import 'dotenv/config';",
+      "import { readJsonDb, usePostgres } from './db';"
+    ]
+  },
+  {
+    "path": "src/modules/admin/quotations/services/quotation.service.ts",
+    "lineCount": 104,
+    "sizeBytes": 3360,
+    "importLines": [
+      "import { apiFetch } from '../../../../lib/api';\r"
+    ]
+  },
+  {
+    "path": "src/utils/csvHelpers.ts",
+    "lineCount": 104,
+    "sizeBytes": 3061,
+    "importLines": []
+  },
+  {
+    "path": "src/components/feedback/ConfirmDialog/ConfirmDialog.tsx",
+    "lineCount": 102,
+    "sizeBytes": 3309,
+    "importLines": [
+      "import React, { useEffect } from 'react';\r",
+      "import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../ui/Dialog';\r",
+      "import { Button } from '../../ui/Button';\r",
+      "import { AlertTriangle, Info, ShieldAlert, CheckCircle } from 'lucide-react';\r"
+    ]
+  },
+  {
+    "path": "src/modules/admin/quotations/components/CustomerPanel.tsx",
+    "lineCount": 99,
+    "sizeBytes": 4087,
+    "importLines": [
+      "import React from 'react';\r"
+    ]
+  },
+  {
+    "path": "server/src/modules/settings/SettingsService.ts",
+    "lineCount": 97,
+    "sizeBytes": 4510,
+    "importLines": [
+      "import { pgPool, usePostgres, readJsonDb, writeJsonDb } from '../../database/db';",
+      "import { AppSettings } from './Settings';"
+    ]
+  },
+  {
+    "path": "scripts/verify_auth_migration.ts",
+    "lineCount": 96,
+    "sizeBytes": 3398,
+    "importLines": [
+      "import { addUser, getUserByEmail, updateUser, deleteUserByEmail } from '../server/src/db';",
+      "import * as crypto from 'crypto';",
+      "import * as argon2 from 'argon2';",
+      "import assert from 'assert';",
+      "import { execSync } from 'child_process';",
+      "    execSync('npx ts-node -P server/tsconfig.json -e \"require(\\'./server/src/utils/jwt\\')\"', { "
+    ]
+  },
+  {
+    "path": "src/components/ui/Switch.tsx",
+    "lineCount": 95,
+    "sizeBytes": 2835,
+    "importLines": [
+      "import * as React from 'react';",
+      "import { Switch as SwitchBase } from './switch-base';",
+      "import { cn } from './utils';"
+    ]
+  },
+  {
+    "path": "server/src/documents/controllers/document.controller.ts",
+    "lineCount": 94,
+    "sizeBytes": 3487,
+    "importLines": [
+      "import { Request, Response } from 'express';\r",
+      "import { QuotationService } from '../../services/quotation.service';\r",
+      "import { getOrderById } from '../../modules/orders/OrderService';\r",
+      "import { DocumentService } from '../document.service';\r",
+      "import { pgPool } from '../../database/db';\r"
+    ]
+  },
+  {
+    "path": "server/src/modules/catalog/ImportHistoryService.ts",
+    "lineCount": 91,
+    "sizeBytes": 3070,
+    "importLines": [
+      "import { pgPool, usePostgres, readJsonDb, writeJsonDb } from '../../database/db';\r",
+      "import { ImportHistory } from './ImportHistory';\r"
+    ]
+  },
+  {
+    "path": "scripts/create_admin.cjs",
+    "lineCount": 89,
+    "sizeBytes": 3021,
+    "importLines": [
+      "const fs = require('fs');",
+      "const path = require('path');",
+      "const argon2 = require('argon2');"
+    ]
+  },
+  {
+    "path": "src/components/ui/Drawer.tsx",
+    "lineCount": 89,
+    "sizeBytes": 1900,
+    "importLines": [
+      "import * as React from 'react';",
+      "import { cn } from './utils';",
+      "import {"
+    ]
+  },
+  {
+    "path": "src/components/ui/Radio.tsx",
+    "lineCount": 89,
+    "sizeBytes": 2612,
+    "importLines": [
+      "import * as React from 'react';",
+      "import { RadioGroup, RadioGroupItem } from './radio-group-base';",
+      "import { cn } from './utils';"
+    ]
+  },
+  {
+    "path": "src/modules/admin/quotations/components/ApprovalTimeline.tsx",
+    "lineCount": 88,
+    "sizeBytes": 3981,
+    "importLines": [
+      "import React from 'react';\r"
+    ]
+  },
+  {
+    "path": "src/components/ui/Checkbox.tsx",
+    "lineCount": 86,
+    "sizeBytes": 2355,
+    "importLines": [
+      "import * as React from 'react';",
+      "import { Checkbox as CheckboxBase } from './checkbox-base';",
+      "import { cn } from './utils';"
+    ]
+  },
+  {
+    "path": "src/context/NotificationContext.tsx",
+    "lineCount": 86,
+    "sizeBytes": 2202,
+    "importLines": [
+      "import React, { createContext, useContext, useState, useEffect } from 'react';"
+    ]
+  },
+  {
+    "path": "src/components/Categories.tsx",
+    "lineCount": 85,
+    "sizeBytes": 3787,
+    "importLines": [
+      "import { useState, useEffect } from 'react'\r",
+      "import { apiFetch } from '../lib/api';"
+    ]
+  },
+  {
+    "path": "src/core/components/WorkspaceShell.tsx",
+    "lineCount": 83,
+    "sizeBytes": 2683,
+    "importLines": [
+      "import * as React from 'react';\r"
+    ]
+  },
+  {
+    "path": "src/modules/business/BusinessProjects.tsx",
+    "lineCount": 82,
+    "sizeBytes": 3549,
+    "importLines": [
+      "import React, { useState, useEffect } from 'react';",
+      "import { useAuth } from '../../context/AuthContext';"
+    ]
+  },
+  {
+    "path": "src/components/ui/Button.tsx",
+    "lineCount": 81,
+    "sizeBytes": 2675,
+    "importLines": [
+      "import * as React from 'react';",
+      "import { Button as ShadcnButton } from './button-base';",
+      "import { cva, type VariantProps } from 'class-variance-authority';",
+      "import { cn } from './utils';"
+    ]
+  },
+  {
+    "path": "src/components/ui/card-base.tsx",
+    "lineCount": 80,
+    "sizeBytes": 1870,
+    "importLines": [
+      "import * as React from \"react\"",
+      "import { cn } from \"src/components/ui/utils\""
+    ]
+  },
+  {
+    "path": "server/src/database/db.ts",
+    "lineCount": 79,
+    "sizeBytes": 2314,
+    "importLines": [
+      "import 'dotenv/config';\r",
+      "import fs from 'fs';\r",
+      "import path from 'path';\r",
+      "import { Pool } from 'pg';\r",
+      "import './initDb';\r"
+    ]
+  },
+  {
+    "path": "src/modules/admin/quotations/components/VersionHistory.tsx",
+    "lineCount": 79,
+    "sizeBytes": 3123,
+    "importLines": [
+      "import React from 'react';\r"
+    ]
+  },
+  {
+    "path": "server/src/modules/rfq/RFQ.ts",
+    "lineCount": 78,
+    "sizeBytes": 1599,
+    "importLines": []
+  },
+  {
+    "path": "src/components/ui/Form.tsx",
+    "lineCount": 77,
+    "sizeBytes": 1902,
+    "importLines": [
+      "import * as React from 'react';",
+      "import * as FormBase from './form-base';",
+      "import { cn } from './utils';"
+    ]
+  },
+  {
+    "path": "src/components/ui/Accordion.tsx",
+    "lineCount": 76,
+    "sizeBytes": 2834,
+    "importLines": [
+      "import * as React from 'react';",
+      "import * as AccordionPrimitive from '@radix-ui/react-accordion';",
+      "import { ChevronDown } from 'lucide-react';",
+      "import { cn } from './utils';"
+    ]
+  },
+  {
+    "path": "server/src/database/seedOrders.ts",
+    "lineCount": 75,
+    "sizeBytes": 3640,
+    "importLines": [
+      "import { Client } from 'pg';\r",
+      "import 'dotenv/config';\r"
+    ]
+  },
+  {
+    "path": "scripts/log-change.js",
+    "lineCount": 71,
+    "sizeBytes": 2509,
+    "importLines": [
+      "const fs = require('fs');\r",
+      "const path = require('path');\r"
+    ]
+  },
+  {
+    "path": "server/src/domain/shared/Money.ts",
+    "lineCount": 68,
+    "sizeBytes": 1956,
+    "importLines": []
+  },
+  {
+    "path": "src/components/ErrorBoundary.tsx",
+    "lineCount": 68,
+    "sizeBytes": 2221,
+    "importLines": [
+      "import { Component } from 'react';\r",
+      "import type { ErrorInfo, ReactNode } from 'react';\r"
+    ]
+  },
+  {
+    "path": "src/components/shared/Timeline.tsx",
+    "lineCount": 68,
+    "sizeBytes": 2348,
+    "importLines": [
+      "import * as React from 'react';",
+      "import { cn } from '../ui/utils';"
+    ]
+  },
+  {
+    "path": "src/components/ui/Avatar.tsx",
+    "lineCount": 68,
+    "sizeBytes": 1787,
+    "importLines": [
+      "import * as React from 'react';",
+      "import * as AvatarBase from './avatar-base';",
+      "import { cn } from './utils';"
+    ]
+  },
+  {
+    "path": "src/core/hooks/useOrders.ts",
+    "lineCount": 68,
+    "sizeBytes": 1987,
+    "importLines": [
+      "import { useState, useEffect } from 'react';\r",
+      "import { apiFetch } from '../../lib/api';\r",
+      "import { useNotification } from '../../hooks/useNotification';\r"
+    ]
+  },
+  {
+    "path": "server/src/modules/users/permissions.ts",
+    "lineCount": 67,
+    "sizeBytes": 2437,
+    "importLines": [
+      "import { User } from './User';"
+    ]
+  },
+  {
+    "path": "src/components/feedback/Banner/Banner.tsx",
+    "lineCount": 67,
+    "sizeBytes": 1940,
+    "importLines": [
+      "import React from 'react';\r",
+      "import { AlertTriangle, WifiOff, Database, ShieldAlert } from 'lucide-react';\r"
+    ]
+  },
+  {
+    "path": "server/src/db.ts",
+    "lineCount": 66,
+    "sizeBytes": 2700,
+    "importLines": []
+  },
+  {
+    "path": "server/src/documents/document.service.ts",
+    "lineCount": 65,
+    "sizeBytes": 2077,
+    "importLines": [
+      "import { QuotationRenderer } from './renderers/quotation/QuotationRenderer';\r",
+      "import { InvoiceRenderer } from './renderers/invoice/InvoiceRenderer';\r",
+      "import { PurchaseOrderRenderer } from './renderers/purchase-order/PurchaseOrderRenderer';\r",
+      "import { PdfGenerator } from './pdf/PdfGenerator';\r",
+      "import { DocumentCache } from './pdf/DocumentCache';\r"
+    ]
+  },
+  {
+    "path": "server/src/documents/pdf/BrowserManager.ts",
+    "lineCount": 62,
+    "sizeBytes": 1761,
+    "importLines": [
+      "import puppeteer, { Browser } from 'puppeteer';\r"
+    ]
+  },
+  {
+    "path": "src/core/hooks/useProducts.ts",
+    "lineCount": 62,
+    "sizeBytes": 2209,
+    "importLines": [
+      "import { useState, useEffect } from 'react';\r",
+      "import { apiFetch } from '../../lib/api';"
+    ]
+  },
+  {
+    "path": "server/src/database/repositories/comment.repository.ts",
+    "lineCount": 58,
+    "sizeBytes": 1756,
+    "importLines": [
+      "import { Pool, PoolClient } from 'pg';"
+    ]
+  },
+  {
+    "path": "src/components/Trust.tsx",
+    "lineCount": 58,
+    "sizeBytes": 1824,
+    "importLines": []
+  },
+  {
+    "path": "src/lib/runtime.ts",
+    "lineCount": 58,
+    "sizeBytes": 1663,
+    "importLines": [
+      "import { RecoveryManager } from './recoveryManager';\r",
+      "import { apiClient, apiFetch } from './api';\r"
+    ]
+  },
+  {
+    "path": "src/components/ui/button-base.tsx",
+    "lineCount": 57,
+    "sizeBytes": 1913,
+    "importLines": [
+      "import * as React from \"react\"",
+      "import { Slot } from \"@radix-ui/react-slot\"",
+      "import { cva, type VariantProps } from \"class-variance-authority\"",
+      "import { cn } from \"src/components/ui/utils\""
+    ]
+  },
+  {
+    "path": "scripts/git-autocommit.cjs",
+    "lineCount": 56,
+    "sizeBytes": 1666,
+    "importLines": [
+      "const { execSync } = require('child_process');"
+    ]
+  },
+  {
+    "path": "src/components/shared/CommentBox.tsx",
+    "lineCount": 56,
+    "sizeBytes": 2087,
+    "importLines": [
+      "import * as React from 'react';",
+      "import { Send, User } from 'lucide-react';",
+      "import { cn } from '../ui/utils';",
+      "import { Button } from '../ui/Button';"
+    ]
+  },
+  {
+    "path": "src/components/ui/StatusBadge.tsx",
+    "lineCount": 55,
+    "sizeBytes": 1133,
+    "importLines": [
+      "import { Badge } from './Badge';"
+    ]
+  },
+  {
+    "path": "src/core/permissions/permissions.ts",
+    "lineCount": 55,
+    "sizeBytes": 2019,
+    "importLines": []
+  },
+  {
+    "path": "server/src/database/repositories/activity.repository.ts",
+    "lineCount": 54,
+    "sizeBytes": 1622,
+    "importLines": [
+      "import { Pool, PoolClient } from 'pg';"
+    ]
+  },
+  {
+    "path": "server/src/documents/pdf/DocumentCache.ts",
+    "lineCount": 53,
+    "sizeBytes": 1322,
+    "importLines": []
+  },
+  {
+    "path": "src/components/ui/Tabs.tsx",
+    "lineCount": 53,
+    "sizeBytes": 1986,
+    "importLines": [
+      "import * as React from 'react';",
+      "import * as TabsPrimitive from '@radix-ui/react-tabs';",
+      "import { cn } from './utils';"
+    ]
+  },
+  {
+    "path": "server/src/events/registerHandlers.ts",
+    "lineCount": 52,
+    "sizeBytes": 2195,
+    "importLines": [
+      "import { EventBus } from '../domain/shared/EventBus';",
+      "import { DashboardRepository } from '../database/repositories/dashboard.repository';",
+      "import { NotificationProvider } from '../domain/shared/NotificationProvider';"
+    ]
+  },
+  {
+    "path": "server/src/modules/catalog/Product.ts",
+    "lineCount": 52,
+    "sizeBytes": 1132,
+    "importLines": []
+  },
+  {
+    "path": "server/src/database/repositories/attachment.repository.ts",
+    "lineCount": 51,
+    "sizeBytes": 1538,
+    "importLines": [
+      "import { Pool, PoolClient } from 'pg';"
+    ]
+  },
+  {
+    "path": "src/components/shared/FilterBar.tsx",
+    "lineCount": 51,
+    "sizeBytes": 1570,
+    "importLines": [
+      "import * as React from 'react';",
+      "import { SlidersHorizontal, RotateCcw } from 'lucide-react';",
+      "import { cn } from '../ui/utils';",
+      "import { Button } from '../ui/Button';"
+    ]
+  },
+  {
+    "path": "server/src/database/seedRunner.ts",
+    "lineCount": 50,
+    "sizeBytes": 1545,
+    "importLines": [
+      "import { seedDevelopmentUsers } from './seedDevelopmentUsers';\r",
+      "import { pgPool, usePostgres, readJsonDb } from './db';\r",
+      "import { waitForInit } from './initDb';\r"
+    ]
+  },
+  {
+    "path": "src/components/ui/Tooltip.tsx",
+    "lineCount": 50,
+    "sizeBytes": 1403,
+    "importLines": [
+      "import * as React from 'react';",
+      "import * as TooltipBase from './tooltip-base';",
+      "import { cn } from './utils';"
+    ]
+  },
+  {
+    "path": "src/components/feedback/ErrorState/ErrorState.tsx",
+    "lineCount": 49,
+    "sizeBytes": 1649,
+    "importLines": [
+      "import React from 'react';\r",
+      "import { AlertCircle, RefreshCw } from 'lucide-react';\r",
+      "import { Button } from '../../ui/Button';\r"
+    ]
+  },
+  {
+    "path": "src/components/feedback/OfflineIndicator/OfflineIndicator.tsx",
+    "lineCount": 49,
+    "sizeBytes": 1580,
+    "importLines": [
+      "import React, { useEffect, useState } from 'react';\r",
+      "import { WifiOff, RefreshCw } from 'lucide-react';\r"
+    ]
+  },
+  {
+    "path": "src/components/ui/avatar-base.tsx",
+    "lineCount": 49,
+    "sizeBytes": 1417,
+    "importLines": [
+      "import * as React from \"react\"",
+      "import * as AvatarPrimitive from \"@radix-ui/react-avatar\"",
+      "import { cn } from \"src/components/ui/utils\""
+    ]
+  },
+  {
+    "path": "server/src/documents/shared/Header.ts",
+    "lineCount": 48,
+    "sizeBytes": 1581,
+    "importLines": []
+  },
+  {
+    "path": "server/src/domain/shared/approval/ApprovalEngine.ts",
+    "lineCount": 46,
+    "sizeBytes": 1386,
+    "importLines": [
+      "import { PoolClient } from 'pg';"
+    ]
+  },
+  {
+    "path": "src/components/shared/SearchInput.tsx",
+    "lineCount": 46,
+    "sizeBytes": 1550,
+    "importLines": [
+      "import * as React from 'react';",
+      "import { Search, Loader2 } from 'lucide-react';",
+      "import { cn } from '../ui/utils';"
+    ]
+  },
+  {
+    "path": "src/components/shared/States.tsx",
+    "lineCount": 46,
+    "sizeBytes": 1309,
+    "importLines": [
+      "import * as React from 'react';",
+      "import { Loader2 } from 'lucide-react';",
+      "import { cn } from '../ui/utils';",
+      "import { Skeleton } from '../ui/Skeleton';"
+    ]
+  },
+  {
+    "path": "src/components/ui/radio-group-base.tsx",
+    "lineCount": 45,
+    "sizeBytes": 1493,
+    "importLines": [
+      "import * as React from \"react\"",
+      "import * as RadioGroupPrimitive from \"@radix-ui/react-radio-group\"",
+      "import { Circle } from \"lucide-react\"",
+      "import { cn } from \"src/components/ui/utils\""
+    ]
+  },
+  {
+    "path": "src/components/feedback/EmptyState/EmptyState.tsx",
+    "lineCount": 43,
+    "sizeBytes": 1356,
+    "importLines": [
+      "import React from 'react';\r",
+      "import { Inbox } from 'lucide-react';\r",
+      "import { Button } from '../../ui/Button';\r"
+    ]
+  },
+  {
+    "path": "src/core/hooks/useRFQs.ts",
+    "lineCount": 43,
+    "sizeBytes": 1074,
+    "importLines": [
+      "import { useState, useEffect } from 'react';\r",
+      "import { apiFetch } from '../../lib/api';"
+    ]
+  },
+  {
+    "path": "server/src/controllers/dashboard.controller.ts",
+    "lineCount": 41,
+    "sizeBytes": 1235,
+    "importLines": [
+      "import { Response } from 'express';",
+      "import { pgPool } from '../database/db';",
+      "import { DashboardRepository } from '../database/repositories/dashboard.repository';",
+      "import { ActivityRepository } from '../database/repositories/activity.repository';"
+    ]
+  },
+  {
+    "path": "src/components/navigation/PageHeader.tsx",
+    "lineCount": 41,
+    "sizeBytes": 1145,
+    "importLines": [
+      "import * as React from 'react';",
+      "import { cn } from '../ui/utils';"
+    ]
+  },
+  {
+    "path": "server/src/domain/shared/tax/GSTStrategy.ts",
+    "lineCount": 40,
+    "sizeBytes": 1088,
+    "importLines": [
+      "import { Money } from '../Money';",
+      "import { TaxStrategy, TaxCalculationResult } from './TaxStrategy';"
+    ]
+  },
+  {
+    "path": "src/components/ui/Popover.tsx",
+    "lineCount": 40,
+    "sizeBytes": 1024,
+    "importLines": [
+      "import * as React from 'react';",
+      "import * as PopoverBase from './popover-base';",
+      "import { cn } from './utils';"
+    ]
+  },
+  {
+    "path": "src/core/auth/PortalResolver.tsx",
+    "lineCount": 40,
+    "sizeBytes": 1205,
+    "importLines": [
+      "import React, { useEffect } from 'react';",
+      "import { useAuth } from '../../context/AuthContext';"
+    ]
+  },
+  {
+    "path": "server/src/domain/shared/StorageAdapter.ts",
+    "lineCount": 39,
+    "sizeBytes": 1051,
+    "importLines": []
+  },
+  {
+    "path": "server/src/middlewares/auth.middleware.ts",
+    "lineCount": 39,
+    "sizeBytes": 1228,
+    "importLines": [
+      "import { Request, Response, NextFunction } from 'express';",
+      "import { getUserById } from '../db';",
+      "import { verifyToken } from '../utils/jwt';"
+    ]
+  },
+  {
+    "path": "server/src/modules/users/User.ts",
+    "lineCount": 39,
+    "sizeBytes": 992,
+    "importLines": []
+  },
+  {
+    "path": "server/src/documents/pdf/PdfGenerator.ts",
+    "lineCount": 38,
+    "sizeBytes": 1165,
+    "importLines": [
+      "import { BrowserManager } from './BrowserManager';\r"
+    ]
+  },
+  {
+    "path": "src/components/shared/DocumentStatusBadge.tsx",
+    "lineCount": 38,
+    "sizeBytes": 1156,
+    "importLines": [
+      "import React from 'react';"
+    ]
+  },
+  {
+    "path": "src/core/config/searchCache.ts",
+    "lineCount": 38,
+    "sizeBytes": 1163,
+    "importLines": []
+  },
+  {
+    "path": "src/components/ui/badge-base.tsx",
+    "lineCount": 37,
+    "sizeBytes": 1140,
+    "importLines": [
+      "import * as React from \"react\"",
+      "import { cva, type VariantProps } from \"class-variance-authority\"",
+      "import { cn } from \"src/components/ui/utils\""
+    ]
+  },
+  {
+    "path": "server/check_db.js",
+    "lineCount": 36,
+    "sizeBytes": 963,
+    "importLines": [
+      "const { Client } = require('pg');\r",
+      "require('dotenv').config();\r"
+    ]
+  },
+  {
+    "path": "src/components/ui/Skeleton.tsx",
+    "lineCount": 36,
+    "sizeBytes": 780,
+    "importLines": [
+      "import * as React from 'react';",
+      "import { Skeleton as SkeletonBase } from './skeleton-base';",
+      "import { cn } from './utils';"
+    ]
+  },
+  {
+    "path": "server/src/utils/jwt.ts",
+    "lineCount": 35,
+    "sizeBytes": 1098,
+    "importLines": [
+      "import crypto from 'crypto';",
+      "import dotenv from 'dotenv';"
+    ]
+  },
+  {
+    "path": "server/src/documents/shared/DocumentLayout.ts",
+    "lineCount": 33,
+    "sizeBytes": 795,
+    "importLines": [
+      "import { CorporateTheme } from './CorporateTheme';\r",
+      "import { Watermark } from './Watermark';\r",
+      "import { Footer } from './Footer';\r"
+    ]
+  },
+  {
+    "path": "src/components/ui/Badge.tsx",
+    "lineCount": 33,
+    "sizeBytes": 1305,
+    "importLines": [
+      "import * as React from 'react';",
+      "import { Badge as ShadcnBadge } from './badge-base';",
+      "import { cva, type VariantProps } from 'class-variance-authority';",
+      "import { cn } from './utils';"
+    ]
+  },
+  {
+    "path": "server/src/domain/shared/EventBus.ts",
+    "lineCount": 32,
+    "sizeBytes": 824,
+    "importLines": [
+      "import { EventEmitter } from 'events';"
+    ]
+  },
+  {
+    "path": "src/components/ui/checkbox-base.tsx",
+    "lineCount": 31,
+    "sizeBytes": 1119,
+    "importLines": [
+      "import * as React from \"react\"",
+      "import * as CheckboxPrimitive from \"@radix-ui/react-checkbox\"",
+      "import { Check } from \"lucide-react\"",
+      "import { cn } from \"src/components/ui/utils\""
+    ]
+  },
+  {
+    "path": "src/core/config/format.ts",
+    "lineCount": 31,
+    "sizeBytes": 899,
+    "importLines": []
+  },
+  {
+    "path": "src/modules/admin/quotations/components/CustomerNotes.tsx",
+    "lineCount": 31,
+    "sizeBytes": 1274,
+    "importLines": [
+      "import React from 'react';\r"
+    ]
+  },
+  {
+    "path": "src/modules/admin/quotations/components/InternalNotes.tsx",
+    "lineCount": 31,
+    "sizeBytes": 1270,
+    "importLines": [
+      "import React from 'react';\r"
+    ]
+  },
+  {
+    "path": "server/src/documents/shared/SignatureBlock.ts",
+    "lineCount": 30,
+    "sizeBytes": 881,
+    "importLines": []
+  },
+  {
+    "path": "src/components/ui/popover-base.tsx",
+    "lineCount": 30,
+    "sizeBytes": 1292,
+    "importLines": [
+      "import * as React from \"react\"",
+      "import * as PopoverPrimitive from \"@radix-ui/react-popover\"",
+      "import { cn } from \"src/components/ui/utils\""
+    ]
+  },
+  {
+    "path": "server/src/domain/shared/PermissionEngine.ts",
+    "lineCount": 29,
+    "sizeBytes": 972,
+    "importLines": []
+  },
+  {
+    "path": "server/src/modules/orders/Order.ts",
+    "lineCount": 29,
+    "sizeBytes": 649,
+    "importLines": []
+  },
+  {
+    "path": "src/components/ui/tooltip-base.tsx",
+    "lineCount": 29,
+    "sizeBytes": 1207,
+    "importLines": [
+      "import * as React from \"react\"",
+      "import * as TooltipPrimitive from \"@radix-ui/react-tooltip\"",
+      "import { cn } from \"src/components/ui/utils\""
+    ]
+  },
+  {
+    "path": "src/components/ui/switch-base.tsx",
+    "lineCount": 28,
+    "sizeBytes": 1151,
+    "importLines": [
+      "import * as React from \"react\"",
+      "import * as SwitchPrimitives from \"@radix-ui/react-switch\"",
+      "import { cn } from \"src/components/ui/utils\""
+    ]
+  },
+  {
+    "path": "src/components/ui/label.tsx",
+    "lineCount": 25,
+    "sizeBytes": 722,
+    "importLines": [
+      "import * as React from \"react\"",
+      "import * as LabelPrimitive from \"@radix-ui/react-label\"",
+      "import { cva, type VariantProps } from \"class-variance-authority\"",
+      "import { cn } from \"src/components/ui/utils\""
+    ]
+  },
+  {
+    "path": "src/hooks/useNotification.ts",
+    "lineCount": 24,
+    "sizeBytes": 742,
+    "importLines": [
+      "import { useContext } from 'react';\r",
+      "import { NotificationContext } from '../providers/NotificationProvider';\r",
+      "import { notification } from '../lib/notification';\r"
+    ]
+  },
+  {
+    "path": "eslint.config.js",
+    "lineCount": 23,
+    "sizeBytes": 613,
+    "importLines": [
+      "import js from '@eslint/js'\r",
+      "import globals from 'globals'\r",
+      "import reactHooks from 'eslint-plugin-react-hooks'\r",
+      "import reactRefresh from 'eslint-plugin-react-refresh'\r",
+      "import tseslint from 'typescript-eslint'\r",
+      "import { defineConfig, globalIgnores } from 'eslint/config'\r"
+    ]
+  },
+  {
+    "path": "server/src/routes/quotation.routes.ts",
+    "lineCount": 23,
+    "sizeBytes": 1134,
+    "importLines": [
+      "import { Router } from 'express';",
+      "import { QuotationController } from '../controllers/quotation.controller';",
+      "import { authenticateUser, requireAdmin } from '../middlewares/auth.middleware';"
+    ]
+  },
+  {
+    "path": "src/components/ui/input-base.tsx",
+    "lineCount": 23,
+    "sizeBytes": 803,
+    "importLines": [
+      "import * as React from \"react\"",
+      "import { cn } from \"src/components/ui/utils\""
+    ]
+  },
+  {
+    "path": "src/components/ui/textarea-base.tsx",
+    "lineCount": 23,
+    "sizeBytes": 701,
+    "importLines": [
+      "import * as React from \"react\"",
+      "import { cn } from \"src/components/ui/utils\""
+    ]
+  },
+  {
+    "path": "vite.config.ts",
+    "lineCount": 23,
+    "sizeBytes": 443,
+    "importLines": [
+      "import { defineConfig } from 'vite'\r",
+      "import react from '@vitejs/plugin-react'\r",
+      "import path from 'path'\r"
+    ]
+  },
+  {
+    "path": "server/src/domain/shared/tax/ExemptStrategy.ts",
+    "lineCount": 19,
+    "sizeBytes": 527,
+    "importLines": [
+      "import { Money } from '../Money';",
+      "import { TaxStrategy, TaxCalculationResult } from './TaxStrategy';"
+    ]
+  },
+  {
+    "path": "server/src/modules/inventory/Inventory.ts",
+    "lineCount": 19,
+    "sizeBytes": 330,
+    "importLines": []
+  },
+  {
+    "path": "src/core/permissions/usePermissions.ts",
+    "lineCount": 19,
+    "sizeBytes": 618,
+    "importLines": [
+      "import { useAuth } from '../../context/AuthContext';",
+      "import * as perm from './permissions';"
+    ]
+  },
+  {
+    "path": "src/components/shared/Card.tsx",
+    "lineCount": 18,
+    "sizeBytes": 331,
+    "importLines": []
+  },
+  {
+    "path": "server/src/domain/shared/tax/TaxStrategy.ts",
+    "lineCount": 17,
+    "sizeBytes": 330,
+    "importLines": [
+      "import { Money } from '../Money';"
+    ]
+  },
+  {
+    "path": "server/src/seed/settings.ts",
+    "lineCount": 16,
+    "sizeBytes": 385,
+    "importLines": [
+      "import { AppSettings } from '../modules/settings/Settings';"
+    ]
+  },
+  {
+    "path": "src/components/ui/skeleton-base.tsx",
+    "lineCount": 16,
+    "sizeBytes": 273,
+    "importLines": [
+      "import { cn } from \"src/components/ui/utils\""
+    ]
+  },
+  {
+    "path": "server/src/routes/dashboard.routes.ts",
+    "lineCount": 15,
+    "sizeBytes": 491,
+    "importLines": [
+      "import { Router } from 'express';",
+      "import { DashboardController } from '../controllers/dashboard.controller';",
+      "import { authenticateUser, requireAdmin } from '../middlewares/auth.middleware';"
+    ]
+  },
+  {
+    "path": "server/src/modules/settings/Settings.ts",
+    "lineCount": 14,
+    "sizeBytes": 334,
+    "importLines": []
+  },
+  {
+    "path": "server/src/domain/shared/NotificationProvider.ts",
+    "lineCount": 13,
+    "sizeBytes": 542,
+    "importLines": []
+  },
+  {
+    "path": "server/src/routes/index.ts",
+    "lineCount": 13,
+    "sizeBytes": 404,
+    "importLines": [
+      "import { Router } from 'express';\r",
+      "import dashboardRoutes from './dashboard.routes';\r",
+      "import quotationRoutes from './quotation.routes';\r",
+      "import documentRoutes from '../documents/routes/document.routes';\r"
+    ]
+  },
+  {
+    "path": "server/src/seed/categories.ts",
+    "lineCount": 13,
+    "sizeBytes": 1076,
+    "importLines": [
+      "import { Category } from '../modules/catalog/Category';"
+    ]
+  },
+  {
+    "path": "src/components/navigation/Breadcrumb.tsx",
+    "lineCount": 13,
+    "sizeBytes": 275,
+    "importLines": []
+  },
+  {
+    "path": "server/src/database/repositories/SearchBuilder.ts",
+    "lineCount": 12,
+    "sizeBytes": 368,
+    "importLines": []
+  },
+  {
+    "path": "server/src/documents/routes/document.routes.ts",
+    "lineCount": 12,
+    "sizeBytes": 439,
+    "importLines": [
+      "import { Router } from 'express';\r",
+      "import { DocumentController } from '../controllers/document.controller';\r",
+      "import { authenticateUser, requireAdmin } from '../../middlewares/auth.middleware';\r"
+    ]
+  },
+  {
+    "path": "server/src/domain/shared/NumberGenerator.ts",
+    "lineCount": 12,
+    "sizeBytes": 404,
+    "importLines": []
+  },
+  {
+    "path": "server/src/modules/catalog/ImportHistory.ts",
+    "lineCount": 12,
+    "sizeBytes": 259,
+    "importLines": []
+  },
+  {
+    "path": "server/src/modules/search/Search.ts",
+    "lineCount": 12,
+    "sizeBytes": 194,
+    "importLines": []
+  },
+  {
+    "path": "src/components/navigation/Pagination.tsx",
+    "lineCount": 12,
+    "sizeBytes": 230,
+    "importLines": []
+  },
+  {
+    "path": "server/src/documents/shared/PageNumber.ts",
+    "lineCount": 11,
+    "sizeBytes": 228,
+    "importLines": []
+  },
+  {
+    "path": "src/main.tsx",
+    "lineCount": 11,
+    "sizeBytes": 240,
+    "importLines": [
+      "import { StrictMode } from 'react'\r",
+      "import { createRoot } from 'react-dom/client'\r",
+      "import './index.css'\r",
+      "import App from './App.tsx'\r"
+    ]
+  },
+  {
+    "path": "server/src/domain/shared/pdf/DocumentGenerator.ts",
+    "lineCount": 10,
+    "sizeBytes": 244,
+    "importLines": []
+  },
+  {
+    "path": "server/src/modules/analytics/AuditLog.ts",
+    "lineCount": 10,
+    "sizeBytes": 199,
+    "importLines": []
+  },
+  {
+    "path": "server/src/documents/shared/Footer.ts",
+    "lineCount": 9,
+    "sizeBytes": 268,
+    "importLines": []
+  },
+  {
+    "path": "server/src/documents/shared/Watermark.ts",
+    "lineCount": 9,
+    "sizeBytes": 163,
+    "importLines": []
+  },
+  {
+    "path": "server/src/modules/catalog/Category.ts",
+    "lineCount": 9,
+    "sizeBytes": 147,
+    "importLines": []
+  },
+  {
+    "path": "server/src/modules/catalog/Brand.ts",
+    "lineCount": 8,
+    "sizeBytes": 140,
+    "importLines": []
+  },
+  {
+    "path": "postcss.config.js",
+    "lineCount": 7,
+    "sizeBytes": 86,
+    "importLines": []
+  },
+  {
+    "path": "src/components/ui/utils.ts",
+    "lineCount": 7,
+    "sizeBytes": 169,
+    "importLines": [
+      "import { clsx, type ClassValue } from 'clsx';",
+      "import { twMerge } from 'tailwind-merge';"
+    ]
+  },
+  {
+    "path": "src/config/api.ts",
+    "lineCount": 6,
+    "sizeBytes": 231,
+    "importLines": []
+  },
+  {
+    "path": "server/src/documents/renderers/DocumentRenderer.ts",
+    "lineCount": 4,
+    "sizeBytes": 81,
+    "importLines": []
+  }
+]

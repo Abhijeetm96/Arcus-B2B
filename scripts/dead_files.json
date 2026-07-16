@@ -1,0 +1,142 @@
+[
+  {
+    "file": "server/check_db.js",
+    "sizeBytes": 963,
+    "lines": 36
+  },
+  {
+    "file": "server/src/documents/shared/PageNumber.ts",
+    "sizeBytes": 228,
+    "lines": 11
+  },
+  {
+    "file": "server/src/documents/shared/styles/corporate-theme.ts",
+    "sizeBytes": 4116,
+    "lines": 201
+  },
+  {
+    "file": "server/src/domain/shared/NumberGenerator.ts",
+    "sizeBytes": 404,
+    "lines": 12
+  },
+  {
+    "file": "server/src/domain/shared/pdf/DocumentGenerator.ts",
+    "sizeBytes": 244,
+    "lines": 10
+  },
+  {
+    "file": "server/src/domain/shared/PricingEngine.ts",
+    "sizeBytes": 3887,
+    "lines": 128
+  },
+  {
+    "file": "server/src/domain/shared/StorageAdapter.ts",
+    "sizeBytes": 1051,
+    "lines": 39
+  },
+  {
+    "file": "server/src/domain/shared/tax/ExemptStrategy.ts",
+    "sizeBytes": 527,
+    "lines": 19
+  },
+  {
+    "file": "server/src/domain/shared/tax/GSTStrategy.ts",
+    "sizeBytes": 1088,
+    "lines": 40
+  },
+  {
+    "file": "server/src/modules/users/permissions.ts",
+    "sizeBytes": 2437,
+    "lines": 67
+  },
+  {
+    "file": "server/src/scripts/seedDevelopmentUsers.ts",
+    "sizeBytes": 7437,
+    "lines": 237
+  },
+  {
+    "file": "server/src/seed/settings.ts",
+    "sizeBytes": 385,
+    "lines": 16
+  },
+  {
+    "file": "src/components/AuthModals.tsx",
+    "sizeBytes": 15302,
+    "lines": 344
+  },
+  {
+    "file": "src/components/feedback/ErrorState/ErrorState.tsx",
+    "sizeBytes": 1649,
+    "lines": 49
+  },
+  {
+    "file": "src/components/shared/CommentBox.tsx",
+    "sizeBytes": 2087,
+    "lines": 56
+  },
+  {
+    "file": "src/components/shared/FilterBar.tsx",
+    "sizeBytes": 1570,
+    "lines": 51
+  },
+  {
+    "file": "src/components/shared/SearchInput.tsx",
+    "sizeBytes": 1550,
+    "lines": 46
+  },
+  {
+    "file": "src/components/shared/Timeline.tsx",
+    "sizeBytes": 2348,
+    "lines": 68
+  },
+  {
+    "file": "src/components/shared/UploadComponent.tsx",
+    "sizeBytes": 4674,
+    "lines": 125
+  },
+  {
+    "file": "src/components/ui/Accordion.tsx",
+    "sizeBytes": 2834,
+    "lines": 76
+  },
+  {
+    "file": "src/components/ui/label.tsx",
+    "sizeBytes": 722,
+    "lines": 25
+  },
+  {
+    "file": "src/components/ui/Tabs.tsx",
+    "sizeBytes": 1986,
+    "lines": 53
+  },
+  {
+    "file": "src/core/components/WorkspaceLeftSidebar.tsx",
+    "sizeBytes": 8074,
+    "lines": 223
+  },
+  {
+    "file": "src/core/components/WorkspaceShell.tsx",
+    "sizeBytes": 2683,
+    "lines": 83
+  },
+  {
+    "file": "src/core/hooks/useProducts.ts",
+    "sizeBytes": 2209,
+    "lines": 62
+  },
+  {
+    "file": "src/core/permissions/usePermissions.ts",
+    "sizeBytes": 618,
+    "lines": 19
+  },
+  {
+    "file": "src/lib/runtime.ts",
+    "sizeBytes": 1663,
+    "lines": 58
+  },
+  {
+    "file": "src/modules/admin/NegotiationCenter.tsx",
+    "sizeBytes": 10721,
+    "lines": 224
+  }
+]
