@@ -2,7 +2,11 @@ import { Client } from 'pg';
 import 'dotenv/config';
 
 async function seed() {
-  const connectionString = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_vfdn7mLCKT2s@ep-cold-silence-aoktz9xt-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    console.error('❌ Error: DATABASE_URL environment variable is not set!');
+    process.exit(1);
+  }
   console.log('🌱 Connecting to database to seed orders...');
   
   const client = new Client({
