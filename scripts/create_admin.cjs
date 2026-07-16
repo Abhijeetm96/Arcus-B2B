@@ -13,6 +13,25 @@ function hashPassword(password, salt) {
 }
 
 async function createAdmin() {
+  const email = process.env.ADMIN_EMAIL || process.argv[2];
+  const password = process.env.ADMIN_PASSWORD || process.argv[3];
+  const phone = process.env.ADMIN_PHONE || process.argv[4] || '9999999999';
+
+  if (!email || !password) {
+    console.error('Error: Admin email and password are required.');
+    console.error('Usage: node scripts/create_admin.cjs <email> <password> [phone]');
+    console.error('Alternatively, set environment variables: ADMIN_EMAIL and ADMIN_PASSWORD.');
+    process.exit(1);
+  }
+
+  const dbUrl = process.env.DATABASE_URL;
+  if (dbUrl) {
+    const isDevDb = dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1') || dbUrl.includes('dev') || dbUrl.includes('test');
+    if (!isDevDb) {
+      console.warn('\x1b[33m%s\x1b[0m', 'WARNING: Running create_admin script against a potentially non-development database URL: ' + dbUrl);
+    }
+  }
+
   try {
     if (!fs.existsSync(DB_FILE)) {
       console.error(`Database file not found at ${DB_FILE}`);
@@ -26,10 +45,6 @@ async function createAdmin() {
       db.users = [];
     }
 
-    const email = 'admin@arcus.com';
-    const password = 'adminpassword';
-    const phone = '9999999999';
-
     // Check if user already exists
     const existingUser = db.users.find(u => u.email.toLowerCase() === email.toLowerCase());
     if (existingUser) {
@@ -41,7 +56,7 @@ async function createAdmin() {
       existingUser.passwordHash = hashPassword(password, salt);
       existingUser.email_verified = true;
       existingUser.customerType = 'BUSINESS';
-      console.log(`Updated existing user to Admin with password "${password}"`);
+      console.log(`Updated existing user to Admin.`);
     } else {
       const salt = generateSalt();
       const hash = hashPassword(password, salt);
@@ -67,7 +82,7 @@ async function createAdmin() {
         updated_at: new Date().toISOString()
       };
       db.users.push(newAdmin);
-      console.log(`Created new Admin user with email "${email}" and password "${password}"`);
+      console.log(`Created new Admin user with email "${email}"`);
     }
 
     fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), 'utf-8');
