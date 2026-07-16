@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
+import argon2 from 'argon2';
 import https from 'https';
 import multer from 'multer';
 import * as XLSX from 'xlsx';
@@ -643,7 +644,7 @@ function generateSalt(): string {
   return crypto.randomBytes(16).toString('hex');
 }
 
-function hashPassword(password: string, salt: string): string {
+function hashPasswordLegacy(password: string, salt: string): string {
   return crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
 }
 
@@ -2540,15 +2541,14 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ error: 'A user with this phone number already exists.' });
     }
 
-    const salt = generateSalt();
-    const hash = hashPassword(password, salt);
+    const hash = await argon2.hash(password);
 
     const newUser = await addUser({
       name: sanitizeText(name),
       email: cleanEmail,
       phone: cleanPhone,
       passwordHash: hash,
-      passwordSalt: salt,
+      passwordSalt: 'argon2',
       companyName: companyName ? sanitizeText(companyName) : undefined,
       role: (role === 'Admin' || role === 'ADMIN') ? 'ADMIN' : 'USER',
       customerType: customerType || (isB2B ? 'BUSINESS' : (isPro ? 'PROFESSIONAL' : 'INDIVIDUAL')),
@@ -2948,9 +2948,47 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
-    const computedHash = hashPassword(password, user.passwordSalt);
-    if (computedHash !== user.passwordHash) {
+    // Verify password. Check if it's an Argon2 hash first.
+    let isValid = false;
+    let needsMigration = false;
+
+    if (user.passwordHash && user.passwordHash.startsWith('$argon2')) {
+      try {
+        isValid = await argon2.verify(user.passwordHash, password);
+      } catch (err) {
+        console.error('[AUTH] Argon2 verification failed:', err);
+        isValid = false;
+      }
+    } else {
+      /*
+        ONE-TIME MIGRATION NOTE: Existing legacy password hashes are stored in the database
+        using PBKDF2 with 1000 iterations. To prevent silently breaking existing user logins,
+        we fall back to verifying the PBKDF2 hash. If valid, we re-hash it using Argon2
+        and update the database.
+      */
+      const legacyHash = hashPasswordLegacy(password, user.passwordSalt);
+      isValid = (legacyHash === user.passwordHash);
+      if (isValid) {
+        needsMigration = true;
+      }
+    }
+
+    if (!isValid) {
       return res.status(401).json({ error: 'Invalid email or password.' });
+    }
+
+    // Automatically migrate legacy password to Argon2
+    if (needsMigration) {
+      try {
+        const argonHash = await argon2.hash(password);
+        await updateUser(user.id!, {
+          passwordHash: argonHash,
+          passwordSalt: 'argon2'
+        });
+        console.log(`[AUTH] Successfully migrated password hash to Argon2 for user: ${user.email}`);
+      } catch (migrationErr) {
+        console.error(`[AUTH] Failed to migrate password hash for user ${user.email}:`, migrationErr);
+      }
     }
 
     // Check if email is verified
@@ -3416,15 +3454,14 @@ app.post('/api/admin/users', adminAuthMiddleware, async (req, res) => {
       }
     }
 
-    const salt = generateSalt();
-    const hash = hashPassword(plainPassword, salt);
+    const hash = await argon2.hash(plainPassword);
 
     const newUser = await addUser({
       name: sanitizeText(name),
       email: cleanEmail,
       phone: cleanPhone,
       passwordHash: hash,
-      passwordSalt: salt,
+      passwordSalt: 'argon2',
       companyName: companyName ? sanitizeText(companyName) : undefined,
       role: role || 'USER',
       customerType: targetCustomerType,
@@ -3816,9 +3853,43 @@ app.post('/api/admin/audit-logs/clear', adminAuthMiddleware, async (req, res) =>
       return res.status(400).json({ error: 'Password is required to clear audit logs.' });
     }
 
-    const computedHash = hashPassword(password, adminUser.passwordSalt);
-    if (computedHash !== adminUser.passwordHash) {
+    let isValid = false;
+    let needsMigration = false;
+
+    if (adminUser.passwordHash && adminUser.passwordHash.startsWith('$argon2')) {
+      try {
+        isValid = await argon2.verify(adminUser.passwordHash, password);
+      } catch (err) {
+        console.error('[ADMIN] Argon2 verification failed:', err);
+        isValid = false;
+      }
+    } else {
+      /*
+        ONE-TIME MIGRATION NOTE: Verify legacy PBKDF2 hash for the admin. If valid,
+        we re-hash it using Argon2 and update the database record.
+      */
+      const legacyHash = hashPasswordLegacy(password, adminUser.passwordSalt);
+      isValid = (legacyHash === adminUser.passwordHash);
+      if (isValid) {
+        needsMigration = true;
+      }
+    }
+
+    if (!isValid) {
       return res.status(401).json({ error: 'Incorrect password.' });
+    }
+
+    if (needsMigration) {
+      try {
+        const argonHash = await argon2.hash(password);
+        await updateUser(adminUser.id!, {
+          passwordHash: argonHash,
+          passwordSalt: 'argon2'
+        });
+        console.log(`[ADMIN] Successfully migrated password hash to Argon2 for admin: ${adminUser.email}`);
+      } catch (migrationErr) {
+        console.error(`[ADMIN] Failed to migrate password hash for admin ${adminUser.email}:`, migrationErr);
+      }
     }
 
     const timestamp = new Date().toISOString();

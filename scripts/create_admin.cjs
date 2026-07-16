@@ -1,16 +1,8 @@
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto');
+const argon2 = require('argon2');
 
 const DB_FILE = path.join(__dirname, '..', 'server', 'data', 'db.json');
-
-function generateSalt() {
-  return crypto.randomBytes(16).toString('hex');
-}
-
-function hashPassword(password, salt) {
-  return crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
-}
 
 async function createAdmin() {
   const email = process.env.ADMIN_EMAIL || process.argv[2];
@@ -51,15 +43,16 @@ async function createAdmin() {
       console.log(`Admin user with email ${email} already exists!`);
       // Update role and password just in case
       existingUser.role = 'Admin';
-      const salt = generateSalt();
-      existingUser.passwordSalt = salt;
-      existingUser.passwordHash = hashPassword(password, salt);
+      const hash = await argon2.hash(password);
+      existingUser.passwordSalt = 'argon2';
+      existingUser.passwordHash = hash;
+      existingUser.password_salt = 'argon2';
+      existingUser.password_hash = hash;
       existingUser.email_verified = true;
       existingUser.customerType = 'BUSINESS';
       console.log(`Updated existing user to Admin.`);
     } else {
-      const salt = generateSalt();
-      const hash = hashPassword(password, salt);
+      const hash = await argon2.hash(password);
       const newAdmin = {
         id: `user_admin_${Date.now()}`,
         name: 'System Admin',
@@ -70,9 +63,9 @@ async function createAdmin() {
         phoneNumber: phone,
         phone_number: phone,
         email_verified: true,
-        passwordSalt: salt,
+        passwordSalt: 'argon2',
         passwordHash: hash,
-        password_salt: salt,
+        password_salt: 'argon2',
         password_hash: hash,
         role: 'Admin',
         customerType: 'BUSINESS',
