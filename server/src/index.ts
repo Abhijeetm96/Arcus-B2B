@@ -3610,7 +3610,29 @@ const pendingImportsCache = new Map<string, {
   mappedRows: any[];
 }>();
 
-const upload = multer({ limits: { fileSize: 50 * 1024 * 1024 } }); // 50MB limit
+const upload = multer({
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+  fileFilter: (req: any, file: any, cb: any) => {
+    const allowedExtensions = ['.xlsx', '.xls', '.csv', '.zip'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!allowedExtensions.includes(ext)) {
+      return cb(new Error('Invalid file extension! Only Excel (.xlsx, .xls), CSV (.csv), and ZIP (.zip) files are allowed.'));
+    }
+
+    const allowedMimeTypes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel',
+      'text/csv',
+      'application/zip',
+      'application/x-zip-compressed'
+    ];
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      return cb(new Error('Invalid file type! Only Excel, CSV, and ZIP formats are allowed.'));
+    }
+
+    cb(null, true);
+  }
+});
 
 // Catalog template download
 app.get('/api/admin/catalog/template', async (req, res) => {
@@ -4161,6 +4183,16 @@ app.post('/api/admin/abandoned-carts/:id/remind', adminAuthMiddleware, async (re
   } catch (err: any) {
     console.error('Error in POST /api/admin/abandoned-carts/:id/remind:', err);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.use((err: any, req: any, res: any, next: any) => {
+  if (err instanceof multer.MulterError) {
+    res.status(400).json({ error: `File upload error: ${err.message}` });
+  } else if (err) {
+    res.status(400).json({ error: err.message || 'An error occurred during file upload' });
+  } else {
+    next();
   }
 });
 

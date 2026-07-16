@@ -26,7 +26,12 @@ export function verifyToken(token: string): string | null {
 
     const payload = `${userId}.${expiresAtStr}`;
     const expectedSignature = crypto.createHmac('sha256', SECRET_KEY).update(payload).digest('hex');
-    if (signature !== expectedSignature) return null;
+    
+    const signatureBuffer = Buffer.from(signature, 'utf8');
+    const expectedBuffer = Buffer.from(expectedSignature, 'utf8');
+    if (signatureBuffer.length !== expectedBuffer.length) return null;
+    if (!crypto.timingSafeEqual(signatureBuffer, expectedBuffer)) return null;
+    
     return userId;
   } catch {
     return null;
