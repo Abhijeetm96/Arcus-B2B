@@ -122,6 +122,14 @@ export async function runMigrations(pgPool: Pool): Promise<void> {
       ADD COLUMN IF NOT EXISTS parent_id VARCHAR(50) REFERENCES categories(id) ON DELETE SET NULL;
   `);
 
+  // Drop deprecated columns on orders table if they exist to support normalized schema
+  await pgPool.query(`
+    ALTER TABLE orders 
+      DROP COLUMN IF EXISTS items,
+      DROP COLUMN IF EXISTS shipping_address,
+      DROP COLUMN IF EXISTS billing_address;
+  `);
+
   // Ensure location and telemetry columns exist on search_queries
   await pgPool.query(`
     ALTER TABLE search_queries

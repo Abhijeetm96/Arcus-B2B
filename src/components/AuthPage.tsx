@@ -322,6 +322,36 @@ export const AuthPage: React.FC = () => {
     }
   };
 
+  const handleQuickLogin = async (email: string, password: string) => {
+    setLoginEmail(email);
+    setLoginPassword(password);
+    setLoginError('');
+    setLoginErrors({});
+    setLoginLoading(true);
+    const res = await login(email, password);
+    setLoginLoading(false);
+    if (res.success) {
+      if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current);
+      redirectTimerRef.current = setTimeout(() => {
+        const token = localStorage.getItem('arcus_token');
+        if (token) {
+          apiFetch('/auth/me')
+          .then(r => r.json())
+          .then(data => {
+            handleRoleRedirect(data);
+          })
+          .catch(() => {
+            window.location.hash = '#/account';
+          });
+        } else {
+          window.location.hash = '#/';
+        }
+      }, 100);
+    } else {
+      setLoginError(res.error || 'Invalid credentials. Please try again.');
+    }
+  };
+
   // Submit Registration - Individual
   const handleIndividualSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1060,6 +1090,51 @@ export const AuthPage: React.FC = () => {
                           <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" className="w-4 h-4 object-contain" alt="LinkedIn" />
                           LinkedIn
                         </button>
+                      </div>
+
+                      {/* Quick Login Shortcuts Box */}
+                      <div className="bg-[#FFFDF5] border border-primary/30 p-md rounded-[12px] space-y-sm mt-md">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-primary font-label-caps flex items-center gap-xs">
+                          <span className="material-symbols-outlined text-[14px]">bug_report</span>
+                          Quick Login Shortcuts (Dev Only)
+                        </p>
+                        <div className="grid grid-cols-2 gap-sm">
+                          <button
+                            type="button"
+                            onClick={() => handleQuickLogin('b2c@arcus.com', 'Password123')}
+                            className="px-sm py-xs border border-primary/20 bg-white hover:bg-primary-container/20 rounded text-[11px] font-bold text-secondary text-center hover:text-on-primary-container transition-all"
+                          >
+                            Retail (B2C)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickLogin('individual@arcus.com', 'password')}
+                            className="px-sm py-xs border border-primary/20 bg-white hover:bg-primary-container/20 rounded text-[11px] font-bold text-secondary text-center hover:text-on-primary-container transition-all"
+                          >
+                            Individual (B2C)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickLogin('business@arcus.com', 'password')}
+                            className="px-sm py-xs border border-primary/20 bg-white hover:bg-primary-container/20 rounded text-[11px] font-bold text-secondary text-center hover:text-on-primary-container transition-all"
+                          >
+                            Business (B2B)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickLogin('professional@arcus.com', 'password')}
+                            className="px-sm py-xs border border-primary/20 bg-white hover:bg-primary-container/20 rounded text-[11px] font-bold text-secondary text-center hover:text-on-primary-container transition-all"
+                          >
+                            Professional
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickLogin('admin@arcus.com', 'password')}
+                            className="px-sm py-xs border border-primary/20 bg-white hover:bg-primary-container/20 rounded text-[11px] font-bold text-secondary text-center hover:text-on-primary-container col-span-2 transition-all"
+                          >
+                            System Admin
+                          </button>
+                        </div>
                       </div>
 
                       <div className="text-center text-xs text-secondary mt-lg">

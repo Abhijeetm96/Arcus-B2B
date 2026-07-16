@@ -210,7 +210,10 @@ app.get('/api/products', async (req, res) => {
               leafSlug: p.leafSlug,
               priceTiers: p.priceTiers,
               specifications: p.specifications,
-              stock: p.stock
+              stock: p.stock,
+              minimumOrderQuantity: p.minimumOrderQuantity,
+              orderMultiple: p.orderMultiple,
+              minimumOrderUnit: p.minimumOrderUnit
             };
             if (isAdmin) {
               baseProduct.procurementPrice = p.procurementPrice;

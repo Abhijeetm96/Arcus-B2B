@@ -184,7 +184,7 @@ export const Checkout: React.FC = () => {
 
   useEffect(() => {
     refreshUser();
-  }, [refreshUser]);
+  }, []);
 
   useEffect(() => {
     if (user) {

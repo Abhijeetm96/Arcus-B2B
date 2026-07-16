@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
+import { useAuth } from '../context/AuthContext'
 import { apiFetch } from '../lib/api';
 
 interface Product {
@@ -44,21 +45,40 @@ const productCategories: ProductCategory[] = [
 ]
 
 export default function Products() {
+  const { user } = useAuth()
+  const customerType = user?.customerType || (user?.role && ['Business', 'Contractor', 'Supplier'].includes(user.role) ? 'BUSINESS' : 'INDIVIDUAL');
+
   const [categories, setCategories] = useState<ProductCategory[]>(productCategories)
   const [quantities, setQuantities] = useState<Record<string, number>>({})
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
-  const incrementQty = (name: string) => {
+  const getProductDefaultQty = (product: any) => {
+    const moq = product.minimumOrderQuantity !== undefined ? product.minimumOrderQuantity : 1;
+    return customerType === 'BUSINESS' ? moq : 1;
+  };
+
+  const incrementQty = (product: any) => {
+    const name = product.name;
+    const moq = product.minimumOrderQuantity !== undefined ? product.minimumOrderQuantity : 1;
+    const mult = product.orderMultiple !== undefined ? product.orderMultiple : 1;
+    const current = quantities[name] !== undefined ? quantities[name] : (customerType === 'BUSINESS' ? moq : 1);
+    
     setQuantities(prev => ({
       ...prev,
-      [name]: (prev[name] || 1) + 1
+      [name]: current + mult
     }))
   }
 
-  const decrementQty = (name: string) => {
+  const decrementQty = (product: any) => {
+    const name = product.name;
+    const moq = product.minimumOrderQuantity !== undefined ? product.minimumOrderQuantity : 1;
+    const mult = product.orderMultiple !== undefined ? product.orderMultiple : 1;
+    const current = quantities[name] !== undefined ? quantities[name] : (customerType === 'BUSINESS' ? moq : 1);
+    const minLimit = customerType === 'BUSINESS' ? moq : 1;
+
     setQuantities(prev => ({
       ...prev,
-      [name]: Math.max(1, (prev[name] || 1) - 1)
+      [name]: Math.max(minLimit, current - mult)
     }))
   }
 
@@ -77,7 +97,11 @@ export default function Products() {
       unit: product.unit || '/ Unit',
       images: [defaultImage],
       categoryTitle: product.categoryTitle || 'Materials',
-      priceTiers: product.priceTiers
+      priceTiers: product.priceTiers,
+      minimumOrderQuantity: product.minimumOrderQuantity,
+      orderMultiple: product.orderMultiple,
+      minimumOrderUnit: product.minimumOrderUnit,
+      stock: product.stock
     }, qty)
 
     setToastMessage(`Added ${qty} x ${product.name} to cart!`)
@@ -170,16 +194,16 @@ export default function Products() {
                         </span>
                         <div className="flex items-center border border-surface-variant rounded bg-surface-container overflow-hidden">
                           <button
-                            onClick={() => decrementQty(product.name)}
+                            onClick={() => decrementQty(product)}
                             className="w-8 h-8 flex items-center justify-center hover:bg-surface-variant transition-colors text-on-surface select-none cursor-pointer font-bold border-none bg-transparent"
                           >
                             -
                           </button>
                           <span className="px-sm font-bold text-on-surface text-body-sm min-w-[24px] text-center">
-                            {quantities[product.name] || 1}
+                            {quantities[product.name] !== undefined ? quantities[product.name] : getProductDefaultQty(product)}
                           </span>
                           <button
-                            onClick={() => incrementQty(product.name)}
+                            onClick={() => incrementQty(product)}
                             className="w-8 h-8 flex items-center justify-center hover:bg-surface-variant transition-colors text-on-surface select-none cursor-pointer font-bold border-none bg-transparent"
                           >
                             +
@@ -191,7 +215,7 @@ export default function Products() {
                     {/* Action Buttons */}
                     <div className="grid grid-cols-2 gap-sm mt-md">
                       <button
-                        onClick={() => handleAddToCart(product, quantities[product.name] || 1)}
+                        onClick={() => handleAddToCart(product, quantities[product.name] !== undefined ? quantities[product.name] : getProductDefaultQty(product))}
                         className="py-sm bg-[#121212] text-white font-semibold rounded-md hover:bg-[#fabd00] hover:text-[#121212] transition-colors flex items-center justify-center gap-xs text-[13px] border border-transparent shadow-sm cursor-pointer"
                       >
                         <span className="material-symbols-outlined text-[16px]">shopping_cart</span>

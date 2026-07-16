@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
+import { useAuth } from '../context/AuthContext'
 import { sanitizeText } from '../../shared/validation'
 import { apiFetch } from '../lib/api';
 
@@ -252,6 +253,9 @@ interface BrandsHubProps {
 }
 
 export default function BrandsHub({ brandSlug }: BrandsHubProps) {
+  const { user } = useAuth()
+  const customerType = user?.customerType || (user?.role && ['Business', 'Contractor', 'Supplier'].includes(user.role) ? 'BUSINESS' : 'INDIVIDUAL');
+
   const [searchQuery, setSearchQuery] = useState('')
   const [quantities, setQuantities] = useState<Record<string, number>>({})
   const [toastMessage, setToastMessage] = useState<string | null>(null)
@@ -285,23 +289,39 @@ export default function BrandsHub({ brandSlug }: BrandsHubProps) {
       .catch((err) => console.warn('Backend server offline, using static brand product list.', err))
   }, [])
 
-  const incrementQty = (id: string) => {
+  const getProductDefaultQty = (product: any) => {
+    const moq = product.minimumOrderQuantity !== undefined ? product.minimumOrderQuantity : 1;
+    return customerType === 'BUSINESS' ? moq : 1;
+  };
+
+  const incrementQty = (product: any) => {
+    const id = product.id;
+    const moq = product.minimumOrderQuantity !== undefined ? product.minimumOrderQuantity : 1;
+    const mult = product.orderMultiple !== undefined ? product.orderMultiple : 1;
+    const current = quantities[id] !== undefined ? quantities[id] : (customerType === 'BUSINESS' ? moq : 1);
+    
     setQuantities(prev => ({
       ...prev,
-      [id]: (prev[id] || 1) + 1
+      [id]: current + mult
     }))
   }
 
-  const decrementQty = (id: string) => {
+  const decrementQty = (product: any) => {
+    const id = product.id;
+    const moq = product.minimumOrderQuantity !== undefined ? product.minimumOrderQuantity : 1;
+    const mult = product.orderMultiple !== undefined ? product.orderMultiple : 1;
+    const current = quantities[id] !== undefined ? quantities[id] : (customerType === 'BUSINESS' ? moq : 1);
+    const minLimit = customerType === 'BUSINESS' ? moq : 1;
+
     setQuantities(prev => ({
       ...prev,
-      [id]: Math.max(1, (prev[id] || 1) - 1)
+      [id]: Math.max(minLimit, current - mult)
     }))
   }
 
   const { addToCart } = useCart()
   const handleAddToCart = (product: any) => {
-    const qty = quantities[product.id] || 1
+    const qty = quantities[product.id] !== undefined ? quantities[product.id] : getProductDefaultQty(product)
     const image = product.image || (product.images && product.images.length > 0 ? product.images[0] : '/pdp_cpvc_pipe_main.png')
     
     addToCart({
@@ -310,7 +330,10 @@ export default function BrandsHub({ brandSlug }: BrandsHubProps) {
       price: product.price,
       unit: product.unit || '/ Unit',
       images: [image],
-      categoryTitle: product.category || 'Materials'
+      categoryTitle: product.category || 'Materials',
+      minimumOrderQuantity: product.minimumOrderQuantity,
+      orderMultiple: product.orderMultiple,
+      minimumOrderUnit: product.unit
     }, qty)
 
     setToastMessage(`Added ${qty} x ${product.name} to cart!`)
@@ -414,7 +437,7 @@ export default function BrandsHub({ brandSlug }: BrandsHubProps) {
                 <h2 className="font-headline-h2 text-[26px] font-extrabold text-[#0A0A0A] tracking-tight">Available Materials ({brandProducts.length})</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
                   {brandProducts.map(product => {
-                    const qty = quantities[product.id] || 1
+                    const qty = quantities[product.id] !== undefined ? quantities[product.id] : getProductDefaultQty(product)
                     return (
                       <div key={product.id} className="bg-white border border-[#E9ECEF] rounded-[24px] overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between h-[480px]">
                         <div className="flex flex-col gap-sm p-lg">
@@ -449,7 +472,7 @@ export default function BrandsHub({ brandSlug }: BrandsHubProps) {
                             <div className="flex flex-col items-end gap-1">
                               <div className="inline-flex items-center border border-[#CED4DA] rounded h-9 bg-white overflow-hidden shadow-sm">
                                 <button
-                                  onClick={() => decrementQty(product.id)}
+                                  onClick={() => decrementQty(product)}
                                   className="w-8 h-full flex items-center justify-center text-[#495057] hover:bg-[#F8F9FA] font-bold"
                                 >
                                   -
@@ -458,7 +481,7 @@ export default function BrandsHub({ brandSlug }: BrandsHubProps) {
                                   {qty}
                                 </span>
                                 <button
-                                  onClick={() => incrementQty(product.id)}
+                                  onClick={() => incrementQty(product)}
                                   className="w-8 h-full flex items-center justify-center text-[#495057] hover:bg-[#F8F9FA] font-bold"
                                 >
                                   +

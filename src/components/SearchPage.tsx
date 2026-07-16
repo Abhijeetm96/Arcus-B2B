@@ -25,6 +25,8 @@ interface Product {
     reorderLevel: number
   }
   minimumOrderQuantity?: number
+  orderMultiple?: number
+  minimumOrderUnit?: string
   leadTimeDays?: number
   procurementPrice?: number
   vendorName?: string
@@ -69,6 +71,7 @@ interface SearchCategory {
 
 export default function SearchPage() {
   const { user } = useAuth()
+  const customerType = user?.customerType || (user?.role && ['Business', 'Contractor', 'Supplier'].includes(user.role) ? 'BUSINESS' : 'INDIVIDUAL');
   const [query, setQuery] = useState('')
   const [products, setProducts] = useState<Product[]>([])
   const [services, setServices] = useState<ServiceItem[]>([])
@@ -217,23 +220,39 @@ export default function SearchPage() {
     new Set((Array.isArray(products) ? products : []).map((p) => p?.brand || 'Generic'))
   ).filter(Boolean)
 
+  const getProductDefaultQty = (product: Product) => {
+    const moq = product.minimumOrderQuantity !== undefined ? product.minimumOrderQuantity : 1;
+    return customerType === 'BUSINESS' ? moq : 1;
+  };
+
   // Quantity controls
-  const incrementQty = (id: string) => {
+  const incrementQty = (product: Product) => {
+    const id = product.id;
+    const moq = product.minimumOrderQuantity !== undefined ? product.minimumOrderQuantity : 1;
+    const mult = product.orderMultiple !== undefined ? product.orderMultiple : 1;
+    const current = quantities[id] !== undefined ? quantities[id] : (customerType === 'BUSINESS' ? moq : 1);
+    
     setQuantities((prev) => ({
       ...prev,
-      [id]: (prev[id] || 1) + 1
+      [id]: current + mult
     }))
   }
 
-  const decrementQty = (id: string) => {
+  const decrementQty = (product: Product) => {
+    const id = product.id;
+    const moq = product.minimumOrderQuantity !== undefined ? product.minimumOrderQuantity : 1;
+    const mult = product.orderMultiple !== undefined ? product.orderMultiple : 1;
+    const current = quantities[id] !== undefined ? quantities[id] : (customerType === 'BUSINESS' ? moq : 1);
+    const minLimit = customerType === 'BUSINESS' ? moq : 1;
+
     setQuantities((prev) => ({
       ...prev,
-      [id]: Math.max(1, (prev[id] || 1) - 1)
+      [id]: Math.max(minLimit, current - mult)
     }))
   }
 
   const handleAddToCart = (product: Product) => {
-    const qty = quantities[product.id] || 1
+    const qty = quantities[product.id] !== undefined ? quantities[product.id] : getProductDefaultQty(product)
     const defaultImage = product.images && product.images.length > 0
       ? product.images[0]
       : '/pdp_cpvc_pipe_main.png'
@@ -247,7 +266,10 @@ export default function SearchPage() {
         images: [defaultImage],
         categoryTitle: product.categoryTitle || 'Materials',
         priceTiers: product.priceTiers,
-        stock: product.stock !== undefined ? product.stock : product.inventory?.available
+        stock: product.stock !== undefined ? product.stock : product.inventory?.available,
+        minimumOrderQuantity: product.minimumOrderQuantity,
+        orderMultiple: product.orderMultiple,
+        minimumOrderUnit: product.unitOfMeasure || product.unit
       },
       qty
     )
@@ -963,7 +985,7 @@ export default function SearchPage() {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
                       {sortedProducts.map((product) => {
-                        const qty = quantities[product.id] || 1
+                        const qty = quantities[product.id] !== undefined ? quantities[product.id] : getProductDefaultQty(product)
                         const available = product.inventory?.available ?? product.stock ?? 0
                         const isOutOfStock = product.status === 'OUT_OF_STOCK' || available === 0
                         const isComingSoon = product.status === 'COMING_SOON'
@@ -1055,7 +1077,7 @@ export default function SearchPage() {
                                   </span>
                                   <div className="flex items-center border border-[#E9ECEF] rounded bg-white overflow-hidden">
                                     <button
-                                      onClick={() => decrementQty(product.id)}
+                                      onClick={() => decrementQty(product)}
                                       className="w-8 h-8 flex items-center justify-center hover:bg-surface-variant transition-colors text-on-surface select-none cursor-pointer font-bold border-none bg-transparent"
                                     >
                                       -
@@ -1064,7 +1086,7 @@ export default function SearchPage() {
                                       {qty}
                                     </span>
                                     <button
-                                      onClick={() => incrementQty(product.id)}
+                                      onClick={() => incrementQty(product)}
                                       className="w-8 h-8 flex items-center justify-center hover:bg-surface-variant transition-colors text-on-surface select-none cursor-pointer font-bold border-none bg-transparent"
                                     >
                                       +

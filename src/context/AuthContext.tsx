@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { apiClient } from '../lib/api';
 
 export interface User {
@@ -167,7 +167,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => window.removeEventListener('arcus-reconnected', handleReconnect);
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     if (isDev) {
       console.log('[AUTH CLIENT] Outgoing request: POST /auth/login', {
         email,
@@ -198,9 +198,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return { success: false, error: err.message };
     }
-  };
+  }, []);
 
-  const register = async (userData: any) => {
+  const register = useCallback(async (userData: any) => {
     const loggableData = { ...userData };
     if (loggableData.password) {
       loggableData.password = '[REDACTED]';
@@ -231,9 +231,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return { success: false, error: err.message };
     }
-  };
+  }, []);
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     const token = localStorage.getItem('arcus_token');
     if (token) {
       if (isDev) {
@@ -251,16 +251,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('[AUTH CLIENT] Failed to refresh user:', err.message);
       }
     }
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     if (isDev) {
       console.log('[AUTH CLIENT] Logging out user, clearing local session.');
     }
     localStorage.removeItem('arcus_token');
     localStorage.removeItem('arcus_cached_user');
     setUser(null);
-  };
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser }}>
