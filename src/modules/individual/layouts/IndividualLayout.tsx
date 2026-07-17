@@ -9,7 +9,8 @@ import {
   MapPin, 
   Heart, 
   Award, 
-  User 
+  User,
+  Wrench
 } from 'lucide-react';
 
 interface IndividualLayoutProps {
@@ -28,6 +29,7 @@ export const IndividualLayout: React.FC<IndividualLayoutProps> = ({
   const menuItems = [
     { id: 'overview', name: 'Overview', icon: LayoutDashboard },
     { id: 'orders', name: 'My Orders', icon: ShoppingBag },
+    { id: 'bookings', name: 'Service Bookings', icon: Wrench },
     { id: 'addresses', name: 'Manage Addresses', icon: MapPin },
     { id: 'wishlist', name: 'Wishlist & Saved', icon: Heart },
     { id: 'rewards', name: 'BuildPoints™ Rewards', icon: Award },

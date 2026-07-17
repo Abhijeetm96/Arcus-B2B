@@ -44,6 +44,18 @@ const productCategories: ProductCategory[] = [
   },
 ]
 
+const getCategoryHref = (title: string) => {
+  const t = title.toLowerCase();
+  if (t.includes('plumbing')) return '#/materials/plumbing';
+  if (t.includes('electrical')) return '#/materials/electrical';
+  if (t.includes('paint')) return '#/materials/paints-chemicals';
+  if (t.includes('cement')) return '#/materials/cement-concrete';
+  if (t.includes('steel')) return '#/materials/steel-structural';
+  if (t.includes('hardware')) return '#/materials/hardware-tools';
+  if (t.includes('safety')) return '#/materials/building-materials';
+  return `#/materials/${t}`;
+};
+
 export default function Products() {
   const { user } = useAuth()
   const customerType = user?.customerType || (user?.role && ['Business', 'Contractor', 'Supplier'].includes(user.role) ? 'BUSINESS' : 'INDIVIDUAL');
@@ -138,15 +150,20 @@ export default function Products() {
         <div className="flex flex-col gap-xxl">
           {categories.map((category) => (
             <div key={category.title} className="flex flex-col gap-lg">
-              <div className="flex items-center gap-md">
-                <div className="h-px flex-1 bg-surface-variant"></div>
-                <h3 className="font-headline-h3 text-[24px] text-on-surface px-md">
+              <div className="flex justify-between items-center border-b border-surface-variant/40 pb-sm">
+                <h3 className="font-headline-h3 text-[24px] text-on-surface">
                   {category.title}
                 </h3>
-                <div className="h-px flex-1 bg-surface-variant"></div>
+                <a
+                  href={getCategoryHref(category.title)}
+                  className="h-10 px-md bg-transparent border border-[#121212] text-[#121212] hover:bg-[#fabd00] hover:border-transparent transition-all duration-200 font-semibold rounded-md flex items-center justify-center gap-xs no-underline text-body-sm cursor-pointer shadow-sm"
+                >
+                  View All {category.title}
+                  <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                </a>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
-                {category.products.map((product) => (
+                {category.products.slice(0, 3).map((product) => (
                   <div
                     key={product.name}
                     className="bg-white border border-surface-variant rounded-md p-md flex flex-col justify-between gap-sm shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.1)] hover:-translate-y-2 transition-all duration-300 text-left"

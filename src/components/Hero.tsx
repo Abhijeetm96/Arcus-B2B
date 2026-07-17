@@ -147,7 +147,7 @@ export default function Hero() {
             {/* Mockup Grid */}
             <div className="grid grid-cols-2 gap-md h-full overflow-y-auto pr-2 custom-scrollbar">
               {/* Material Orders */}
-              <div className="col-span-1 bg-white rounded-md p-md border border-slate-200 flex flex-col gap-sm relative overflow-hidden group shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
+              <div className="col-span-1 bg-white rounded-md p-md border border-slate-200 flex flex-col gap-sm relative overflow-hidden group shadow-[0_4px_20px_rgba(0,0,0,0.05)] h-[140px]">
                 <div className="absolute right-0 top-0 w-16 h-16 bg-primary/10 rounded-bl-full -z-10 group-hover:scale-150 transition-transform"></div>
                 <div className="flex justify-between items-start">
                   <span className="material-symbols-outlined text-primary">
@@ -170,7 +170,7 @@ export default function Hero() {
                 </div>
               </div>
               {/* Delivery Tracking */}
-              <div className="col-span-1 bg-white rounded-md p-0 border border-slate-200 flex flex-col relative overflow-hidden group h-[120px] shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
+              <div className="col-span-1 bg-white rounded-md p-0 border border-slate-200 flex flex-col relative overflow-hidden group h-[140px] shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMjAwIj48cGF0aCBkPSJNMCA1MCBRIDEwMCAxMDAgMjAwIDUwIFQgNDAwIDUwIiBmaWxsPSJub25lIiBzdHJva2U9IiNlNWEwMGIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iNCA0Ii8+PC9zdmc+')] bg-cover opacity-50"></div>
                 <div className="p-md flex flex-col h-full z-10 bg-gradient-to-t from-white to-transparent">
                   <div className="flex justify-between items-start">
@@ -203,21 +203,21 @@ export default function Hero() {
                   </span>
                 </div>
                 <div className="flex-1 mt-sm relative flex items-end gap-1 h-[80px]">
-                  <div className="w-full bg-white/20 h-[20%] rounded-t-sm"></div>
-                  <div className="w-full bg-white/20 h-[30%] rounded-t-sm"></div>
-                  <div className="w-full bg-white/20 h-[25%] rounded-t-sm"></div>
-                  <div className="w-full bg-white/20 h-[45%] rounded-t-sm"></div>
-                  <div className="w-full bg-white/20 h-[60%] rounded-t-sm"></div>
-                  <div className="w-full bg-primary h-[85%] rounded-t-sm relative">
+                  <div className="flex-1 bg-white/20 h-[20%] rounded-t-sm"></div>
+                  <div className="flex-1 bg-white/20 h-[30%] rounded-t-sm"></div>
+                  <div className="flex-1 bg-white/20 h-[25%] rounded-t-sm"></div>
+                  <div className="flex-1 bg-white/20 h-[45%] rounded-t-sm"></div>
+                  <div className="flex-1 bg-white/20 h-[60%] rounded-t-sm"></div>
+                  <div className="flex-1 bg-primary h-[85%] rounded-t-sm relative">
                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-white text-slate-900 font-label-caps text-[9px] px-1 rounded-md">
                       ₹65k
                     </div>
                   </div>
-                  <div className="w-full bg-white/20 h-[70%] rounded-t-sm"></div>
+                  <div className="flex-1 bg-white/20 h-[70%] rounded-t-sm"></div>
                 </div>
               </div>
               {/* Service Bookings */}
-              <div className="col-span-1 bg-white rounded-md p-md border border-slate-200 flex flex-col gap-sm shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
+              <div className="col-span-1 bg-white rounded-md p-md border border-slate-200 flex flex-col gap-sm shadow-[0_4px_20px_rgba(0,0,0,0.05)] h-[140px]">
                 <div className="flex items-center gap-sm mb-sm justify-start">
                   <span className="material-symbols-outlined text-slate-500">
                     engineering
@@ -256,7 +256,7 @@ export default function Hero() {
                 </div>
               </div>
               {/* RFQ Status */}
-              <div className="col-span-1 bg-white rounded-md p-md border border-slate-200 flex flex-col gap-sm shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
+              <div className="col-span-1 bg-white rounded-md p-md border border-slate-200 flex flex-col gap-sm shadow-[0_4px_20px_rgba(0,0,0,0.05)] h-[140px]">
                 <div className="flex items-center gap-sm mb-sm justify-start">
                   <span className="material-symbols-outlined text-slate-500">
                     request_quote

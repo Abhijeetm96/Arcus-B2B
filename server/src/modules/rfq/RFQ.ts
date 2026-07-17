@@ -24,6 +24,8 @@ export interface Booking {
   phone: string;
   date: string;
   notes?: string;
+  userId?: string;
+  status?: 'Pending' | 'Confirmed' | 'Partner Dispatched' | 'Completed' | 'Cancelled';
 }
 
 export interface DirectQuote {

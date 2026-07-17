@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { IndividualLayout } from './layouts/IndividualLayout';
 import { IndividualOrders } from './IndividualOrders';
+import { IndividualBookings } from './IndividualBookings';
 import { IndividualAddresses } from './IndividualAddresses';
 import { IndividualProfile } from './IndividualProfile';
 import { useAuth } from '../../context/AuthContext';
@@ -125,6 +126,8 @@ export const IndividualDashboard: React.FC = () => {
         return renderOverview();
       case 'orders':
         return <IndividualOrders />;
+      case 'bookings':
+        return <IndividualBookings />;
       case 'addresses':
         return <IndividualAddresses />;
       case 'wishlist':

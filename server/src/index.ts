@@ -14,7 +14,7 @@ import {
   deleteUserByGst, searchService, getAppSettings, updateAppSettings, getAllCategories, addCategory, updateCategory, 
   deleteCategory, addProduct, updateProduct, deleteProduct, updateProductInventory, updateRfqStatus, Order,
   getAllBrands, getBrandById, addBrand, updateBrand, deleteBrand, logAction, getAllAuditLogs, requestClearAuditLogs, getClearRequestTime, cancelClearAuditLogs, recordAdjustment, getAdjustmentHistory,
-  getAllOrders, getAllUsers,
+  getAllOrders, getAllUsers, getBookingsByUserId, updateBookingStatus,
   validateImportSheet, matchZipImages, generateTemplate, exportCatalog, executeImport, executeBulkUpdates, getAllImportHistory, getImportHistoryById, HEADER_MAPPING
 } from './db';
 import { validateEmail, validatePhone, validatePassword, validateName, validateBusinessName, validateGST, validateExperience, validateURL, normalizePhone, sanitizeText, trimAndClean, RateLimiter } from '../../shared/validation';
@@ -587,12 +587,23 @@ app.post('/api/service-bookings', async (req, res) => {
     if (!phoneV.valid) return res.status(400).json({ error: phoneV.error });
     if (!date) return res.status(400).json({ error: 'Date is required.' });
 
+    // Extract optional userId from session token
+    let userId: string | undefined;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      const decoded = verifyToken(token);
+      if (decoded) userId = decoded;
+    }
+
     const newBooking = await addBooking({
       serviceName: sanitizeText(serviceName),
       name: sanitizeText(name),
       phone: normalizePhone(phone),
       date: sanitizeText(date),
-      notes: sanitizeText(notes || '')
+      notes: sanitizeText(notes || ''),
+      userId,
+      status: 'Pending'
     });
     res.status(201).json({ success: true, booking: newBooking });
   } catch (err: any) {
@@ -645,10 +656,56 @@ app.get('/api/rfqs', async (req, res) => {
 
 app.get('/api/service-bookings', async (req, res) => {
   try {
-    const bookings = await getAllBookings();
-    res.json(bookings);
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized. No session token found.' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const userId = verifyToken(token);
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized. Session expired.' });
+    }
+
+    const user = await getUserById(userId);
+    if (user?.role === 'ADMIN' || user?.role === 'Admin') {
+      const bookings = await getAllBookings();
+      res.json(bookings);
+    } else {
+      const bookings = await getBookingsByUserId(userId);
+      res.json(bookings);
+    }
   } catch (err: any) {
     console.error('Error fetching service bookings:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.put('/api/admin/bookings/:id/status', adminAuthMiddleware, async (req, res) => {
+  try {
+    const bookingId = req.params.id;
+    const { status } = req.body;
+    if (!status) {
+      return res.status(400).json({ error: 'Status is required.' });
+    }
+    const updated = await updateBookingStatus(bookingId, status);
+    if (!updated) {
+      return res.status(404).json({ error: 'Booking not found.' });
+    }
+    
+    const adminUser = (req as any).adminUser;
+    const performedBy = adminUser?.fullName || adminUser?.name || 'Admin';
+
+    // Log Booking Status Update
+    await logAction(
+      'BOOKING_UPDATE',
+      `Service Booking #${bookingId} status updated to ${status}.`,
+      performedBy
+    );
+
+    res.json({ success: true, booking: updated });
+  } catch (err: any) {
+    console.error('Error updating booking status:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

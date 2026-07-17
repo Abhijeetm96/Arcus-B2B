@@ -543,6 +543,9 @@ async function initDb() {
           notes TEXT
         );
 
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS user_id VARCHAR(50);
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Pending';
+
         CREATE TABLE IF NOT EXISTS quotes (
           id VARCHAR(50) PRIMARY KEY,
           timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

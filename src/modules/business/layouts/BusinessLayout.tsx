@@ -12,7 +12,8 @@ import {
   Bookmark, 
   Users, 
   ShieldAlert, 
-  MapPin 
+  MapPin,
+  Wrench
 } from 'lucide-react';
 
 interface BusinessLayoutProps {
@@ -32,6 +33,7 @@ export const BusinessLayout: React.FC<BusinessLayoutProps> = ({
     { id: 'overview', name: 'Overview', icon: LayoutDashboard },
     { id: 'rfqs', name: 'B2B RFQs Workspace', icon: FileText },
     { id: 'orders', name: 'Purchase History', icon: History },
+    { id: 'bookings', name: 'Service Bookings', icon: Wrench },
     { id: 'invoices', name: 'Tax Invoices Input', icon: Receipt },
     { id: 'projects', name: 'Commercial Projects', icon: Briefcase },
     { id: 'quotes', name: 'Saved Quotes', icon: Bookmark },

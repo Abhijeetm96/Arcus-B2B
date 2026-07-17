@@ -36,7 +36,7 @@ export {
 export { searchService } from './modules/search/SearchService';
 export { getAppSettings, updateAppSettings } from './modules/settings/SettingsService';
 export { getAllCategories, addCategory, updateCategory, deleteCategory } from './modules/catalog/CategoryService';
-export { addRfq, getAllRfqs, updateRfqStatus, addBooking, getAllBookings, addQuote, getAllQuotes } from './modules/rfq/RFQService';
+export { addRfq, getAllRfqs, updateRfqStatus, addBooking, getAllBookings, addQuote, getAllQuotes, getBookingsByUserId, updateBookingStatus } from './modules/rfq/RFQService';
 export { addOrder, getOrdersByUserId, getOrderById, updateOrderStatus, getAllOrders } from './modules/orders/OrderService';
 export { getAllBrands, getBrandById, addBrand, updateBrand, deleteBrand } from './modules/catalog/BrandService';
 export { logAction, getAllAuditLogs, requestClearAuditLogs, getClearRequestTime, cancelClearAuditLogs } from './modules/analytics/AuditLogService';

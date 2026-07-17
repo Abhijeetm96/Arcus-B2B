@@ -4,6 +4,7 @@ import { BusinessRFQs } from './BusinessRFQs';
 import { BusinessProjects } from './BusinessProjects';
 import { BusinessInvoices } from './BusinessInvoices';
 import { IndividualOrders } from '../individual/IndividualOrders';
+import { IndividualBookings } from '../individual/IndividualBookings';
 import { IndividualAddresses } from '../individual/IndividualAddresses';
 import { useAuth } from '../../context/AuthContext';
 import { useOrders } from '../../core/hooks/useOrders';
@@ -95,6 +96,8 @@ export const BusinessDashboard: React.FC = () => {
         return <BusinessRFQs />;
       case 'orders':
         return <IndividualOrders />;
+      case 'bookings':
+        return <IndividualBookings />;
       case 'invoices':
         return <BusinessInvoices />;
       case 'projects':

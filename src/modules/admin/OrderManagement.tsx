@@ -15,6 +15,7 @@ interface Booking {
   phone: string;
   date: string;
   notes?: string;
+  status?: string;
 }
 
 export const OrderManagement: React.FC<OrderManagementProps> = ({ type }) => {
@@ -109,6 +110,32 @@ export const OrderManagement: React.FC<OrderManagementProps> = ({ type }) => {
       }
     } catch (err: any) {
       setError(err.message || 'Error updating order status.');
+    }
+  };
+
+  const handleBookingStatusChange = async (bookingId: string, newStatus: string) => {
+    setError(null);
+    setSuccess(null);
+    try {
+      const token = localStorage.getItem('arcus_token');
+      const res = await apiFetch(`/admin/bookings/${bookingId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to update booking status.');
+      }
+
+      setSuccess(`Booking #${bookingId} status updated to ${newStatus}!`);
+      fetchData();
+    } catch (err: any) {
+      setError(err.message || 'Error updating booking status.');
     }
   };
 
@@ -251,11 +278,20 @@ export const OrderManagement: React.FC<OrderManagementProps> = ({ type }) => {
                     <th className="px-lg py-md">Service Booked</th>
                     <th className="px-lg py-md">Preferred Date</th>
                     <th className="px-lg py-md">Client Notes</th>
+                    <th className="px-lg py-md">Status</th>
+                    <th className="px-lg py-md text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredBookings.map(b => {
                     const dateStr = b.timestamp ? new Date(b.timestamp).toLocaleDateString('en-IN') : (b.date || 'N/A');
+                    const getStatusColor = (status: string) => {
+                      switch (status) {
+                        case 'Cancelled': return 'bg-red-50 text-red-700 border-red-200';
+                        case 'Completed': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                        default: return 'bg-blue-50 text-blue-700 border-blue-200';
+                      }
+                    };
                     return (
                       <tr key={b.id} className="hover:bg-slate-50/50 transition-colors">
                         <td className="px-lg py-md font-mono text-xs font-bold text-primary">{b.id}</td>
@@ -264,12 +300,30 @@ export const OrderManagement: React.FC<OrderManagementProps> = ({ type }) => {
                         <td className="px-lg py-md text-slate-900 font-bold">{b.service_name}</td>
                         <td className="px-lg py-md text-slate-500 font-semibold text-xs">{b.date || dateStr}</td>
                         <td className="px-lg py-md text-slate-400 font-medium truncate max-w-xs">{b.notes || 'None'}</td>
+                        <td className="px-lg py-md">
+                          <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] border ${getStatusColor(b.status || 'Pending')}`}>
+                            {b.status || 'Pending'}
+                          </span>
+                        </td>
+                        <td className="px-lg py-md text-right">
+                          <select
+                            value={b.status || 'Pending'}
+                            onChange={(e) => handleBookingStatusChange(b.id, e.target.value)}
+                            className="h-8 px-xs border border-slate-200 rounded text-xs bg-slate-50 font-bold text-slate-700 cursor-pointer focus:ring-0 focus:border-primary"
+                          >
+                            <option value="Pending">Pending</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Partner Dispatched">Partner Dispatched</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                          </select>
+                        </td>
                       </tr>
                     );
                   })}
                   {filteredBookings.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="text-center py-xl text-slate-400 font-semibold">
+                      <td colSpan={8} className="text-center py-xl text-slate-400 font-semibold">
                         No service bookings found.
                       </td>
                     </tr>

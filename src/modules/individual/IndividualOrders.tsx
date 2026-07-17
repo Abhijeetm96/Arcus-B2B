@@ -6,6 +6,33 @@ export const IndividualOrders: React.FC = () => {
   const { orders, loading, cancelOrder } = useOrders();
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
 
+  const orderSteps = [
+    { label: 'Order Placed', status: 'Pending', desc: 'Order received & registered' },
+    { label: 'Confirmed', status: 'Confirmed', desc: 'Order approved & processed' },
+    { label: 'Dispatched', status: 'Dispatched', desc: 'Shipped from hub' },
+    { label: 'Out For Delivery', status: 'Out For Delivery', desc: 'Technician/truck on the way' },
+    { label: 'Delivered', status: 'Delivered', desc: 'Successfully delivered' }
+  ];
+
+  const getStepIndex = (status: string) => {
+    switch (status) {
+      case 'Pending':
+      case 'Awaiting Payment':
+        return 0;
+      case 'Confirmed':
+        return 1;
+      case 'Dispatched':
+      case 'Awaiting Delivery':
+        return 2;
+      case 'Out For Delivery':
+        return 3;
+      case 'Delivered':
+        return 4;
+      default:
+        return 0;
+    }
+  };
+
   const downloadInvoice = (order: any) => {
     // Generate Invoice HTML template
     const items = order.items || [];
@@ -172,6 +199,62 @@ export const IndividualOrders: React.FC = () => {
               <p className="font-bold text-secondary">Placed On</p>
               <p className="text-sm font-bold text-slate-800 mt-xs">{formatDate(selectedOrder.timestamp || selectedOrder.date)}</p>
             </div>
+          </div>
+
+          {/* Stepper tracking container */}
+          <div className="bg-slate-50 border border-slate-200 rounded p-lg my-md text-xs">
+            <h4 className="text-xs font-bold text-slate-800 mb-lg uppercase tracking-wider">Order Delivery Status</h4>
+            {selectedOrder.status === 'Cancelled' ? (
+              <div className="flex items-center gap-md text-red-600 bg-red-50 border border-red-200 rounded p-md">
+                <span className="material-symbols-outlined text-[24px]">cancel</span>
+                <div>
+                  <p className="text-xs font-bold">Order Cancelled</p>
+                  <p className="text-[10px] text-red-500">This order has been cancelled and will not be delivered.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="relative flex flex-col md:flex-row md:justify-between items-start md:items-center gap-lg md:gap-0 mt-md">
+                {/* Horizontal line for desktop stepper */}
+                <div className="absolute left-0 right-0 top-4 h-0.5 bg-slate-200 hidden md:block z-0" />
+                <div 
+                  className="absolute left-0 top-4 h-0.5 bg-primary hidden md:block z-0 transition-all duration-500 ease-out" 
+                  style={{ width: `${(getStepIndex(selectedOrder.status) / (orderSteps.length - 1)) * 100}%` }}
+                />
+
+                {orderSteps.map((step, idx) => {
+                  const currentStepIdx = getStepIndex(selectedOrder.status);
+                  const isCompleted = idx < currentStepIdx;
+                  const isActive = idx === currentStepIdx;
+
+                  return (
+                    <div key={idx} className="flex flex-row md:flex-col items-center gap-md md:gap-sm z-10 md:w-32 text-left md:text-center relative">
+                      {/* Stepper Node */}
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 shrink-0 ${
+                        isCompleted ? 'bg-primary border-primary text-slate-900 font-bold' :
+                        isActive ? 'bg-white border-primary text-primary font-bold shadow-[0_0_12px_rgba(250,189,0,0.4)] animate-pulse' :
+                        'bg-white border-slate-200 text-slate-400'
+                      }`}>
+                        {isCompleted ? (
+                          <span className="material-symbols-outlined text-[18px] font-bold">check</span>
+                        ) : (
+                          <span className="text-xs font-bold">{idx + 1}</span>
+                        )}
+                      </div>
+                      
+                      {/* Stepper Labels */}
+                      <div>
+                        <p className={`text-xs font-bold leading-tight ${isActive ? 'text-slate-900' : 'text-slate-500'}`}>
+                          {step.label}
+                        </p>
+                        <p className="text-[9px] text-slate-400 mt-0.5 leading-tight md:max-w-[100px] md:mx-auto">
+                          {step.desc}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="border border-slate-200 rounded overflow-hidden mt-md">
