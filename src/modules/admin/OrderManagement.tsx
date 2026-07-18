@@ -488,6 +488,27 @@ const OrderInvoiceView: React.FC<OrderInvoiceViewProps> = ({
   const gstAmount = order.gstNumber ? amtVal * 0.18 : 0;
   const subtotal = amtVal - gstAmount;
 
+  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const fetchPdf = async () => {
+      try {
+        const response = await apiFetch(`/documents/${order.id}?format=pdf&download=true`);
+        if (response.ok) {
+          const blob = await response.blob();
+          if (active) setPdfBlob(blob);
+        }
+      } catch (err) {
+        console.error('Pre-fetching invoice PDF failed:', err);
+      }
+    };
+    fetchPdf();
+    return () => {
+      active = false;
+    };
+  }, [order.id]);
+
   return (
     <div className="space-y-lg text-left bg-white border border-slate-200 rounded p-lg shadow-sm">
       <div className="flex justify-between items-center border-b border-slate-200 pb-sm mb-lg">
@@ -652,9 +673,12 @@ const OrderInvoiceView: React.FC<OrderInvoiceViewProps> = ({
               <button
                 onClick={async () => {
                   try {
-                    const response = await apiFetch(`/documents/${order.id}?format=pdf&download=true`);
-                    if (!response.ok) throw new Error('Failed to fetch invoice');
-                    const blob = await response.blob();
+                    let blob = pdfBlob;
+                    if (!blob) {
+                      const response = await apiFetch(`/documents/${order.id}?format=pdf&download=true`);
+                      if (!response.ok) throw new Error('Failed to fetch invoice');
+                      blob = await response.blob();
+                    }
                     const file = new File([blob], `Invoice-${order.id.slice(-6).toUpperCase()}.pdf`, { type: 'application/pdf' });
                     
                     const itemsText = order.items ? order.items.map((item: any) => `- ${item.productName || item.productId} (x${item.quantity || 1}): ₹${((item.quantity || 1) * (item.price || 0)).toLocaleString('en-IN')}`).join('\n') : '';
@@ -703,9 +727,12 @@ const OrderInvoiceView: React.FC<OrderInvoiceViewProps> = ({
               <button
                 onClick={async () => {
                   try {
-                    const response = await apiFetch(`/documents/${order.id}?format=pdf&download=true`);
-                    if (!response.ok) throw new Error('Failed to fetch invoice');
-                    const blob = await response.blob();
+                    let blob = pdfBlob;
+                    if (!blob) {
+                      const response = await apiFetch(`/documents/${order.id}?format=pdf&download=true`);
+                      if (!response.ok) throw new Error('Failed to fetch invoice');
+                      blob = await response.blob();
+                    }
                     const file = new File([blob], `Invoice-${order.id.slice(-6).toUpperCase()}.pdf`, { type: 'application/pdf' });
                     
                     const itemsText = order.items ? order.items.map((item: any) => `- ${item.productName || item.productId} (x${item.quantity || 1}): ₹${((item.quantity || 1) * (item.price || 0)).toLocaleString('en-IN')}`).join('\n') : '';
@@ -774,6 +801,27 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
   const serviceRate = 1499;
   const gstAmount = serviceRate * 0.18;
   const subtotal = serviceRate - gstAmount;
+
+  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const fetchPdf = async () => {
+      try {
+        const response = await apiFetch(`/documents/booking/${booking.id}`);
+        if (response.ok) {
+          const blob = await response.blob();
+          if (active) setPdfBlob(blob);
+        }
+      } catch (err) {
+        console.error('Pre-fetching booking PDF failed:', err);
+      }
+    };
+    fetchPdf();
+    return () => {
+      active = false;
+    };
+  }, [booking.id]);
 
   return (
     <div className="space-y-lg text-left bg-white border border-slate-200 rounded p-lg shadow-sm">
@@ -930,9 +978,12 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
               <button
                 onClick={async () => {
                   try {
-                    const response = await apiFetch(`/documents/booking/${booking.id}`);
-                    if (!response.ok) throw new Error('Failed to fetch invoice');
-                    const blob = await response.blob();
+                    let blob = pdfBlob;
+                    if (!blob) {
+                      const response = await apiFetch(`/documents/booking/${booking.id}`);
+                      if (!response.ok) throw new Error('Failed to fetch invoice');
+                      blob = await response.blob();
+                    }
                     const file = new File([blob], `Service-Invoice-${booking.id.slice(-6).toUpperCase()}.pdf`, { type: 'application/pdf' });
                     
                     const bookingText = `Hi, Please find attached the Arcus Service Tax Invoice details for Booking #${booking.id}.\n\nService: ${booking.service_name}\nTotal Amount: ₹1,499.00`;
@@ -979,9 +1030,12 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
               <button
                 onClick={async () => {
                   try {
-                    const response = await apiFetch(`/documents/booking/${booking.id}`);
-                    if (!response.ok) throw new Error('Failed to fetch invoice');
-                    const blob = await response.blob();
+                    let blob = pdfBlob;
+                    if (!blob) {
+                      const response = await apiFetch(`/documents/booking/${booking.id}`);
+                      if (!response.ok) throw new Error('Failed to fetch invoice');
+                      blob = await response.blob();
+                    }
                     const file = new File([blob], `Service-Invoice-${booking.id.slice(-6).toUpperCase()}.pdf`, { type: 'application/pdf' });
                     
                     const bookingText = `*ARCUS SERVICES - SERVICE TAX INVOICE*\n------------------------------------------\nInvoice No: INV-SRV-${booking.id.slice(-6).toUpperCase()}\nBooking ID: ${booking.id}\nDate Logged: ${booking.timestamp ? new Date(booking.timestamp).toLocaleDateString('en-IN') : 'N/A'}\n\n*Client Details:*\nName: ${booking.name}\nPhone: ${booking.phone}\n\n*Service Scheduled:*\nService: ${booking.service_name}\nAppointment: ${booking.date}\n${booking.notes ? `Instructions: ${booking.notes}\n` : ''}\n*Service Amount Breakdown:*\nSubtotal: ₹${subtotal.toLocaleString('en-IN')}\nGST (18%): ₹${gstAmount.toLocaleString('en-IN')}\n*Total Service Amount: ₹${serviceRate.toLocaleString('en-IN')}*\n------------------------------------------`;
@@ -999,7 +1053,7 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
                   }
 
                   // Fallback to standard WhatsApp Link
-                  const bookingText = `*ARCUS SERVICES - SERVICE TAX INVOICE*\n------------------------------------------\nInvoice No: INV-SRV-${booking.id.slice(-6).toUpperCase()}\nBooking ID: ${booking.id}\nDate Logged: ${booking.timestamp ? new Date(booking.timestamp).toLocaleDateString('en-IN') : 'N/A'}\n\n*Client Details:*\nName: ${booking.name}\nPhone: ${booking.phone}\n\n*Service Scheduled:*\nService: ${booking.service_name}\nAppointment: ${booking.date}\n${booking.notes ? `Instructions: ${booking.notes}\n` : ''}\n*Service Amount Breakdown:*\nSubtotal: ₹${subtotal.toLocaleString('en-IN')}\nGST (18%): ₹${gstAmount.toLocaleString('en-IN')}\n*Total Service Amount: ₹${serviceRate.toLocaleString('en-IN')}*\n------------------------------------------`;
+                  const bookingText = `*ARCUS SERVICES - SERVICE TAX INVOICE*\n------------------------------------------\nInvoice No: INV-SRV-${booking.id.slice(-6).toUpperCase()}\nBooking ID: ${booking.id}\nDate Logged: ${booking.timestamp ? new Date(booking.timestamp).toLocaleDateString('en-IN') : 'N/A'}\n\n*Client Details:*\nName: ${booking.name}\nPhone: ${booking.phone}\n\n*Service Scheduled:*\nService: ${booking.service_name}\nAppointment: ${booking.date}\n${booking.notes ? `Instructions: ${booking.notes}\n` : ''}\n*Service Amount Breakdown:*\nSubtotal: ₹${subtotal.toLocaleString('en-IN')}\nGST (18%): ₹${gstAmount.toLocaleString('en-IN')}\n*Total Service Amount: ₹${serviceRate.toLocaleString('en-IN')}*\n\n*View/Download PDF:*\n------------------------------------------`;
                   const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(bookingText)}`;
                   window.open(waUrl, '_blank');
                 }}
