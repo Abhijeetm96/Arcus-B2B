@@ -662,6 +662,10 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
   onBack,
   handleBookingStatusChange
 }) => {
+  const serviceRate = 1499;
+  const gstAmount = serviceRate * 0.18;
+  const subtotal = serviceRate - gstAmount;
+
   return (
     <div className="space-y-lg text-left bg-white border border-slate-200 rounded p-lg shadow-sm">
       <div className="flex justify-between items-center border-b border-slate-200 pb-sm mb-lg">
@@ -673,12 +677,12 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
           Back to Bookings List
         </button>
         <span className="text-xs bg-slate-100 text-slate-800 px-md py-sm rounded border font-bold uppercase tracking-wider">
-          Booking Status: {booking.status}
+          Booking Status: {booking.status || 'Pending'}
         </span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-lg items-start">
-        {/* Left Column: Job Card */}
+        {/* Left Column: Invoice Sheet */}
         <div className="lg:col-span-2 border border-slate-200 rounded p-xl space-y-xl bg-white shadow-xs">
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start gap-md">
@@ -686,46 +690,81 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
               <h2 className="text-xl font-extrabold tracking-tight text-slate-900">ARCUS SERVICES</h2>
               <p className="text-[11px] text-slate-500 font-medium mt-1 leading-relaxed">
                 Contractor Placement & Site Maintenance Hub<br />
-                Bangalore, Karnataka - 560001<br />
+                MG Road, Industrial Area Phase 2<br />
+                Bangalore, Karnataka - 560025<br />
                 services@arcus.com | Support: +91 80 4912 3456
               </p>
             </div>
             <div className="sm:text-right">
-              <h1 className="text-lg font-extrabold uppercase text-slate-800 tracking-wider">Work Order / Job Card</h1>
+              <h1 className="text-lg font-extrabold uppercase text-slate-800 tracking-wider">Service Tax Invoice</h1>
               <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                <span className="font-bold text-slate-700">Booking ID:</span> <span className="font-mono text-[11px]">{booking.id}</span><br />
+                <span className="font-bold text-slate-700">Invoice No:</span> INV-SRV-{booking.id.slice(-6).toUpperCase()}<br />
                 <span className="font-bold text-slate-700">Date Logged:</span> {booking.timestamp ? new Date(booking.timestamp).toLocaleDateString('en-IN') : 'N/A'}<br />
+                <span className="font-bold text-slate-700">Booking ID:</span> <span className="font-mono text-[11px]">{booking.id}</span>
               </p>
             </div>
           </div>
 
           <hr className="border-slate-100" />
 
-          {/* Client Details */}
+          {/* Client & Schedule Blocks */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-lg text-xs">
             <div>
-              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Client Details</h4>
+              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Billed To (Client)</h4>
               <p className="font-bold text-slate-800 mt-xs">{booking.name}</p>
-              <p className="text-slate-600 mt-1 font-mono">{booking.phone}</p>
+              <p className="text-slate-600 mt-1">Phone: {booking.phone}</p>
             </div>
             <div>
-              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Job Schedule</h4>
-              <p className="font-bold text-slate-800 mt-xs">Requested Date & Time</p>
+              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Service Schedule</h4>
+              <p className="font-bold text-slate-800 mt-xs">Appointment Date & Time</p>
               <p className="text-slate-600 mt-1">{booking.date}</p>
             </div>
           </div>
 
-          {/* Job Specifications */}
-          <div className="space-y-xs text-xs">
-            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Service Requested</h4>
-            <div className="bg-slate-50 p-md rounded border border-slate-150">
-              <div className="font-bold text-slate-900 text-sm">{booking.service_name}</div>
-              {booking.notes && (
-                <div className="text-slate-600 mt-sm leading-relaxed whitespace-pre-wrap pt-sm border-t border-slate-200">
-                  <span className="font-bold text-slate-800 text-[10px] uppercase font-mono tracking-wider">Client Instructions:</span><br />
-                  {booking.notes}
-                </div>
-              )}
+          {/* Service Items Table */}
+          <div className="border border-slate-200 rounded overflow-hidden">
+            <table className="w-full text-xs text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase">
+                  <th className="p-md">Service Description / Code</th>
+                  <th className="p-md text-right">Visitation & Consulting Fee</th>
+                  <th className="p-md text-center">Qty</th>
+                  <th className="p-md text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
+                <tr>
+                  <td className="p-md text-slate-900">
+                    <div>{booking.service_name}</div>
+                    {booking.notes && (
+                      <div className="text-[10px] text-slate-400 font-medium mt-1 font-sans">
+                        Instructions: {booking.notes}
+                      </div>
+                    )}
+                  </td>
+                  <td className="p-md text-right">₹{serviceRate.toLocaleString('en-IN')}</td>
+                  <td className="p-md text-center">1</td>
+                  <td className="p-md text-right">₹{serviceRate.toLocaleString('en-IN')}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Totals Summary */}
+          <div className="flex justify-end pt-md">
+            <div className="w-64 space-y-sm text-xs font-semibold text-slate-600">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span className="text-slate-900">₹{subtotal.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>GST (18%)</span>
+                <span className="text-slate-900">₹{gstAmount.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between border-t border-slate-100 pt-sm text-sm font-bold text-slate-900">
+                <span>Total Service Amount</span>
+                <span className="text-primary">₹{serviceRate.toLocaleString('en-IN')}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -755,7 +794,7 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
               className="w-full h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
             >
               <span className="material-symbols-outlined text-[16px]">print</span>
-              Print Job Card
+              Print Invoice
             </button>
           </div>
         </div>
