@@ -631,7 +631,7 @@ const OrderInvoiceView: React.FC<OrderInvoiceViewProps> = ({
               <button
                 onClick={async () => {
                   try {
-                    const response = await apiFetch(`/api/documents/${order.id}?format=pdf&download=true`);
+                    const response = await apiFetch(`/documents/${order.id}?format=pdf&download=true`);
                     if (!response.ok) throw new Error('Failed to fetch invoice');
                     const blob = await response.blob();
                     const fileURL = URL.createObjectURL(blob);
@@ -656,7 +656,7 @@ const OrderInvoiceView: React.FC<OrderInvoiceViewProps> = ({
                   if (!userEmail) return;
                   
                   try {
-                    const response = await apiFetch(`/api/admin/orders/${order.id}/share-email`, {
+                    const response = await apiFetch(`/admin/orders/${order.id}/share-email`, {
                       method: 'POST',
                       body: JSON.stringify({ email: userEmail })
                     });
@@ -886,7 +886,7 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
                   if (!userEmail) return;
                   
                   try {
-                    const response = await apiFetch(`/api/admin/bookings/${booking.id}/share-email`, {
+                    const response = await apiFetch(`/admin/bookings/${booking.id}/share-email`, {
                       method: 'POST',
                       body: JSON.stringify({ email: userEmail })
                     });
