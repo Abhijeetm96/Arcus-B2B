@@ -198,6 +198,57 @@ export const OrderManagement: React.FC<OrderManagementProps> = ({ type }) => {
     }
   };
 
+  if (selectedOrder && type !== 'SERVICES') {
+    return (
+      <div className="space-y-md text-left">
+        {error && (
+          <div className="bg-red-50 text-red-800 p-md rounded border border-red-200 flex justify-between items-center">
+            <span>{error}</span>
+            <button onClick={() => setError(null)} className="material-symbols-outlined text-[18px]">close</button>
+          </div>
+        )}
+        {success && (
+          <div className="bg-green-50 text-green-800 p-md rounded border border-green-200 flex justify-between items-center">
+            <span>{success}</span>
+            <button onClick={() => setSuccess(null)} className="material-symbols-outlined text-[18px]">close</button>
+          </div>
+        )}
+        <OrderInvoiceView 
+          order={selectedOrder} 
+          onBack={() => setSelectedOrder(null)} 
+          handleStatusChange={handleStatusChange}
+          orderNotes={orderNotes}
+          setOrderNotes={setOrderNotes}
+          handleSaveNotes={handleSaveNotes}
+        />
+      </div>
+    );
+  }
+
+  if (selectedBooking && type === 'SERVICES') {
+    return (
+      <div className="space-y-md text-left">
+        {error && (
+          <div className="bg-red-50 text-red-800 p-md rounded border border-red-200 flex justify-between items-center">
+            <span>{error}</span>
+            <button onClick={() => setError(null)} className="material-symbols-outlined text-[18px]">close</button>
+          </div>
+        )}
+        {success && (
+          <div className="bg-green-50 text-green-800 p-md rounded border border-green-200 flex justify-between items-center">
+            <span>{success}</span>
+            <button onClick={() => setSuccess(null)} className="material-symbols-outlined text-[18px]">close</button>
+          </div>
+        )}
+        <BookingJobSheetView 
+          booking={selectedBooking} 
+          onBack={() => setSelectedBooking(null)} 
+          handleBookingStatusChange={handleBookingStatusChange}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-md text-left">
       {/* Notifications */}
@@ -412,312 +463,303 @@ export const OrderManagement: React.FC<OrderManagementProps> = ({ type }) => {
           </div>
         </div>
       )}
-      {/* Details Side Drawer Modal (only for B2B/B2C orders) */}
-      {selectedOrder && type !== 'SERVICES' && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
-          <div className="w-full max-w-md bg-white h-full shadow flex flex-col justify-between overflow-hidden">
-            {/* Header */}
-            <div className="px-lg py-md border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-              <div>
-                <h3 className="font-extrabold text-slate-900 text-body-md">
-                  Order Details: {selectedOrder.id}
-                </h3>
-                <p className="text-[11px] text-slate-400 font-semibold mt-0.5">Purchased on {selectedOrder.date || 'N/A'}</p>
-              </div>
-              <button
-                onClick={() => setSelectedOrder(null)}
-                className="material-symbols-outlined text-slate-400 hover:text-slate-900"
-              >
-                close
-              </button>
+    </div>
+  );
+};
+
+interface OrderInvoiceViewProps {
+  order: any;
+  onBack: () => void;
+  handleStatusChange: (id: string, status: string) => void;
+  orderNotes: string;
+  setOrderNotes: (notes: string) => void;
+  handleSaveNotes: () => void;
+}
+
+const OrderInvoiceView: React.FC<OrderInvoiceViewProps> = ({
+  order,
+  onBack,
+  handleStatusChange,
+  orderNotes,
+  setOrderNotes,
+  handleSaveNotes
+}) => {
+  const amtVal = typeof order.amount === 'number' ? order.amount : parseFloat(String(order.amount).replace(/[^\d.]/g, '')) || 0;
+  const gstAmount = order.gstNumber ? amtVal * 0.18 : 0;
+  const subtotal = amtVal - gstAmount;
+
+  return (
+    <div className="space-y-lg text-left bg-white border border-slate-200 rounded p-lg shadow-sm">
+      <div className="flex justify-between items-center border-b border-slate-200 pb-sm mb-lg">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-xs text-xs font-bold text-primary hover:underline bg-transparent border-none cursor-pointer p-0"
+        >
+          <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+          Back to Orders List
+        </button>
+        <span className="text-xs bg-slate-100 text-slate-800 px-md py-sm rounded border font-bold uppercase tracking-wider">
+          Order Status: {order.status}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-lg items-start">
+        {/* Left Column: Invoice Sheet */}
+        <div className="lg:col-span-2 border border-slate-200 rounded p-xl space-y-xl bg-white shadow-xs">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-md">
+            <div>
+              <h2 className="text-xl font-extrabold tracking-tight text-slate-900">ARCUS COMMERCE</h2>
+              <p className="text-[11px] text-slate-500 font-medium mt-1 leading-relaxed">
+                Arcus Building Materials & Logistics Hub<br />
+                MG Road, Industrial Area Phase 2<br />
+                Bangalore, Karnataka - 560025<br />
+                support@arcus.com | +91 80 4912 3456
+              </p>
             </div>
+            <div className="sm:text-right">
+              <h1 className="text-lg font-extrabold uppercase text-slate-800 tracking-wider">Tax Invoice</h1>
+              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                <span className="font-bold text-slate-700">Invoice No:</span> INV-{order.id.slice(-6).toUpperCase()}<br />
+                <span className="font-bold text-slate-700">Date:</span> {order.date || new Date(order.timestamp).toLocaleDateString('en-IN')}<br />
+                <span className="font-bold text-slate-700">Order ID:</span> <span className="font-mono text-[11px]">{order.id}</span>
+              </p>
+            </div>
+          </div>
 
-            {/* Body */}
-            <div className="flex-1 overflow-y-auto p-lg space-y-lg text-slate-600">
-              {/* Buyer info */}
-              <div className="space-y-xs">
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Client Details</h4>
-                <div className="bg-slate-50 p-md rounded border border-slate-100 space-y-1">
-                  <div className="font-bold text-slate-900 text-xs">{selectedOrder.userId}</div>
-                  <div className="text-[11px] text-slate-500 font-medium">Shipping Address: {selectedOrder.shippingAddress}</div>
-                  {selectedOrder.gstNumber && (
-                    <div className="text-[10px] font-bold text-primary font-mono mt-sm">GSTIN: {selectedOrder.gstNumber}</div>
-                  )}
+          <hr className="border-slate-100" />
+
+          {/* Address Blocks */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-lg text-xs">
+            <div>
+              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Billed To</h4>
+              <p className="font-bold text-slate-800 mt-xs">{order.userId}</p>
+              {order.billingAddress ? (
+                <p className="text-slate-600 mt-1 whitespace-pre-line leading-relaxed">{order.billingAddress}</p>
+              ) : (
+                <p className="text-slate-600 mt-1 whitespace-pre-line leading-relaxed">{order.shippingAddress}</p>
+              )}
+            </div>
+            <div>
+              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Shipped To</h4>
+              <p className="font-bold text-slate-800 mt-xs">{order.userId}</p>
+              <p className="text-slate-600 mt-1 whitespace-pre-line leading-relaxed">{order.shippingAddress}</p>
+              {order.gstNumber && (
+                <div className="mt-sm p-xs bg-slate-50 border border-slate-100 rounded inline-block text-[10px] font-bold text-primary font-mono">
+                  GSTIN: {order.gstNumber}
                 </div>
+              )}
+            </div>
+          </div>
+
+          {/* Items Table */}
+          <div className="border border-slate-200 rounded overflow-hidden">
+            <table className="w-full text-xs text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase">
+                  <th className="p-md">Product / Description</th>
+                  <th className="p-md text-right">Price</th>
+                  <th className="p-md text-center">Qty</th>
+                  <th className="p-md text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {order.items && order.items.map((item: any, idx: number) => (
+                  <tr key={idx} className="font-semibold text-slate-700">
+                    <td className="p-md text-slate-900">{item.productName || item.productId}</td>
+                    <td className="p-md text-right">₹{item.price?.toLocaleString('en-IN') || 0}</td>
+                    <td className="p-md text-center">{item.quantity || 1}</td>
+                    <td className="p-md text-right">₹{((item.quantity || 1) * (item.price || 0)).toLocaleString('en-IN')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Totals Summary */}
+          <div className="flex justify-end pt-md">
+            <div className="w-64 space-y-sm text-xs font-semibold text-slate-600">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span className="text-slate-900">₹{subtotal.toLocaleString('en-IN')}</span>
               </div>
-
-              {/* Items */}
-              <div className="space-y-xs">
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Order Items</h4>
-                <div className="border border-slate-200 rounded divide-y divide-slate-100 overflow-hidden">
-                  {selectedOrder.items && selectedOrder.items.map((item, idx) => (
-                    <div key={idx} className="p-md flex justify-between items-center text-xs font-semibold">
-                      <div>
-                        <div className="text-slate-900">{item.productName || item.productId}</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">Qty: {item.quantity} × ₹{item.price?.toLocaleString('en-IN') || 0}</div>
-                      </div>
-                      <div className="text-slate-900">₹{((item.quantity || 1) * (item.price || 0)).toLocaleString('en-IN')}</div>
-                    </div>
-                  ))}
+              {order.gstNumber && (
+                <div className="flex justify-between">
+                  <span>GST (18%)</span>
+                  <span className="text-slate-900">₹{gstAmount.toLocaleString('en-IN')}</span>
                 </div>
-                <div className="flex justify-between items-center pt-md font-bold text-slate-900 text-sm">
-                  <span>Total Amount</span>
-                  <span className="text-primary">₹{(typeof selectedOrder.amount === 'number' ? selectedOrder.amount : parseFloat(String(selectedOrder.amount).replace(/[^\d.]/g, '')) || 0).toLocaleString('en-IN')}</span>
-                </div>
-                <button
-                  onClick={async () => {
-                    try {
-                      const response = await apiFetch(`/api/documents/${selectedOrder.id}?format=pdf&download=true`);
-                      if (!response.ok) throw new Error('Failed to fetch invoice');
-                      const blob = await response.blob();
-                      const fileURL = URL.createObjectURL(blob);
-                      window.open(fileURL, '_blank');
-                      setTimeout(() => {
-                        URL.revokeObjectURL(fileURL);
-                      }, 10000);
-                    } catch (err) {
-                      console.error('Invoice download failed:', err);
-                      alert('Failed to download invoice PDF.');
-                    }
-                  }}
-                  className="w-full mt-md h-9 border border-slate-200 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all"
-                >
-                  <span className="material-symbols-outlined text-[16px]">download</span>
-                  Download Invoice PDF
-                </button>
-              </div>
-
-              {/* Status Update */}
-              <div className="space-y-sm">
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Update Status</h4>
-                <div className="flex gap-sm">
-                  <select
-                    value={selectedOrder.status}
-                    onChange={(e) => handleStatusChange(selectedOrder.id, e.target.value)}
-                    className="flex-1 h-10 px-md border border-slate-200 rounded text-xs bg-slate-50 font-bold"
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="Awaiting Payment">Awaiting Payment</option>
-                    <option value="Confirmed">Confirmed</option>
-                    <option value="Dispatched">Dispatched</option>
-                    <option value="Awaiting Delivery">Awaiting Delivery</option>
-                    <option value="Out For Delivery">Out For Delivery</option>
-                    <option value="Delivered">Delivered</option>
-                    <option value="Cancelled">Cancelled</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Admin Notes */}
-              <div className="space-y-sm">
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Internal Notes</h4>
-                <textarea
-                  value={orderNotes}
-                  onChange={(e) => setOrderNotes(e.target.value)}
-                  placeholder="Type notes to attach to this order..."
-                  className="w-full border border-slate-200 rounded p-md text-xs focus:border-primary focus:ring-0 bg-slate-50 min-h-[80px]"
-                />
-                <button
-                  onClick={handleSaveNotes}
-                  className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-md rounded transition-all"
-                >
-                  Save Internal Notes
-                </button>
+              )}
+              <div className="flex justify-between border-t border-slate-100 pt-sm text-sm font-bold text-slate-900">
+                <span>Total Amount</span>
+                <span className="text-primary">₹{amtVal.toLocaleString('en-IN')}</span>
               </div>
             </div>
           </div>
         </div>
-      )}
 
-      
-      {/* Details Side Drawer Modal (only for B2B/B2C orders) */}
-      {selectedOrder && type !== 'SERVICES' && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
-          <div className="w-full max-w-md bg-white h-full shadow flex flex-col justify-between overflow-hidden">
-            {/* Header */}
-            <div className="px-lg py-md border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-              <div>
-                <h3 className="font-extrabold text-slate-900 text-body-md">
-                  Order Details: {selectedOrder.id}
-                </h3>
-                <p className="text-[11px] text-slate-400 font-semibold mt-0.5">Purchased on {selectedOrder.date || 'N/A'}</p>
-              </div>
-              <button
-                onClick={() => setSelectedOrder(null)}
-                className="material-symbols-outlined text-slate-400 hover:text-slate-900"
+        {/* Right Column: Processing Controls */}
+        <div className="space-y-lg">
+          {/* Status Controls */}
+          <div className="bg-slate-50 border border-slate-200 rounded p-lg space-y-md">
+            <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider font-mono">Process Order</h3>
+            <div className="space-y-xs">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Status</label>
+              <select
+                value={order.status}
+                onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                className="w-full h-10 px-md border border-slate-200 rounded text-xs bg-white font-bold text-slate-700 cursor-pointer"
               >
-                close
-              </button>
+                <option value="Pending">Pending</option>
+                <option value="Awaiting Payment">Awaiting Payment</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Dispatched">Dispatched</option>
+                <option value="Awaiting Delivery">Awaiting Delivery</option>
+                <option value="Out For Delivery">Out For Delivery</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
             </div>
+            
+            <button
+              onClick={() => window.print()}
+              className="w-full h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
+            >
+              <span className="material-symbols-outlined text-[16px]">print</span>
+              Print Invoice
+            </button>
+          </div>
 
-            {/* Body */}
-            <div className="flex-1 overflow-y-auto p-lg space-y-lg text-slate-600">
-              {/* Buyer info */}
-              <div className="space-y-xs">
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Client Details</h4>
-                <div className="bg-slate-50 p-md rounded border border-slate-100 space-y-1">
-                  <div className="font-bold text-slate-900 text-xs">{selectedOrder.userId}</div>
-                  <div className="text-[11px] text-slate-500 font-medium">Shipping Address: {selectedOrder.shippingAddress}</div>
-                  {selectedOrder.gstNumber && (
-                    <div className="text-[10px] font-bold text-primary font-mono mt-sm">GSTIN: {selectedOrder.gstNumber}</div>
-                  )}
-                </div>
-              </div>
+          {/* Internal Notes */}
+          <div className="bg-slate-50 border border-slate-200 rounded p-lg space-y-md">
+            <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider font-mono">Internal Notes</h3>
+            <textarea
+              value={orderNotes}
+              onChange={(e) => setOrderNotes(e.target.value)}
+              placeholder="Type internal notes to attach..."
+              className="w-full border border-slate-200 rounded p-md text-xs focus:border-primary focus:ring-0 bg-white min-h-[100px]"
+            />
+            <button
+              onClick={handleSaveNotes}
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-md rounded transition-all shadow-xs"
+            >
+              Save Internal Notes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
-              {/* Items */}
-              <div className="space-y-xs">
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Order Items</h4>
-                <div className="border border-slate-200 rounded divide-y divide-slate-100 overflow-hidden">
-                  {selectedOrder.items && selectedOrder.items.map((item, idx) => (
-                    <div key={idx} className="p-md flex justify-between items-center text-xs font-semibold">
-                      <div>
-                        <div className="text-slate-900">{item.productName || item.productId}</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">Qty: {item.quantity} × ₹{item.price?.toLocaleString('en-IN') || 0}</div>
-                      </div>
-                      <div className="text-slate-900">₹{((item.quantity || 1) * (item.price || 0)).toLocaleString('en-IN')}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex justify-between items-center pt-md font-bold text-slate-900 text-sm">
-                  <span>Total Amount</span>
-                  <span className="text-primary">₹{(typeof selectedOrder.amount === 'number' ? selectedOrder.amount : parseFloat(String(selectedOrder.amount).replace(/[^\d.]/g, '')) || 0).toLocaleString('en-IN')}</span>
-                </div>
-                <button
-                  onClick={async () => {
-                    try {
-                      const response = await apiFetch(`/api/documents/${selectedOrder.id}?format=pdf&download=true`);
-                      if (!response.ok) throw new Error('Failed to fetch invoice');
-                      const blob = await response.blob();
-                      const fileURL = URL.createObjectURL(blob);
-                      window.open(fileURL, '_blank');
-                      setTimeout(() => {
-                        URL.revokeObjectURL(fileURL);
-                      }, 10000);
-                    } catch (err) {
-                      console.error('Invoice download failed:', err);
-                      alert('Failed to download invoice PDF.');
-                    }
-                  }}
-                  className="w-full mt-md h-9 border border-slate-200 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all"
-                >
-                  <span className="material-symbols-outlined text-[16px]">download</span>
-                  Download Invoice PDF
-                </button>
-              </div>
+interface BookingJobSheetViewProps {
+  booking: any;
+  onBack: () => void;
+  handleBookingStatusChange: (id: string, status: string) => void;
+}
 
-              {/* Status Update */}
-              <div className="space-y-sm">
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Update Status</h4>
-                <div className="flex gap-sm">
-                  <select
-                    value={selectedOrder.status}
-                    onChange={(e) => handleStatusChange(selectedOrder.id, e.target.value)}
-                    className="flex-1 h-10 px-md border border-slate-200 rounded text-xs bg-slate-50 font-bold"
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="Awaiting Payment">Awaiting Payment</option>
-                    <option value="Confirmed">Confirmed</option>
-                    <option value="Dispatched">Dispatched</option>
-                    <option value="Awaiting Delivery">Awaiting Delivery</option>
-                    <option value="Out For Delivery">Out For Delivery</option>
-                    <option value="Delivered">Delivered</option>
-                    <option value="Cancelled">Cancelled</option>
-                  </select>
-                </div>
-              </div>
+const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
+  booking,
+  onBack,
+  handleBookingStatusChange
+}) => {
+  return (
+    <div className="space-y-lg text-left bg-white border border-slate-200 rounded p-lg shadow-sm">
+      <div className="flex justify-between items-center border-b border-slate-200 pb-sm mb-lg">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-xs text-xs font-bold text-primary hover:underline bg-transparent border-none cursor-pointer p-0"
+        >
+          <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+          Back to Bookings List
+        </button>
+        <span className="text-xs bg-slate-100 text-slate-800 px-md py-sm rounded border font-bold uppercase tracking-wider">
+          Booking Status: {booking.status}
+        </span>
+      </div>
 
-              {/* Admin Notes */}
-              <div className="space-y-sm">
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Internal Notes</h4>
-                <textarea
-                  value={orderNotes}
-                  onChange={(e) => setOrderNotes(e.target.value)}
-                  placeholder="Type notes to attach to this order..."
-                  className="w-full border border-slate-200 rounded p-md text-xs focus:border-primary focus:ring-0 bg-slate-50 min-h-[80px]"
-                />
-                <button
-                  onClick={handleSaveNotes}
-                  className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-md rounded transition-all"
-                >
-                  Save Internal Notes
-                </button>
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-lg items-start">
+        {/* Left Column: Job Card */}
+        <div className="lg:col-span-2 border border-slate-200 rounded p-xl space-y-xl bg-white shadow-xs">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-md">
+            <div>
+              <h2 className="text-xl font-extrabold tracking-tight text-slate-900">ARCUS SERVICES</h2>
+              <p className="text-[11px] text-slate-500 font-medium mt-1 leading-relaxed">
+                Contractor Placement & Site Maintenance Hub<br />
+                Bangalore, Karnataka - 560001<br />
+                services@arcus.com | Support: +91 80 4912 3456
+              </p>
+            </div>
+            <div className="sm:text-right">
+              <h1 className="text-lg font-extrabold uppercase text-slate-800 tracking-wider">Work Order / Job Card</h1>
+              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                <span className="font-bold text-slate-700">Booking ID:</span> <span className="font-mono text-[11px]">{booking.id}</span><br />
+                <span className="font-bold text-slate-700">Date Logged:</span> {booking.timestamp ? new Date(booking.timestamp).toLocaleDateString('en-IN') : 'N/A'}<br />
+              </p>
+            </div>
+          </div>
+
+          <hr className="border-slate-100" />
+
+          {/* Client Details */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-lg text-xs">
+            <div>
+              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Client Details</h4>
+              <p className="font-bold text-slate-800 mt-xs">{booking.name}</p>
+              <p className="text-slate-600 mt-1 font-mono">{booking.phone}</p>
+            </div>
+            <div>
+              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Job Schedule</h4>
+              <p className="font-bold text-slate-800 mt-xs">Requested Date & Time</p>
+              <p className="text-slate-600 mt-1">{booking.date}</p>
+            </div>
+          </div>
+
+          {/* Job Specifications */}
+          <div className="space-y-xs text-xs">
+            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Service Requested</h4>
+            <div className="bg-slate-50 p-md rounded border border-slate-150">
+              <div className="font-bold text-slate-900 text-sm">{booking.service_name}</div>
+              {booking.notes && (
+                <div className="text-slate-600 mt-sm leading-relaxed whitespace-pre-wrap pt-sm border-t border-slate-200">
+                  <span className="font-bold text-slate-800 text-[10px] uppercase font-mono tracking-wider">Client Instructions:</span><br />
+                  {booking.notes}
+                </div>
+              )}
             </div>
           </div>
         </div>
-      )}
 
-      {/* Details Side Drawer Modal for Service Bookings */}
-      {selectedBooking && type === 'SERVICES' && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
-          <div className="w-full max-w-md bg-white h-full shadow flex flex-col justify-between overflow-hidden">
-            {/* Header */}
-            <div className="px-lg py-md border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-              <div>
-                <h3 className="font-extrabold text-slate-900 text-body-md">
-                  Booking Details: {selectedBooking.id}
-                </h3>
-                <p className="text-[11px] text-slate-400 font-semibold mt-0.5">
-                  Requested on {selectedBooking.timestamp ? new Date(selectedBooking.timestamp).toLocaleDateString('en-IN') : 'N/A'}
-                </p>
-              </div>
-              <button
-                onClick={() => setSelectedBooking(null)}
-                className="material-symbols-outlined text-slate-400 hover:text-slate-900"
+        {/* Right Column: Processing Controls */}
+        <div className="space-y-lg">
+          {/* Status Controls */}
+          <div className="bg-slate-50 border border-slate-200 rounded p-lg space-y-md">
+            <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider font-mono">Process Booking</h3>
+            <div className="space-y-xs">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Status</label>
+              <select
+                value={booking.status || 'Pending'}
+                onChange={(e) => handleBookingStatusChange(booking.id, e.target.value)}
+                className="w-full h-10 px-md border border-slate-200 rounded text-xs bg-white font-bold text-slate-700 cursor-pointer"
               >
-                close
-              </button>
+                <option value="Pending">Pending</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Partner Dispatched">Partner Dispatched</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
             </div>
 
-            {/* Body */}
-            <div className="flex-1 overflow-y-auto p-lg space-y-lg text-slate-600 text-left">
-              {/* Client info */}
-              <div className="space-y-xs">
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Client Details</h4>
-                <div className="bg-slate-50 p-md rounded border border-slate-100 space-y-1">
-                  <div className="font-bold text-slate-900 text-xs">{selectedBooking.name}</div>
-                  <div className="text-[11px] text-slate-500 font-semibold">Phone: {selectedBooking.phone}</div>
-                </div>
-              </div>
-
-              {/* Service Details */}
-              <div className="space-y-xs">
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Service Details</h4>
-                <div className="bg-slate-50 p-md rounded border border-slate-100 space-y-1">
-                  <div className="font-bold text-slate-900 text-xs">{selectedBooking.service_name}</div>
-                  <div className="text-[11px] text-slate-500 font-medium">Scheduled Date: {selectedBooking.date}</div>
-                  {selectedBooking.notes && (
-                    <div className="text-[11px] text-slate-500 font-medium mt-xs pt-xs border-t border-slate-200">
-                      Notes: {selectedBooking.notes}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Status Update */}
-              <div className="space-y-sm">
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Update Status</h4>
-                <div className="flex gap-sm">
-                  <select
-                    value={selectedBooking.status || 'Pending'}
-                    onChange={(e) => {
-                      handleBookingStatusChange(selectedBooking.id, e.target.value);
-                      setSelectedBooking({ ...selectedBooking, status: e.target.value });
-                    }}
-                    className="flex-1 h-10 px-md border border-slate-200 rounded text-xs bg-slate-50 font-bold"
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="Confirmed">Confirmed</option>
-                    <option value="Partner Dispatched">Partner Dispatched</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Cancelled">Cancelled</option>
-                  </select>
-                </div>
-              </div>
-            </div>
+            <button
+              onClick={() => window.print()}
+              className="w-full h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
+            >
+              <span className="material-symbols-outlined text-[16px]">print</span>
+              Print Job Card
+            </button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
