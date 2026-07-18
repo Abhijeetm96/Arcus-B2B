@@ -620,13 +620,61 @@ const OrderInvoiceView: React.FC<OrderInvoiceViewProps> = ({
               </select>
             </div>
             
-            <button
-              onClick={() => window.print()}
-              className="w-full h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
-            >
-              <span className="material-symbols-outlined text-[16px]">print</span>
-              Print Invoice
-            </button>
+            <div className="grid grid-cols-2 gap-sm">
+              <button
+                onClick={() => window.print()}
+                className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
+              >
+                <span className="material-symbols-outlined text-[16px]">print</span>
+                Print
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    const response = await apiFetch(`/api/documents/${order.id}?format=pdf&download=true`);
+                    if (!response.ok) throw new Error('Failed to fetch invoice');
+                    const blob = await response.blob();
+                    const fileURL = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = fileURL;
+                    link.download = `Invoice-${order.id.slice(-6).toUpperCase()}.pdf`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    setTimeout(() => {
+                      URL.revokeObjectURL(fileURL);
+                    }, 10000);
+                  } catch (err) {
+                    console.error('Invoice download failed:', err);
+                    alert('Failed to download invoice PDF.');
+                  }
+                }}
+                className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
+              >
+                <span className="material-symbols-outlined text-[16px]">download</span>
+                Download
+              </button>
+              <button
+                onClick={() => {
+                  const mailtoUrl = `mailto:${order.userId || ''}?subject=Arcus Invoice ${order.id}&body=Hi, Please find your Arcus Tax Invoice details for Order ${order.id}. Total Amount: INR ${amtVal.toLocaleString('en-IN')}.`;
+                  window.open(mailtoUrl, '_blank');
+                }}
+                className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
+              >
+                <span className="material-symbols-outlined text-[16px]">mail</span>
+                Email
+              </button>
+              <button
+                onClick={() => {
+                  const waText = encodeURIComponent(`Hi, here is your Arcus Invoice details for Order #${order.id}. Total Amount: INR ${amtVal.toLocaleString('en-IN')}.`);
+                  window.open(`https://api.whatsapp.com/send?text=${waText}`, '_blank');
+                }}
+                className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
+              >
+                <span className="material-symbols-outlined text-[16px]">chat</span>
+                WhatsApp
+              </button>
+            </div>
           </div>
 
           {/* Internal Notes */}
@@ -789,13 +837,53 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
               </select>
             </div>
 
-            <button
-              onClick={() => window.print()}
-              className="w-full h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
-            >
-              <span className="material-symbols-outlined text-[16px]">print</span>
-              Print Invoice
-            </button>
+            <div className="grid grid-cols-2 gap-sm">
+              <button
+                onClick={() => window.print()}
+                className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
+              >
+                <span className="material-symbols-outlined text-[16px]">print</span>
+                Print
+              </button>
+              <button
+                onClick={() => {
+                  const text = `Invoice No: INV-SRV-${booking.id.slice(-6).toUpperCase()}\nService: ${booking.service_name}\nTotal Amount: ₹${serviceRate.toLocaleString('en-IN')}`;
+                  const blob = new Blob([text], { type: 'text/plain' });
+                  const url = URL.createObjectURL(blob);
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.download = `Service-Invoice-${booking.id.slice(-6).toUpperCase()}.txt`;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                  URL.revokeObjectURL(url);
+                }}
+                className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
+              >
+                <span className="material-symbols-outlined text-[16px]">download</span>
+                Download
+              </button>
+              <button
+                onClick={() => {
+                  const mailtoUrl = `mailto:${booking.phone || ''}?subject=Arcus Service Invoice ${booking.id}&body=Hi, Please find your Arcus Service Invoice details for Booking ${booking.id}. Total Amount: INR ${serviceRate.toLocaleString('en-IN')}.`;
+                  window.open(mailtoUrl, '_blank');
+                }}
+                className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
+              >
+                <span className="material-symbols-outlined text-[16px]">mail</span>
+                Email
+              </button>
+              <button
+                onClick={() => {
+                  const waText = encodeURIComponent(`Hi, here is your Arcus Service Invoice details for Booking #${booking.id}. Total Amount: INR ${serviceRate.toLocaleString('en-IN')}.`);
+                  window.open(`https://api.whatsapp.com/send?text=${waText}`, '_blank');
+                }}
+                className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
+              >
+                <span className="material-symbols-outlined text-[16px]">chat</span>
+                WhatsApp
+              </button>
+            </div>
           </div>
         </div>
       </div>
