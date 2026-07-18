@@ -237,8 +237,11 @@ export const OrderManagement: React.FC<OrderManagementProps> = ({ type }) => {
             >
               <option value="all">All Orders</option>
               <option value="Pending">Pending</option>
+              <option value="Awaiting Payment">Awaiting Payment</option>
               <option value="Confirmed">Confirmed</option>
               <option value="Dispatched">Dispatched</option>
+              <option value="Awaiting Delivery">Awaiting Delivery</option>
+              <option value="Out For Delivery">Out For Delivery</option>
               <option value="Delivered">Delivered</option>
               <option value="Cancelled">Cancelled</option>
             </select>
@@ -349,7 +352,15 @@ export const OrderManagement: React.FC<OrderManagementProps> = ({ type }) => {
                     const dateStr = o.timestamp ? new Date(o.timestamp).toLocaleDateString('en-IN') : (o.date || 'N/A');
                     return (
                       <tr key={o.id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-lg py-md font-mono text-xs font-bold text-primary">{o.id}</td>
+                        <td 
+                          className="px-lg py-md font-mono text-xs font-bold text-primary cursor-pointer hover:underline"
+                          onClick={() => {
+                            setSelectedOrder(o);
+                            setOrderNotes('');
+                          }}
+                        >
+                          {o.id}
+                        </td>
                         <td className="px-lg py-md">
                           <div className="font-semibold text-slate-900">{o.userId}</div>
                           <div className="text-[10px] text-slate-400 truncate max-w-xs">{o.shippingAddress}</div>
@@ -481,8 +492,11 @@ export const OrderManagement: React.FC<OrderManagementProps> = ({ type }) => {
                     className="flex-1 h-10 px-md border border-slate-200 rounded text-xs bg-slate-50 font-bold"
                   >
                     <option value="Pending">Pending</option>
+                    <option value="Awaiting Payment">Awaiting Payment</option>
                     <option value="Confirmed">Confirmed</option>
                     <option value="Dispatched">Dispatched</option>
+                    <option value="Awaiting Delivery">Awaiting Delivery</option>
+                    <option value="Out For Delivery">Out For Delivery</option>
                     <option value="Delivered">Delivered</option>
                     <option value="Cancelled">Cancelled</option>
                   </select>
