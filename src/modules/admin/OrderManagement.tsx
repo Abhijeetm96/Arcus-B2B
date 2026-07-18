@@ -32,6 +32,7 @@ export const OrderManagement: React.FC<OrderManagementProps> = ({ type }) => {
 
   // Detail Drawer
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [orderNotes, setOrderNotes] = useState<string>('');
 
   const fetchUsers = async () => {
@@ -297,7 +298,14 @@ export const OrderManagement: React.FC<OrderManagementProps> = ({ type }) => {
                     };
                     return (
                       <tr key={b.id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-lg py-md font-mono text-xs font-bold text-primary">{b.id}</td>
+                        <td 
+                          className="px-lg py-md font-mono text-xs font-bold text-primary cursor-pointer hover:underline"
+                          onClick={() => {
+                            setSelectedBooking(b);
+                          }}
+                        >
+                          {b.id}
+                        </td>
                         <td className="px-lg py-md font-semibold text-slate-900">{b.name}</td>
                         <td className="px-lg py-md font-mono text-xs font-semibold text-slate-600">{b.phone}</td>
                         <td className="px-lg py-md text-slate-900 font-bold">{b.service_name}</td>
@@ -309,17 +317,15 @@ export const OrderManagement: React.FC<OrderManagementProps> = ({ type }) => {
                           </span>
                         </td>
                         <td className="px-lg py-md text-right">
-                          <select
-                            value={b.status || 'Pending'}
-                            onChange={(e) => handleBookingStatusChange(b.id, e.target.value)}
-                            className="h-8 px-xs border border-slate-200 rounded text-xs bg-slate-50 font-bold text-slate-700 cursor-pointer focus:ring-0 focus:border-primary"
+                          <button
+                            onClick={() => {
+                              setSelectedBooking(b);
+                            }}
+                            className="flex items-center gap-xs px-md h-8 border border-slate-200 hover:border-slate-800 text-slate-600 hover:text-slate-950 font-bold text-xs rounded transition-all ml-auto"
                           >
-                            <option value="Pending">Pending</option>
-                            <option value="Confirmed">Confirmed</option>
-                            <option value="Partner Dispatched">Partner Dispatched</option>
-                            <option value="Completed">Completed</option>
-                            <option value="Cancelled">Cancelled</option>
-                          </select>
+                            <span className="material-symbols-outlined text-[16px]">visibility</span>
+                            View Details
+                          </button>
                         </td>
                       </tr>
                     );
@@ -406,7 +412,6 @@ export const OrderManagement: React.FC<OrderManagementProps> = ({ type }) => {
           </div>
         </div>
       )}
-
       {/* Details Side Drawer Modal (only for B2B/B2C orders) */}
       {selectedOrder && type !== 'SERVICES' && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
@@ -518,6 +523,196 @@ export const OrderManagement: React.FC<OrderManagementProps> = ({ type }) => {
                 >
                   Save Internal Notes
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      
+      {/* Details Side Drawer Modal (only for B2B/B2C orders) */}
+      {selectedOrder && type !== 'SERVICES' && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
+          <div className="w-full max-w-md bg-white h-full shadow flex flex-col justify-between overflow-hidden">
+            {/* Header */}
+            <div className="px-lg py-md border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+              <div>
+                <h3 className="font-extrabold text-slate-900 text-body-md">
+                  Order Details: {selectedOrder.id}
+                </h3>
+                <p className="text-[11px] text-slate-400 font-semibold mt-0.5">Purchased on {selectedOrder.date || 'N/A'}</p>
+              </div>
+              <button
+                onClick={() => setSelectedOrder(null)}
+                className="material-symbols-outlined text-slate-400 hover:text-slate-900"
+              >
+                close
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto p-lg space-y-lg text-slate-600">
+              {/* Buyer info */}
+              <div className="space-y-xs">
+                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Client Details</h4>
+                <div className="bg-slate-50 p-md rounded border border-slate-100 space-y-1">
+                  <div className="font-bold text-slate-900 text-xs">{selectedOrder.userId}</div>
+                  <div className="text-[11px] text-slate-500 font-medium">Shipping Address: {selectedOrder.shippingAddress}</div>
+                  {selectedOrder.gstNumber && (
+                    <div className="text-[10px] font-bold text-primary font-mono mt-sm">GSTIN: {selectedOrder.gstNumber}</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Items */}
+              <div className="space-y-xs">
+                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Order Items</h4>
+                <div className="border border-slate-200 rounded divide-y divide-slate-100 overflow-hidden">
+                  {selectedOrder.items && selectedOrder.items.map((item, idx) => (
+                    <div key={idx} className="p-md flex justify-between items-center text-xs font-semibold">
+                      <div>
+                        <div className="text-slate-900">{item.productName || item.productId}</div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">Qty: {item.quantity} × ₹{item.price?.toLocaleString('en-IN') || 0}</div>
+                      </div>
+                      <div className="text-slate-900">₹{((item.quantity || 1) * (item.price || 0)).toLocaleString('en-IN')}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-between items-center pt-md font-bold text-slate-900 text-sm">
+                  <span>Total Amount</span>
+                  <span className="text-primary">₹{(typeof selectedOrder.amount === 'number' ? selectedOrder.amount : parseFloat(String(selectedOrder.amount).replace(/[^\d.]/g, '')) || 0).toLocaleString('en-IN')}</span>
+                </div>
+                <button
+                  onClick={async () => {
+                    try {
+                      const response = await apiFetch(`/api/documents/${selectedOrder.id}?format=pdf&download=true`);
+                      if (!response.ok) throw new Error('Failed to fetch invoice');
+                      const blob = await response.blob();
+                      const fileURL = URL.createObjectURL(blob);
+                      window.open(fileURL, '_blank');
+                      setTimeout(() => {
+                        URL.revokeObjectURL(fileURL);
+                      }, 10000);
+                    } catch (err) {
+                      console.error('Invoice download failed:', err);
+                      alert('Failed to download invoice PDF.');
+                    }
+                  }}
+                  className="w-full mt-md h-9 border border-slate-200 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all"
+                >
+                  <span className="material-symbols-outlined text-[16px]">download</span>
+                  Download Invoice PDF
+                </button>
+              </div>
+
+              {/* Status Update */}
+              <div className="space-y-sm">
+                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Update Status</h4>
+                <div className="flex gap-sm">
+                  <select
+                    value={selectedOrder.status}
+                    onChange={(e) => handleStatusChange(selectedOrder.id, e.target.value)}
+                    className="flex-1 h-10 px-md border border-slate-200 rounded text-xs bg-slate-50 font-bold"
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="Awaiting Payment">Awaiting Payment</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Dispatched">Dispatched</option>
+                    <option value="Awaiting Delivery">Awaiting Delivery</option>
+                    <option value="Out For Delivery">Out For Delivery</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Admin Notes */}
+              <div className="space-y-sm">
+                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Internal Notes</h4>
+                <textarea
+                  value={orderNotes}
+                  onChange={(e) => setOrderNotes(e.target.value)}
+                  placeholder="Type notes to attach to this order..."
+                  className="w-full border border-slate-200 rounded p-md text-xs focus:border-primary focus:ring-0 bg-slate-50 min-h-[80px]"
+                />
+                <button
+                  onClick={handleSaveNotes}
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-md rounded transition-all"
+                >
+                  Save Internal Notes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Details Side Drawer Modal for Service Bookings */}
+      {selectedBooking && type === 'SERVICES' && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
+          <div className="w-full max-w-md bg-white h-full shadow flex flex-col justify-between overflow-hidden">
+            {/* Header */}
+            <div className="px-lg py-md border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+              <div>
+                <h3 className="font-extrabold text-slate-900 text-body-md">
+                  Booking Details: {selectedBooking.id}
+                </h3>
+                <p className="text-[11px] text-slate-400 font-semibold mt-0.5">
+                  Requested on {selectedBooking.timestamp ? new Date(selectedBooking.timestamp).toLocaleDateString('en-IN') : 'N/A'}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedBooking(null)}
+                className="material-symbols-outlined text-slate-400 hover:text-slate-900"
+              >
+                close
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto p-lg space-y-lg text-slate-600 text-left">
+              {/* Client info */}
+              <div className="space-y-xs">
+                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Client Details</h4>
+                <div className="bg-slate-50 p-md rounded border border-slate-100 space-y-1">
+                  <div className="font-bold text-slate-900 text-xs">{selectedBooking.name}</div>
+                  <div className="text-[11px] text-slate-500 font-semibold">Phone: {selectedBooking.phone}</div>
+                </div>
+              </div>
+
+              {/* Service Details */}
+              <div className="space-y-xs">
+                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Service Details</h4>
+                <div className="bg-slate-50 p-md rounded border border-slate-100 space-y-1">
+                  <div className="font-bold text-slate-900 text-xs">{selectedBooking.service_name}</div>
+                  <div className="text-[11px] text-slate-500 font-medium">Scheduled Date: {selectedBooking.date}</div>
+                  {selectedBooking.notes && (
+                    <div className="text-[11px] text-slate-500 font-medium mt-xs pt-xs border-t border-slate-200">
+                      Notes: {selectedBooking.notes}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Status Update */}
+              <div className="space-y-sm">
+                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Update Status</h4>
+                <div className="flex gap-sm">
+                  <select
+                    value={selectedBooking.status || 'Pending'}
+                    onChange={(e) => {
+                      handleBookingStatusChange(selectedBooking.id, e.target.value);
+                      setSelectedBooking({ ...selectedBooking, status: e.target.value });
+                    }}
+                    className="flex-1 h-10 px-md border border-slate-200 rounded text-xs bg-slate-50 font-bold"
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Partner Dispatched">Partner Dispatched</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
