@@ -3,72 +3,6 @@ import type { Order } from './types';
 import { apiFetch } from '../../lib/api';
 import { exportToCSV } from '../../utils/csvHelpers';
 
-const downloadEmlDraft = async (
-  emailTo: string,
-  subject: string,
-  bodyText: string,
-  pdfBlob: Blob | null,
-  filename: string
-) => {
-  try {
-    let blob = pdfBlob;
-    if (!blob) {
-      alert('Invoice PDF is still compiling in the background. Please wait 2 seconds and try again.');
-      return;
-    }
-
-    // Convert blob to base64
-    const base64Promise = new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = (reader.result as string).split(',')[1];
-        resolve(base64String);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-
-    const base64Pdf = await base64Promise;
-    const base64PdfFormatted = base64Pdf.match(/.{1,76}/g)?.join('\r\n') || base64Pdf;
-    const boundary = `----=_NextPart_${Date.now()}`;
-
-    const eml = [
-      `To: ${emailTo}`,
-      `Subject: ${subject}`,
-      `X-Unsent: 1`,
-      `MIME-Version: 1.0`,
-      `Content-Type: multipart/mixed; boundary="${boundary}"`,
-      ``,
-      `--${boundary}`,
-      `Content-Type: text/plain; charset="utf-8"`,
-      `Content-Transfer-Encoding: 7bit`,
-      ``,
-      bodyText,
-      ``,
-      `--${boundary}`,
-      `Content-Type: application/pdf; name="${filename}"`,
-      `Content-Transfer-Encoding: base64`,
-      `Content-Disposition: attachment; filename="${filename}"`,
-      ``,
-      base64PdfFormatted,
-      `--${boundary}--`
-    ].join('\r\n');
-
-    const emlBlob = new Blob([eml], { type: 'message/rfc822' });
-    const emlURL = URL.createObjectURL(emlBlob);
-    const link = document.createElement('a');
-    link.href = emlURL;
-    link.download = filename.replace('.pdf', '.eml');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(emlURL);
-  } catch (err) {
-    console.error('EML generation failed:', err);
-    alert('Failed to generate draft email EML file.');
-  }
-};
-
 interface OrderManagementProps {
   type: 'B2B' | 'B2C' | 'SERVICES';
 }
@@ -555,6 +489,7 @@ const OrderInvoiceView: React.FC<OrderInvoiceViewProps> = ({
   const subtotal = amtVal - gstAmount;
 
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+  const [secureLink, setSecureLink] = useState<string>('');
 
   useEffect(() => {
     let active = true;
@@ -569,7 +504,21 @@ const OrderInvoiceView: React.FC<OrderInvoiceViewProps> = ({
         console.error('Pre-fetching invoice PDF failed:', err);
       }
     };
+    const fetchSecureLink = async () => {
+      try {
+        const response = await apiFetch(`/admin/documents/order/${order.id}/secure-token`);
+        if (response.ok) {
+          const data = await response.json();
+          if (active && data.secureLink) {
+            setSecureLink(data.secureLink);
+          }
+        }
+      } catch (err) {
+        console.error('Error pre-fetching secure link:', err);
+      }
+    };
     fetchPdf();
+    fetchSecureLink();
     return () => {
       active = false;
     };
@@ -745,20 +694,49 @@ const OrderInvoiceView: React.FC<OrderInvoiceViewProps> = ({
                       if (!response.ok) throw new Error('Failed to fetch invoice');
                       blob = await response.blob();
                     }
+                    const file = new File([blob], `Invoice-${order.id.slice(-6).toUpperCase()}.pdf`, { type: 'application/pdf' });
                     
+                    const maskedLink = secureLink ? `${window.location.origin}${secureLink}` : `${window.location.origin}/api/documents/${order.id}?format=pdf`;
                     const itemsText = order.items ? order.items.map((item: any) => `- ${item.productName || item.productId} (x${item.quantity || 1}): ₹${((item.quantity || 1) * (item.price || 0)).toLocaleString('en-IN')}`).join('\n') : '';
-                    const invoiceText = `Hi, Please find attached the Arcus Tax Invoice details for Order #${order.id}.\n\nItems:\n${itemsText}\n\nTotal Amount: ₹${amtVal.toLocaleString('en-IN')}`;
+                    const invoiceText = `Hi, Please find attached the Arcus Tax Invoice details for Order #${order.id}.\n\nItems:\n${itemsText}\n\nTotal Amount: ₹${amtVal.toLocaleString('en-IN')}\n\nSecure Download Link:\n${maskedLink}`;
 
-                    await downloadEmlDraft(
-                      order.userId && order.userId.includes('@') ? order.userId : '',
-                      `Arcus Tax Invoice - INV-${order.id.slice(-6).toUpperCase()}`,
-                      invoiceText,
-                      blob,
-                      `Invoice-${order.id.slice(-6).toUpperCase()}.pdf`
-                    );
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                      await navigator.share({
+                        files: [file],
+                        title: `Arcus Tax Invoice - INV-${order.id.slice(-6).toUpperCase()}`,
+                        text: invoiceText
+                      });
+                      return;
+                    }
                   } catch (err) {
-                    console.error('Email draft download failed:', err);
-                    alert('Failed to generate email draft.');
+                    console.warn('Native sharing failed:', err);
+                  }
+
+                  // Fallback: Download PDF locally AND open local mail client (mailto)
+                  try {
+                    let blob = pdfBlob;
+                    if (!blob) {
+                      const response = await apiFetch(`/documents/${order.id}?format=pdf&download=true`);
+                      if (!response.ok) throw new Error('Failed to fetch invoice');
+                      blob = await response.blob();
+                    }
+                    const fileURL = URL.createObjectURL(blob);
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = fileURL;
+                    downloadLink.download = `Invoice-${order.id.slice(-6).toUpperCase()}.pdf`;
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+                    URL.revokeObjectURL(fileURL);
+
+                    const maskedLink = secureLink ? `${window.location.origin}${secureLink}` : `${window.location.origin}/api/documents/${order.id}?format=pdf`;
+                    const itemsText = order.items ? order.items.map((item: any) => `- ${item.productName || item.productId} (x${item.quantity || 1}): ₹${((item.quantity || 1) * (item.price || 0)).toLocaleString('en-IN')}`).join('\n') : '';
+                    const invoiceBody = `Hi, Please find attached the Arcus Tax Invoice details for Order #${order.id}.\n\nItems:\n${itemsText}\n\nTotal Amount: ₹${amtVal.toLocaleString('en-IN')}\n\nSecure Download Link:\n${maskedLink}\n\n(Attached invoice PDF has been downloaded to your local Downloads folder. Please attach it to this email.)`;
+                    
+                    const mailtoUrl = `mailto:?subject=${encodeURIComponent(`Arcus Tax Invoice - INV-${order.id.slice(-6).toUpperCase()}`)}&body=${encodeURIComponent(invoiceBody)}`;
+                    window.open(mailtoUrl, '_blank');
+                  } catch (err) {
+                    console.error('Email fallback failed:', err);
                   }
                 }}
                 className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
@@ -777,8 +755,9 @@ const OrderInvoiceView: React.FC<OrderInvoiceViewProps> = ({
                     }
                     const file = new File([blob], `Invoice-${order.id.slice(-6).toUpperCase()}.pdf`, { type: 'application/pdf' });
                     
+                    const maskedLink = secureLink ? `${window.location.origin}${secureLink}` : `${window.location.origin}/api/documents/${order.id}?format=pdf`;
                     const itemsText = order.items ? order.items.map((item: any) => `- ${item.productName || item.productId} (x${item.quantity || 1}): ₹${((item.quantity || 1) * (item.price || 0)).toLocaleString('en-IN')}`).join('\n') : '';
-                    const invoiceText = `*ARCUS COMMERCE - TAX INVOICE*\n------------------------------------------\nInvoice No: INV-${order.id.slice(-6).toUpperCase()}\nOrder ID: ${order.id}\nDate: ${order.date || new Date(order.timestamp).toLocaleDateString('en-IN')}\n\n*Billed To:*\nName: ${order.userId}\nAddress: ${order.shippingAddress}\n${order.gstNumber ? `GSTIN: ${order.gstNumber}\n` : ''}\n*Items:*\n${itemsText}\n\n*Total Breakdown:*\nSubtotal: ₹${subtotal.toLocaleString('en-IN')}\nGST (18%): ₹${gstAmount.toLocaleString('en-IN')}\n*Total Amount: ₹${amtVal.toLocaleString('en-IN')}*\n------------------------------------------`;
+                    const invoiceText = `*ARCUS COMMERCE - TAX INVOICE*\n------------------------------------------\nInvoice No: INV-${order.id.slice(-6).toUpperCase()}\nOrder ID: ${order.id}\nDate: ${order.date || new Date(order.timestamp).toLocaleDateString('en-IN')}\n\n*Billed To:*\nName: ${order.userId}\nAddress: ${order.shippingAddress}\n${order.gstNumber ? `GSTIN: ${order.gstNumber}\n` : ''}\n*Items:*\n${itemsText}\n\n*Total Breakdown:*\nSubtotal: ₹${subtotal.toLocaleString('en-IN')}\nGST (18%): ₹${gstAmount.toLocaleString('en-IN')}\n*Total Amount: ₹${amtVal.toLocaleString('en-IN')}*\n\n*Secure Download Link:*\n${maskedLink}\n------------------------------------------`;
 
                     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                       await navigator.share({
@@ -792,10 +771,10 @@ const OrderInvoiceView: React.FC<OrderInvoiceViewProps> = ({
                     console.warn('Native sharing failed:', err);
                   }
 
-                  // Fallback to standard WhatsApp Link
-                  const invoiceLink = `${window.location.origin}/api/documents/${order.id}?format=pdf`;
+                  // Fallback to standard WhatsApp Link with masked link
+                  const maskedLink = secureLink ? `${window.location.origin}${secureLink}` : `${window.location.origin}/api/documents/${order.id}?format=pdf`;
                   const itemsText = order.items ? order.items.map((item: any) => `- ${item.productName || item.productId} (x${item.quantity || 1}): ₹${((item.quantity || 1) * (item.price || 0)).toLocaleString('en-IN')}`).join('\n') : '';
-                  const invoiceText = `*ARCUS COMMERCE - TAX INVOICE*\n------------------------------------------\nInvoice No: INV-${order.id.slice(-6).toUpperCase()}\nOrder ID: ${order.id}\nDate: ${order.date || new Date(order.timestamp).toLocaleDateString('en-IN')}\n\n*Billed To:*\nName: ${order.userId}\nAddress: ${order.shippingAddress}\n${order.gstNumber ? `GSTIN: ${order.gstNumber}\n` : ''}\n*Items:*\n${itemsText}\n\n*Total Breakdown:*\nSubtotal: ₹${subtotal.toLocaleString('en-IN')}\nGST (18%): ₹${gstAmount.toLocaleString('en-IN')}\n*Total Amount: ₹${amtVal.toLocaleString('en-IN')}*\n\n*View/Download PDF:*\n${invoiceLink}\n------------------------------------------`;
+                  const invoiceText = `*ARCUS COMMERCE - TAX INVOICE*\n------------------------------------------\nInvoice No: INV-${order.id.slice(-6).toUpperCase()}\nOrder ID: ${order.id}\nDate: ${order.date || new Date(order.timestamp).toLocaleDateString('en-IN')}\n\n*Billed To:*\nName: ${order.userId}\nAddress: ${order.shippingAddress}\n${order.gstNumber ? `GSTIN: ${order.gstNumber}\n` : ''}\n*Items:*\n${itemsText}\n\n*Total Breakdown:*\nSubtotal: ₹${subtotal.toLocaleString('en-IN')}\nGST (18%): ₹${gstAmount.toLocaleString('en-IN')}\n*Total Amount: ₹${amtVal.toLocaleString('en-IN')}*\n\n*Secure Download Link:*\n${maskedLink}\n------------------------------------------`;
                   const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(invoiceText)}`;
                   window.open(waUrl, '_blank');
                 }}
@@ -845,6 +824,7 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
   const subtotal = serviceRate - gstAmount;
 
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+  const [secureLink, setSecureLink] = useState<string>('');
 
   useEffect(() => {
     let active = true;
@@ -859,7 +839,21 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
         console.error('Pre-fetching booking PDF failed:', err);
       }
     };
+    const fetchSecureLink = async () => {
+      try {
+        const response = await apiFetch(`/admin/documents/booking/${booking.id}/secure-token`);
+        if (response.ok) {
+          const data = await response.json();
+          if (active && data.secureLink) {
+            setSecureLink(data.secureLink);
+          }
+        }
+      } catch (err) {
+        console.error('Error pre-fetching secure link:', err);
+      }
+    };
     fetchPdf();
+    fetchSecureLink();
     return () => {
       active = false;
     };
@@ -1026,19 +1020,47 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
                       if (!response.ok) throw new Error('Failed to fetch invoice');
                       blob = await response.blob();
                     }
+                    const file = new File([blob], `Service-Invoice-${booking.id.slice(-6).toUpperCase()}.pdf`, { type: 'application/pdf' });
                     
-                    const bookingText = `Hi, Please find attached the Arcus Service Tax Invoice details for Booking #${booking.id}.\n\nService: ${booking.service_name}\nTotal Amount: ₹1,499.00`;
+                    const maskedLink = secureLink ? `${window.location.origin}${secureLink}` : `${window.location.origin}/api/documents/booking/${booking.id}`;
+                    const bookingText = `Hi, Please find attached the Arcus Service Tax Invoice details for Booking #${booking.id}.\n\nService: ${booking.service_name}\nTotal Amount: ₹1,499.00\n\nSecure Download Link:\n${maskedLink}`;
 
-                    await downloadEmlDraft(
-                      '',
-                      `Arcus Service Tax Invoice - INV-SRV-${booking.id.slice(-6).toUpperCase()}`,
-                      bookingText,
-                      blob,
-                      `Service-Invoice-${booking.id.slice(-6).toUpperCase()}.pdf`
-                    );
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                      await navigator.share({
+                        files: [file],
+                        title: `Arcus Service Tax Invoice - INV-SRV-${booking.id.slice(-6).toUpperCase()}`,
+                        text: bookingText
+                      });
+                      return;
+                    }
                   } catch (err) {
-                    console.error('Email draft download failed:', err);
-                    alert('Failed to generate email draft.');
+                    console.warn('Native sharing failed:', err);
+                  }
+
+                  // Fallback: Download PDF locally AND open local mail client (mailto)
+                  try {
+                    let blob = pdfBlob;
+                    if (!blob) {
+                      const response = await apiFetch(`/documents/booking/${booking.id}`);
+                      if (!response.ok) throw new Error('Failed to fetch invoice');
+                      blob = await response.blob();
+                    }
+                    const fileURL = URL.createObjectURL(blob);
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = fileURL;
+                    downloadLink.download = `Service-Invoice-${booking.id.slice(-6).toUpperCase()}.pdf`;
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+                    URL.revokeObjectURL(fileURL);
+
+                    const maskedLink = secureLink ? `${window.location.origin}${secureLink}` : `${window.location.origin}/api/documents/booking/${booking.id}`;
+                    const invoiceBody = `Hi, Please find attached the Arcus Service Tax Invoice details for Booking #${booking.id}.\n\nService: ${booking.service_name}\nTotal Amount: ₹1,499.00\n\nSecure Download Link:\n${maskedLink}\n\n(Attached service invoice PDF has been downloaded to your local Downloads folder. Please attach it to this email.)`;
+                    
+                    const mailtoUrl = `mailto:?subject=${encodeURIComponent(`Arcus Service Tax Invoice - INV-SRV-${booking.id.slice(-6).toUpperCase()}`)}&body=${encodeURIComponent(invoiceBody)}`;
+                    window.open(mailtoUrl, '_blank');
+                  } catch (err) {
+                    console.error('Email fallback failed:', err);
                   }
                 }}
                 className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
@@ -1057,7 +1079,8 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
                     }
                     const file = new File([blob], `Service-Invoice-${booking.id.slice(-6).toUpperCase()}.pdf`, { type: 'application/pdf' });
                     
-                    const bookingText = `*ARCUS SERVICES - SERVICE TAX INVOICE*\n------------------------------------------\nInvoice No: INV-SRV-${booking.id.slice(-6).toUpperCase()}\nBooking ID: ${booking.id}\nDate Logged: ${booking.timestamp ? new Date(booking.timestamp).toLocaleDateString('en-IN') : 'N/A'}\n\n*Client Details:*\nName: ${booking.name}\nPhone: ${booking.phone}\n\n*Service Scheduled:*\nService: ${booking.service_name}\nAppointment: ${booking.date}\n${booking.notes ? `Instructions: ${booking.notes}\n` : ''}\n*Service Amount Breakdown:*\nSubtotal: ₹${subtotal.toLocaleString('en-IN')}\nGST (18%): ₹${gstAmount.toLocaleString('en-IN')}\n*Total Service Amount: ₹${serviceRate.toLocaleString('en-IN')}*\n------------------------------------------`;
+                    const maskedLink = secureLink ? `${window.location.origin}${secureLink}` : `${window.location.origin}/api/documents/booking/${booking.id}`;
+                    const bookingText = `*ARCUS SERVICES - SERVICE TAX INVOICE*\n------------------------------------------\nInvoice No: INV-SRV-${booking.id.slice(-6).toUpperCase()}\nBooking ID: ${booking.id}\nDate Logged: ${booking.timestamp ? new Date(booking.timestamp).toLocaleDateString('en-IN') : 'N/A'}\n\n*Client Details:*\nName: ${booking.name}\nPhone: ${booking.phone}\n\n*Service Scheduled:*\nService: ${booking.service_name}\nAppointment: ${booking.date}\n${booking.notes ? `Instructions: ${booking.notes}\n` : ''}\n*Service Amount Breakdown:*\nSubtotal: ₹${subtotal.toLocaleString('en-IN')}\nGST (18%): ₹${gstAmount.toLocaleString('en-IN')}\n*Total Service Amount: ₹${serviceRate.toLocaleString('en-IN')}*\n\n*Secure Download Link:*\n${maskedLink}\n------------------------------------------`;
 
                     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                       await navigator.share({
@@ -1071,8 +1094,9 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
                     console.warn('Native sharing failed:', err);
                   }
 
-                  // Fallback to standard WhatsApp Link
-                  const bookingText = `*ARCUS SERVICES - SERVICE TAX INVOICE*\n------------------------------------------\nInvoice No: INV-SRV-${booking.id.slice(-6).toUpperCase()}\nBooking ID: ${booking.id}\nDate Logged: ${booking.timestamp ? new Date(booking.timestamp).toLocaleDateString('en-IN') : 'N/A'}\n\n*Client Details:*\nName: ${booking.name}\nPhone: ${booking.phone}\n\n*Service Scheduled:*\nService: ${booking.service_name}\nAppointment: ${booking.date}\n${booking.notes ? `Instructions: ${booking.notes}\n` : ''}\n*Service Amount Breakdown:*\nSubtotal: ₹${subtotal.toLocaleString('en-IN')}\nGST (18%): ₹${gstAmount.toLocaleString('en-IN')}\n*Total Service Amount: ₹${serviceRate.toLocaleString('en-IN')}*\n\n*View/Download PDF:*\n------------------------------------------`;
+                  // Fallback to standard WhatsApp Link with masked link
+                  const maskedLink = secureLink ? `${window.location.origin}${secureLink}` : `${window.location.origin}/api/documents/booking/${booking.id}`;
+                  const bookingText = `*ARCUS SERVICES - SERVICE TAX INVOICE*\n------------------------------------------\nInvoice No: INV-SRV-${booking.id.slice(-6).toUpperCase()}\nBooking ID: ${booking.id}\nDate Logged: ${booking.timestamp ? new Date(booking.timestamp).toLocaleDateString('en-IN') : 'N/A'}\n\n*Client Details:*\nName: ${booking.name}\nPhone: ${booking.phone}\n\n*Service Scheduled:*\nService: ${booking.service_name}\nAppointment: ${booking.date}\n${booking.notes ? `Instructions: ${booking.notes}\n` : ''}\n*Service Amount Breakdown:*\nSubtotal: ₹${subtotal.toLocaleString('en-IN')}\nGST (18%): ₹${gstAmount.toLocaleString('en-IN')}\n*Total Service Amount: ₹${serviceRate.toLocaleString('en-IN')}*\n\n*Secure Download Link:*\n${maskedLink}\n------------------------------------------`;
                   const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(bookingText)}`;
                   window.open(waUrl, '_blank');
                 }}
