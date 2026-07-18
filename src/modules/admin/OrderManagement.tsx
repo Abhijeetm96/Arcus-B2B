@@ -3,6 +3,72 @@ import type { Order } from './types';
 import { apiFetch } from '../../lib/api';
 import { exportToCSV } from '../../utils/csvHelpers';
 
+const downloadEmlDraft = async (
+  emailTo: string,
+  subject: string,
+  bodyText: string,
+  pdfBlob: Blob | null,
+  filename: string
+) => {
+  try {
+    let blob = pdfBlob;
+    if (!blob) {
+      alert('Invoice PDF is still compiling in the background. Please wait 2 seconds and try again.');
+      return;
+    }
+
+    // Convert blob to base64
+    const base64Promise = new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = (reader.result as string).split(',')[1];
+        resolve(base64String);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+
+    const base64Pdf = await base64Promise;
+    const base64PdfFormatted = base64Pdf.match(/.{1,76}/g)?.join('\r\n') || base64Pdf;
+    const boundary = `----=_NextPart_${Date.now()}`;
+
+    const eml = [
+      `To: ${emailTo}`,
+      `Subject: ${subject}`,
+      `X-Unsent: 1`,
+      `MIME-Version: 1.0`,
+      `Content-Type: multipart/mixed; boundary="${boundary}"`,
+      ``,
+      `--${boundary}`,
+      `Content-Type: text/plain; charset="utf-8"`,
+      `Content-Transfer-Encoding: 7bit`,
+      ``,
+      bodyText,
+      ``,
+      `--${boundary}`,
+      `Content-Type: application/pdf; name="${filename}"`,
+      `Content-Transfer-Encoding: base64`,
+      `Content-Disposition: attachment; filename="${filename}"`,
+      ``,
+      base64PdfFormatted,
+      `--${boundary}--`
+    ].join('\r\n');
+
+    const emlBlob = new Blob([eml], { type: 'message/rfc822' });
+    const emlURL = URL.createObjectURL(emlBlob);
+    const link = document.createElement('a');
+    link.href = emlURL;
+    link.download = filename.replace('.pdf', '.eml');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(emlURL);
+  } catch (err) {
+    console.error('EML generation failed:', err);
+    alert('Failed to generate draft email EML file.');
+  }
+};
+
 interface OrderManagementProps {
   type: 'B2B' | 'B2C' | 'SERVICES';
 }
@@ -679,44 +745,20 @@ const OrderInvoiceView: React.FC<OrderInvoiceViewProps> = ({
                       if (!response.ok) throw new Error('Failed to fetch invoice');
                       blob = await response.blob();
                     }
-                    const file = new File([blob], `Invoice-${order.id.slice(-6).toUpperCase()}.pdf`, { type: 'application/pdf' });
                     
                     const itemsText = order.items ? order.items.map((item: any) => `- ${item.productName || item.productId} (x${item.quantity || 1}): ₹${((item.quantity || 1) * (item.price || 0)).toLocaleString('en-IN')}`).join('\n') : '';
                     const invoiceText = `Hi, Please find attached the Arcus Tax Invoice details for Order #${order.id}.\n\nItems:\n${itemsText}\n\nTotal Amount: ₹${amtVal.toLocaleString('en-IN')}`;
 
-                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                      await navigator.share({
-                        files: [file],
-                        title: `Arcus Tax Invoice - INV-${order.id.slice(-6).toUpperCase()}`,
-                        text: invoiceText
-                      });
-                      return;
-                    }
+                    await downloadEmlDraft(
+                      order.userId && order.userId.includes('@') ? order.userId : '',
+                      `Arcus Tax Invoice - INV-${order.id.slice(-6).toUpperCase()}`,
+                      invoiceText,
+                      blob,
+                      `Invoice-${order.id.slice(-6).toUpperCase()}.pdf`
+                    );
                   } catch (err) {
-                    console.warn('Native sharing failed:', err);
-                  }
-
-                  // Fallback to server email delivery
-                  const defaultEmail = order.userId && order.userId.includes('@') ? order.userId : '';
-                  const userEmail = window.prompt('Native mail app sharing unavailable. Enter recipient email address to send PDF invoice attachment via server:', defaultEmail);
-                  if (!userEmail) return;
-                  
-                  try {
-                    const response = await apiFetch(`/admin/orders/${order.id}/share-email`, {
-                      method: 'POST',
-                      body: JSON.stringify({ email: userEmail })
-                    });
-                    if (!response.ok) throw new Error('Email delivery failed');
-                    const data = await response.json();
-                    if (data.previewUrl) {
-                      window.open(data.previewUrl, '_blank');
-                      alert('Invoice email sent! Opened mock preview link in new tab.');
-                    } else {
-                      alert('Invoice email sent successfully!');
-                    }
-                  } catch (err) {
-                    console.error('Email send failed:', err);
-                    alert('Failed to send invoice email with PDF attachment.');
+                    console.error('Email draft download failed:', err);
+                    alert('Failed to generate email draft.');
                   }
                 }}
                 className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
@@ -984,42 +1026,19 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
                       if (!response.ok) throw new Error('Failed to fetch invoice');
                       blob = await response.blob();
                     }
-                    const file = new File([blob], `Service-Invoice-${booking.id.slice(-6).toUpperCase()}.pdf`, { type: 'application/pdf' });
                     
                     const bookingText = `Hi, Please find attached the Arcus Service Tax Invoice details for Booking #${booking.id}.\n\nService: ${booking.service_name}\nTotal Amount: ₹1,499.00`;
 
-                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                      await navigator.share({
-                        files: [file],
-                        title: `Arcus Service Tax Invoice - INV-SRV-${booking.id.slice(-6).toUpperCase()}`,
-                        text: bookingText
-                      });
-                      return;
-                    }
+                    await downloadEmlDraft(
+                      '',
+                      `Arcus Service Tax Invoice - INV-SRV-${booking.id.slice(-6).toUpperCase()}`,
+                      bookingText,
+                      blob,
+                      `Service-Invoice-${booking.id.slice(-6).toUpperCase()}.pdf`
+                    );
                   } catch (err) {
-                    console.warn('Native sharing failed:', err);
-                  }
-
-                  // Fallback to server email delivery
-                  const userEmail = window.prompt('Native mail app sharing unavailable. Enter recipient email address to send PDF service invoice attachment via server:');
-                  if (!userEmail) return;
-                  
-                  try {
-                    const response = await apiFetch(`/admin/bookings/${booking.id}/share-email`, {
-                      method: 'POST',
-                      body: JSON.stringify({ email: userEmail })
-                    });
-                    if (!response.ok) throw new Error('Email delivery failed');
-                    const data = await response.json();
-                    if (data.previewUrl) {
-                      window.open(data.previewUrl, '_blank');
-                      alert('Service invoice email sent! Opened mock preview link in new tab.');
-                    } else {
-                      alert('Service invoice email sent successfully!');
-                    }
-                  } catch (err) {
-                    console.error('Email send failed:', err);
-                    alert('Failed to send service invoice email.');
+                    console.error('Email draft download failed:', err);
+                    alert('Failed to generate email draft.');
                   }
                 }}
                 className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
