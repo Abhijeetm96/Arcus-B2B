@@ -651,8 +651,30 @@ const OrderInvoiceView: React.FC<OrderInvoiceViewProps> = ({
               </button>
               <button
                 onClick={async () => {
+                  try {
+                    const response = await apiFetch(`/documents/${order.id}?format=pdf&download=true`);
+                    if (!response.ok) throw new Error('Failed to fetch invoice');
+                    const blob = await response.blob();
+                    const file = new File([blob], `Invoice-${order.id.slice(-6).toUpperCase()}.pdf`, { type: 'application/pdf' });
+                    
+                    const itemsText = order.items ? order.items.map((item: any) => `- ${item.productName || item.productId} (x${item.quantity || 1}): ₹${((item.quantity || 1) * (item.price || 0)).toLocaleString('en-IN')}`).join('\n') : '';
+                    const invoiceText = `Hi, Please find attached the Arcus Tax Invoice details for Order #${order.id}.\n\nItems:\n${itemsText}\n\nTotal Amount: ₹${amtVal.toLocaleString('en-IN')}`;
+
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                      await navigator.share({
+                        files: [file],
+                        title: `Arcus Tax Invoice - INV-${order.id.slice(-6).toUpperCase()}`,
+                        text: invoiceText
+                      });
+                      return;
+                    }
+                  } catch (err) {
+                    console.warn('Native sharing failed:', err);
+                  }
+
+                  // Fallback to server email delivery
                   const defaultEmail = order.userId && order.userId.includes('@') ? order.userId : '';
-                  const userEmail = window.prompt('Enter recipient email address to send PDF invoice attachment:', defaultEmail);
+                  const userEmail = window.prompt('Native mail app sharing unavailable. Enter recipient email address to send PDF invoice attachment via server:', defaultEmail);
                   if (!userEmail) return;
                   
                   try {
@@ -679,7 +701,29 @@ const OrderInvoiceView: React.FC<OrderInvoiceViewProps> = ({
                 Email
               </button>
               <button
-                onClick={() => {
+                onClick={async () => {
+                  try {
+                    const response = await apiFetch(`/documents/${order.id}?format=pdf&download=true`);
+                    if (!response.ok) throw new Error('Failed to fetch invoice');
+                    const blob = await response.blob();
+                    const file = new File([blob], `Invoice-${order.id.slice(-6).toUpperCase()}.pdf`, { type: 'application/pdf' });
+                    
+                    const itemsText = order.items ? order.items.map((item: any) => `- ${item.productName || item.productId} (x${item.quantity || 1}): ₹${((item.quantity || 1) * (item.price || 0)).toLocaleString('en-IN')}`).join('\n') : '';
+                    const invoiceText = `*ARCUS COMMERCE - TAX INVOICE*\n------------------------------------------\nInvoice No: INV-${order.id.slice(-6).toUpperCase()}\nOrder ID: ${order.id}\nDate: ${order.date || new Date(order.timestamp).toLocaleDateString('en-IN')}\n\n*Billed To:*\nName: ${order.userId}\nAddress: ${order.shippingAddress}\n${order.gstNumber ? `GSTIN: ${order.gstNumber}\n` : ''}\n*Items:*\n${itemsText}\n\n*Total Breakdown:*\nSubtotal: ₹${subtotal.toLocaleString('en-IN')}\nGST (18%): ₹${gstAmount.toLocaleString('en-IN')}\n*Total Amount: ₹${amtVal.toLocaleString('en-IN')}*\n------------------------------------------`;
+
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                      await navigator.share({
+                        files: [file],
+                        title: `Arcus Tax Invoice - INV-${order.id.slice(-6).toUpperCase()}`,
+                        text: invoiceText
+                      });
+                      return;
+                    }
+                  } catch (err) {
+                    console.warn('Native sharing failed:', err);
+                  }
+
+                  // Fallback to standard WhatsApp Link
                   const invoiceLink = `${window.location.origin}/api/documents/${order.id}?format=pdf`;
                   const itemsText = order.items ? order.items.map((item: any) => `- ${item.productName || item.productId} (x${item.quantity || 1}): ₹${((item.quantity || 1) * (item.price || 0)).toLocaleString('en-IN')}`).join('\n') : '';
                   const invoiceText = `*ARCUS COMMERCE - TAX INVOICE*\n------------------------------------------\nInvoice No: INV-${order.id.slice(-6).toUpperCase()}\nOrder ID: ${order.id}\nDate: ${order.date || new Date(order.timestamp).toLocaleDateString('en-IN')}\n\n*Billed To:*\nName: ${order.userId}\nAddress: ${order.shippingAddress}\n${order.gstNumber ? `GSTIN: ${order.gstNumber}\n` : ''}\n*Items:*\n${itemsText}\n\n*Total Breakdown:*\nSubtotal: ₹${subtotal.toLocaleString('en-IN')}\nGST (18%): ₹${gstAmount.toLocaleString('en-IN')}\n*Total Amount: ₹${amtVal.toLocaleString('en-IN')}*\n\n*View/Download PDF:*\n${invoiceLink}\n------------------------------------------`;
@@ -863,17 +907,20 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
                 Print
               </button>
               <button
-                onClick={() => {
-                  const text = `Invoice No: INV-SRV-${booking.id.slice(-6).toUpperCase()}\nService: ${booking.service_name}\nTotal Amount: ₹${serviceRate.toLocaleString('en-IN')}`;
-                  const blob = new Blob([text], { type: 'text/plain' });
-                  const url = URL.createObjectURL(blob);
-                  const link = document.createElement('a');
-                  link.href = url;
-                  link.download = `Service-Invoice-${booking.id.slice(-6).toUpperCase()}.txt`;
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                  URL.revokeObjectURL(url);
+                onClick={async () => {
+                  try {
+                    const response = await apiFetch(`/documents/booking/${booking.id}`);
+                    if (!response.ok) throw new Error('Failed to fetch invoice');
+                    const blob = await response.blob();
+                    const fileURL = URL.createObjectURL(blob);
+                    window.open(fileURL, '_blank');
+                    setTimeout(() => {
+                      URL.revokeObjectURL(fileURL);
+                    }, 10000);
+                  } catch (err) {
+                    console.error('Invoice download failed:', err);
+                    alert('Failed to download invoice PDF.');
+                  }
                 }}
                 className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
               >
@@ -882,7 +929,28 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
               </button>
               <button
                 onClick={async () => {
-                  const userEmail = window.prompt('Enter recipient email address to send PDF service invoice attachment:');
+                  try {
+                    const response = await apiFetch(`/documents/booking/${booking.id}`);
+                    if (!response.ok) throw new Error('Failed to fetch invoice');
+                    const blob = await response.blob();
+                    const file = new File([blob], `Service-Invoice-${booking.id.slice(-6).toUpperCase()}.pdf`, { type: 'application/pdf' });
+                    
+                    const bookingText = `Hi, Please find attached the Arcus Service Tax Invoice details for Booking #${booking.id}.\n\nService: ${booking.service_name}\nTotal Amount: ₹1,499.00`;
+
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                      await navigator.share({
+                        files: [file],
+                        title: `Arcus Service Tax Invoice - INV-SRV-${booking.id.slice(-6).toUpperCase()}`,
+                        text: bookingText
+                      });
+                      return;
+                    }
+                  } catch (err) {
+                    console.warn('Native sharing failed:', err);
+                  }
+
+                  // Fallback to server email delivery
+                  const userEmail = window.prompt('Native mail app sharing unavailable. Enter recipient email address to send PDF service invoice attachment via server:');
                   if (!userEmail) return;
                   
                   try {
@@ -900,7 +968,7 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
                     }
                   } catch (err) {
                     console.error('Email send failed:', err);
-                    alert('Failed to send service invoice email with PDF attachment.');
+                    alert('Failed to send service invoice email.');
                   }
                 }}
                 className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
@@ -909,7 +977,28 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
                 Email
               </button>
               <button
-                onClick={() => {
+                onClick={async () => {
+                  try {
+                    const response = await apiFetch(`/documents/booking/${booking.id}`);
+                    if (!response.ok) throw new Error('Failed to fetch invoice');
+                    const blob = await response.blob();
+                    const file = new File([blob], `Service-Invoice-${booking.id.slice(-6).toUpperCase()}.pdf`, { type: 'application/pdf' });
+                    
+                    const bookingText = `*ARCUS SERVICES - SERVICE TAX INVOICE*\n------------------------------------------\nInvoice No: INV-SRV-${booking.id.slice(-6).toUpperCase()}\nBooking ID: ${booking.id}\nDate Logged: ${booking.timestamp ? new Date(booking.timestamp).toLocaleDateString('en-IN') : 'N/A'}\n\n*Client Details:*\nName: ${booking.name}\nPhone: ${booking.phone}\n\n*Service Scheduled:*\nService: ${booking.service_name}\nAppointment: ${booking.date}\n${booking.notes ? `Instructions: ${booking.notes}\n` : ''}\n*Service Amount Breakdown:*\nSubtotal: ₹${subtotal.toLocaleString('en-IN')}\nGST (18%): ₹${gstAmount.toLocaleString('en-IN')}\n*Total Service Amount: ₹${serviceRate.toLocaleString('en-IN')}*\n------------------------------------------`;
+
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                      await navigator.share({
+                        files: [file],
+                        title: `Arcus Service Tax Invoice - INV-SRV-${booking.id.slice(-6).toUpperCase()}`,
+                        text: bookingText
+                      });
+                      return;
+                    }
+                  } catch (err) {
+                    console.warn('Native sharing failed:', err);
+                  }
+
+                  // Fallback to standard WhatsApp Link
                   const bookingText = `*ARCUS SERVICES - SERVICE TAX INVOICE*\n------------------------------------------\nInvoice No: INV-SRV-${booking.id.slice(-6).toUpperCase()}\nBooking ID: ${booking.id}\nDate Logged: ${booking.timestamp ? new Date(booking.timestamp).toLocaleDateString('en-IN') : 'N/A'}\n\n*Client Details:*\nName: ${booking.name}\nPhone: ${booking.phone}\n\n*Service Scheduled:*\nService: ${booking.service_name}\nAppointment: ${booking.date}\n${booking.notes ? `Instructions: ${booking.notes}\n` : ''}\n*Service Amount Breakdown:*\nSubtotal: ₹${subtotal.toLocaleString('en-IN')}\nGST (18%): ₹${gstAmount.toLocaleString('en-IN')}\n*Total Service Amount: ₹${serviceRate.toLocaleString('en-IN')}*\n------------------------------------------`;
                   const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(bookingText)}`;
                   window.open(waUrl, '_blank');
