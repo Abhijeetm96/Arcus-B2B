@@ -650,12 +650,28 @@ const OrderInvoiceView: React.FC<OrderInvoiceViewProps> = ({
                 Download
               </button>
               <button
-                onClick={() => {
-                  const invoiceLink = `${window.location.origin}/api/documents/${order.id}?format=pdf`;
-                  const itemsText = order.items ? order.items.map((item: any) => `- ${item.productName || item.productId} (x${item.quantity || 1}): ₹${((item.quantity || 1) * (item.price || 0)).toLocaleString('en-IN')}`).join('\n') : '';
-                  const invoiceText = `ARCUS COMMERCE - TAX INVOICE\n------------------------------------------\nInvoice No: INV-${order.id.slice(-6).toUpperCase()}\nOrder ID: ${order.id}\nDate: ${order.date || new Date(order.timestamp).toLocaleDateString('en-IN')}\n\nBilled To:\nName: ${order.userId}\nAddress: ${order.shippingAddress}\n${order.gstNumber ? `GSTIN: ${order.gstNumber}\n` : ''}\nItems:\n${itemsText}\n\nTotal Breakdown:\nSubtotal: ₹${subtotal.toLocaleString('en-IN')}\nGST (18%): ₹${gstAmount.toLocaleString('en-IN')}\nTotal Amount: ₹${amtVal.toLocaleString('en-IN')}\n\nView/Download PDF:\n${invoiceLink}\n------------------------------------------`;
-                  const mailtoUrl = `mailto:${order.userId || ''}?subject=${encodeURIComponent(`Arcus Tax Invoice - INV-${order.id.slice(-6).toUpperCase()}`)}&body=${encodeURIComponent(invoiceText)}`;
-                  window.open(mailtoUrl, '_blank');
+                onClick={async () => {
+                  const defaultEmail = order.userId && order.userId.includes('@') ? order.userId : '';
+                  const userEmail = window.prompt('Enter recipient email address to send PDF invoice attachment:', defaultEmail);
+                  if (!userEmail) return;
+                  
+                  try {
+                    const response = await apiFetch(`/api/admin/orders/${order.id}/share-email`, {
+                      method: 'POST',
+                      body: JSON.stringify({ email: userEmail })
+                    });
+                    if (!response.ok) throw new Error('Email delivery failed');
+                    const data = await response.json();
+                    if (data.previewUrl) {
+                      window.open(data.previewUrl, '_blank');
+                      alert('Invoice email sent! Opened mock preview link in new tab.');
+                    } else {
+                      alert('Invoice email sent successfully!');
+                    }
+                  } catch (err) {
+                    console.error('Email send failed:', err);
+                    alert('Failed to send invoice email with PDF attachment.');
+                  }
                 }}
                 className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
               >
@@ -865,10 +881,27 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
                 Download
               </button>
               <button
-                onClick={() => {
-                  const bookingText = `ARCUS SERVICES - SERVICE TAX INVOICE\n------------------------------------------\nInvoice No: INV-SRV-${booking.id.slice(-6).toUpperCase()}\nBooking ID: ${booking.id}\nDate Logged: ${booking.timestamp ? new Date(booking.timestamp).toLocaleDateString('en-IN') : 'N/A'}\n\nClient Details:\nName: ${booking.name}\nPhone: ${booking.phone}\n\nService Scheduled:\nService: ${booking.service_name}\nAppointment: ${booking.date}\n${booking.notes ? `Instructions: ${booking.notes}\n` : ''}\nService Amount Breakdown:\nSubtotal: ₹${subtotal.toLocaleString('en-IN')}\nGST (18%): ₹${gstAmount.toLocaleString('en-IN')}\nTotal Service Amount: ₹${serviceRate.toLocaleString('en-IN')}\n------------------------------------------`;
-                  const mailtoUrl = `mailto:${booking.phone || ''}?subject=${encodeURIComponent(`Arcus Service Tax Invoice - INV-SRV-${booking.id.slice(-6).toUpperCase()}`)}&body=${encodeURIComponent(bookingText)}`;
-                  window.open(mailtoUrl, '_blank');
+                onClick={async () => {
+                  const userEmail = window.prompt('Enter recipient email address to send PDF service invoice attachment:');
+                  if (!userEmail) return;
+                  
+                  try {
+                    const response = await apiFetch(`/api/admin/bookings/${booking.id}/share-email`, {
+                      method: 'POST',
+                      body: JSON.stringify({ email: userEmail })
+                    });
+                    if (!response.ok) throw new Error('Email delivery failed');
+                    const data = await response.json();
+                    if (data.previewUrl) {
+                      window.open(data.previewUrl, '_blank');
+                      alert('Service invoice email sent! Opened mock preview link in new tab.');
+                    } else {
+                      alert('Service invoice email sent successfully!');
+                    }
+                  } catch (err) {
+                    console.error('Email send failed:', err);
+                    alert('Failed to send service invoice email with PDF attachment.');
+                  }
                 }}
                 className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
               >
