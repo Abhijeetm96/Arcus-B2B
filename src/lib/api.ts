@@ -26,7 +26,7 @@ export class ApiError extends Error {
 export const mapHttpStatusToErrorMessage = (status: number, customMessage?: string): string => {
   switch (status) {
     case 401:
-      return 'Invalid email or password.';
+      return 'Incorrect email or password';
     case 403:
       return "You don't have permission to perform this action.";
     case 404:
