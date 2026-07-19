@@ -23,10 +23,13 @@ export function StartupGuard({ children }: StartupGuardProps) {
     // Run health check on mount
     RecoveryManager.checkHealthNow();
 
-    // 15 seconds connection timeout
+    // 3 seconds connection timeout
     const timer = setTimeout(() => {
       setHasTimeout(true);
-    }, 15000);
+      if (import.meta.env.DEV) {
+        setIsReady(true);
+      }
+    }, 3000);
 
     return () => {
       unsubscribe();
