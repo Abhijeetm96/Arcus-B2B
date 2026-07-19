@@ -28,6 +28,7 @@ import { CartService } from './modules/cart/CartService';
 import { sendEmailWithAttachment } from './utils/mailer';
 import { DocumentService } from './documents/document.service';
 import { PdfGenerator } from './documents/pdf/PdfGenerator';
+import { DocumentDeliveryService } from './documents/document-delivery.service';
 
 import { authenticateUser, requireAdmin } from './middlewares/auth.middleware';
 import { generateToken, verifyToken } from './utils/jwt';
@@ -1052,6 +1053,37 @@ app.get('/api/admin/documents/:type/:id/secure-token', adminAuthMiddleware, asyn
   } catch (err) {
     console.error('Error generating secure token:', err);
     res.status(500).json({ error: 'Failed to generate secure link.' });
+  }
+});
+
+app.post('/api/documents/deliver', adminAuthMiddleware, async (req, res) => {
+  try {
+    const { type, id, method, recipient, options } = req.body;
+    if (!type || !id || !method || !recipient) {
+      return res.status(400).json({ error: 'Missing required delivery parameters (type, id, method, recipient).' });
+    }
+
+    if (method !== 'email' && method !== 'whatsapp') {
+      return res.status(400).json({ error: 'Invalid delivery method. Supported: email, whatsapp' });
+    }
+
+    const result = await DocumentDeliveryService.deliverDocument({
+      type,
+      id,
+      method,
+      recipient,
+      options
+    });
+
+    if (!result.success) {
+      console.error('[DocumentDelivery] Delivery failed:', result.error);
+      return res.status(500).json({ error: result.error || 'Delivery failed.' });
+    }
+
+    res.json({ success: true, messageId: result.messageId, previewUrl: result.previewUrl });
+  } catch (err: any) {
+    console.error('[DocumentDelivery] Error executing delivery:', err);
+    res.status(500).json({ error: 'Internal server error executing document delivery.' });
   }
 });
 
