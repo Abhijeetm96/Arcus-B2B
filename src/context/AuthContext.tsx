@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { apiClient } from '../lib/api';
 
@@ -48,12 +49,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Helper to normalize user role and customerType on client side
 const normalizeUser = (u: any): User | null => {
-  if (!u) return null;
+  if (!u || typeof u !== 'object') return null;
   
-  const rawRole = (u.role || '').toUpperCase();
+  const rawRole = String(u.role || '').toUpperCase();
   const normalizedRole = (rawRole === 'ADMIN' || rawRole === 'SUPER_ADMIN') ? 'Admin' : 'USER';
   
-  let customerType = u.customerType || '';
+  let customerType = typeof u.customerType === 'string' ? u.customerType : '';
   if (!customerType) {
     if (['INDIVIDUAL', 'BUYER', 'USER'].includes(rawRole)) {
       customerType = 'INDIVIDUAL';
@@ -91,7 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const health = await apiClient('/health', { skipAuth: true, timeout: 3000 });
           console.log('[AUTH CLIENT] Backend server health check succeeded:', health);
         } catch (err: any) {
-          console.warn('[AUTH CLIENT] ⚠️ WARNING: Backend API server is offline or unreachable!', err.message);
+          console.warn('[AUTH CLIENT] ⚠️ WARNING: Backend API server is offline or unreachable!', err?.message);
         }
       }
 
@@ -102,16 +103,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         try {
           const data = await apiClient('/auth/me', { timeout: 5000 });
-          const normalized = normalizeUser(data);
-          setUser(normalized);
-          localStorage.setItem('arcus_cached_user', JSON.stringify(normalized));
-          if (isDev) {
-            console.log('[AUTH CLIENT] Startup: Session restored successfully.', normalized);
+          if (data && !data.error) {
+            const normalized = normalizeUser(data);
+            if (normalized) {
+              setUser(normalized);
+              localStorage.setItem('arcus_cached_user', JSON.stringify(normalized));
+            } else {
+              setUser(null);
+            }
+          } else {
+            setUser(null);
           }
         } catch (err: any) {
-          if (err.status === 401 || err.status === 403) {
+          if (err?.status === 401 || err?.status === 403) {
             if (isDev) {
-              console.warn('[AUTH CLIENT] Startup: Token invalid or expired. Clearing session.', err.message);
+              console.warn('[AUTH CLIENT] Startup: Token invalid or expired. Clearing session.', err?.message);
             }
             localStorage.removeItem('arcus_token');
             localStorage.removeItem('arcus_cached_user');
@@ -122,7 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (cached) {
               try {
                 const parsed = JSON.parse(cached);
-                setUser(parsed);
+                setUser(normalizeUser(parsed));
                 console.log('[AUTH CLIENT] Startup: Server unreachable. Restored session from cache.', parsed);
               } catch {
                 setUser(null);
@@ -241,14 +247,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       try {
         const data = await apiClient('/auth/me');
-        const normalized = normalizeUser(data);
-        setUser(normalized);
-        localStorage.setItem('arcus_cached_user', JSON.stringify(normalized));
+        if (data && !data.error) {
+          const normalized = normalizeUser(data);
+          if (normalized) {
+            setUser(normalized);
+            localStorage.setItem('arcus_cached_user', JSON.stringify(normalized));
+          }
+        }
         if (isDev) {
-          console.log('[AUTH CLIENT] Session refreshed successfully.', normalized);
+          console.log('[AUTH CLIENT] Session refreshed successfully.');
         }
       } catch (err: any) {
-        console.error('[AUTH CLIENT] Failed to refresh user:', err.message);
+        console.error('[AUTH CLIENT] Failed to refresh user:', err?.message || err);
       }
     }
   }, []);
