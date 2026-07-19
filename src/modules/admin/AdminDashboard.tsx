@@ -18,6 +18,7 @@ import { ImportProducts } from './ImportProducts';
 import { ExportProducts } from './ExportProducts';
 import { BulkUpdates } from './BulkUpdates';
 import { AbandonedCarts } from './AbandonedCarts';
+import { TaxControlCentre } from './TaxControlCentre';
 
 export const AdminDashboard: React.FC = () => {
   const { user, loading } = useAuth();
@@ -114,6 +115,8 @@ export const AdminDashboard: React.FC = () => {
         return <AbandonedCarts />;
       case 'reports':
         return <Reports />;
+      case 'tax':
+        return <TaxControlCentre />;
       case 'audit-logs':
         return <AuditLogs currentRole={currentRole} />;
       case 'role-mgmt':

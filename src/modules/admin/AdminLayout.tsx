@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import { apiFetch } from '../../lib/api';
 import * as perm from '../../core/permissions/permissions';
@@ -39,6 +40,7 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   pin_drop: Lucide.MapPin,
   admin_panel_settings: Lucide.ShieldAlert,
   settings: Lucide.Settings,
+  tax: Lucide.Receipt,
 };
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({
@@ -232,6 +234,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       check: (u: any) => perm.canViewReports(u) 
     },
     { 
+      id: 'tax', 
+      name: 'Tax Control Centre', 
+      icon: 'tax', 
+      isGroup: false,
+      check: (u: any) => perm.canViewReports(u) || perm.canManageSettings(u)
+    },
+    { 
       id: 'audit-logs', 
       name: 'Audit Logs', 
       icon: 'history', 
@@ -253,6 +262,18 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       check: (u: any) => perm.canManageSettings(u) 
     }
   ];
+
+  const getSectionLabel = (section: string): string => {
+    if (section === 'rfqs') return 'RFQ Center';
+    for (const item of menuItems) {
+      if (item.id === section) return item.name;
+      if (item.subItems) {
+        const sub = item.subItems.find(s => s.id === section);
+        if (sub) return sub.name;
+      }
+    }
+    return section.replace('-', ' ');
+  };
 
   const notifications = [
     { id: 1, title: 'Low Stock Alert', desc: 'Astral CPVC Pipe 3m is below reorder level (6 left).', time: '10 mins ago', type: 'warning' },
@@ -449,7 +470,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
   const breadcrumbs = [
     { label: 'Admin Portal', href: '#/portal/admin' },
-    { label: activeSection === 'rfqs' ? 'RFQ Center' : activeSection.replace('-', ' ') }
+    { label: getSectionLabel(activeSection) }
   ];
 
   const headerActions = (
@@ -551,7 +572,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     <PageLayout
       sidebar={sidebarContent}
       breadcrumbItems={breadcrumbs}
-      title={activeSection === 'rfqs' ? 'RFQ Center' : activeSection.replace('-', ' ')}
+      title={getSectionLabel(activeSection)}
       actions={headerActions}
       className="bg-slate-50"
     >
