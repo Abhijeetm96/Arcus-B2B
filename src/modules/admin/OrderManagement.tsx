@@ -490,6 +490,79 @@ const OrderInvoiceView: React.FC<OrderInvoiceViewProps> = ({
 
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
+  const [phoneInput, setPhoneInput] = useState('');
+
+  useEffect(() => {
+    setEmailInput(order.userId && order.userId.includes('@') ? order.userId : '');
+    setPhoneInput(order.phone || '');
+  }, [order.id]);
+
+  const handleSendEmail = async () => {
+    if (!emailInput) return;
+    setIsSendingEmail(true);
+    try {
+      const response = await apiFetch(`/documents/deliver`, {
+        method: 'POST',
+        body: JSON.stringify({
+          type: 'invoice',
+          id: order.id,
+          method: 'email',
+          recipient: emailInput
+        })
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Server error');
+      }
+
+      const data = await response.json();
+      setIsEmailModalOpen(false);
+      if (data.previewUrl) {
+        window.open(data.previewUrl, '_blank');
+        alert('Invoice email sent! Opened mock preview link in new tab.');
+      } else {
+        alert('Invoice email sent successfully!');
+      }
+    } catch (err) {
+      console.error('Email send failed:', err);
+      alert('Unable to send email. Please try again.');
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
+  const handleSendWhatsApp = async () => {
+    if (!phoneInput) return;
+    setIsSendingWhatsApp(true);
+    try {
+      const response = await apiFetch(`/documents/deliver`, {
+        method: 'POST',
+        body: JSON.stringify({
+          type: 'invoice',
+          id: order.id,
+          method: 'whatsapp',
+          recipient: phoneInput
+        })
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Server error');
+      }
+
+      setIsWhatsAppModalOpen(false);
+      alert('Invoice WhatsApp message sent successfully!');
+    } catch (err) {
+      console.error('WhatsApp send failed:', err);
+      alert('Unable to send WhatsApp message.');
+    } finally {
+      setIsSendingWhatsApp(false);
+    }
+  };
 
   return (
     <div className="space-y-lg text-left bg-white border border-slate-200 rounded p-lg shadow-sm">
@@ -653,84 +726,18 @@ const OrderInvoiceView: React.FC<OrderInvoiceViewProps> = ({
                 Download
               </button>
               <button
-                disabled={isSendingEmail}
-                onClick={async () => {
-                  const defaultEmail = order.userId && order.userId.includes('@') ? order.userId : '';
-                  const userEmail = window.prompt('Enter recipient email address to deliver invoice PDF:', defaultEmail);
-                  if (!userEmail) return;
-
-                  setIsSendingEmail(true);
-                  try {
-                    const response = await apiFetch(`/documents/deliver`, {
-                      method: 'POST',
-                      body: JSON.stringify({
-                        type: 'invoice',
-                        id: order.id,
-                        method: 'email',
-                        recipient: userEmail
-                      })
-                    });
-
-                    if (!response.ok) {
-                      const data = await response.json().catch(() => ({}));
-                      throw new Error(data.error || 'Server error');
-                    }
-
-                    const data = await response.json();
-                    if (data.previewUrl) {
-                      window.open(data.previewUrl, '_blank');
-                      alert('Invoice email sent! Opened mock preview link in new tab.');
-                    } else {
-                      alert('Invoice email sent successfully!');
-                    }
-                  } catch (err) {
-                    console.error('Email send failed:', err);
-                    alert('Unable to send email. Please try again.');
-                  } finally {
-                    setIsSendingEmail(false);
-                  }
-                }}
-                className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs disabled:opacity-50"
+                onClick={() => setIsEmailModalOpen(true)}
+                className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
               >
                 <span className="material-symbols-outlined text-[16px]">mail</span>
-                {isSendingEmail ? 'Sending...' : 'Email'}
+                Email
               </button>
               <button
-                disabled={isSendingWhatsApp}
-                onClick={async () => {
-                  const defaultPhone = order.phone || '';
-                  const userPhone = window.prompt('Enter recipient WhatsApp phone number (with country code):', defaultPhone);
-                  if (!userPhone) return;
-
-                  setIsSendingWhatsApp(true);
-                  try {
-                    const response = await apiFetch(`/documents/deliver`, {
-                      method: 'POST',
-                      body: JSON.stringify({
-                        type: 'invoice',
-                        id: order.id,
-                        method: 'whatsapp',
-                        recipient: userPhone
-                      })
-                    });
-
-                    if (!response.ok) {
-                      const data = await response.json().catch(() => ({}));
-                      throw new Error(data.error || 'Server error');
-                    }
-
-                    alert('Invoice WhatsApp message sent successfully!');
-                  } catch (err) {
-                    console.error('WhatsApp send failed:', err);
-                    alert('Unable to send WhatsApp message.');
-                  } finally {
-                    setIsSendingWhatsApp(false);
-                  }
-                }}
-                className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs disabled:opacity-50"
+                onClick={() => setIsWhatsAppModalOpen(true)}
+                className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
               >
                 <span className="material-symbols-outlined text-[16px]">chat</span>
-                {isSendingWhatsApp ? 'Sending...' : 'WhatsApp'}
+                WhatsApp
               </button>
             </div>
           </div>
@@ -753,6 +760,94 @@ const OrderInvoiceView: React.FC<OrderInvoiceViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Email Modal */}
+      {isEmailModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center z-50 p-md transition-opacity">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-lg border-b border-slate-100 flex justify-between items-center">
+              <h3 className="font-bold text-slate-800 text-sm">Send Tax Invoice via Email</h3>
+              <button 
+                onClick={() => setIsEmailModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 bg-transparent border-none p-0 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+            <div className="p-lg space-y-md">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-xs">Recipient Email</label>
+                <input
+                  type="email"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  placeholder="name@company.com"
+                  className="w-full h-10 px-sm border border-slate-200 rounded focus:border-primary focus:outline-none text-slate-800 text-sm font-sans"
+                />
+              </div>
+            </div>
+            <div className="px-lg py-md bg-slate-50 border-t border-slate-100 flex justify-end gap-sm">
+              <button
+                onClick={() => setIsEmailModalOpen(false)}
+                className="px-md h-9 border border-slate-300 rounded text-slate-600 hover:text-slate-800 hover:border-slate-400 text-xs font-bold bg-white transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={isSendingEmail || !emailInput}
+                onClick={handleSendEmail}
+                className="px-md h-9 bg-slate-900 text-white rounded hover:bg-slate-850 disabled:opacity-50 text-xs font-bold flex items-center gap-xs transition-all border-none"
+              >
+                {isSendingEmail ? 'Sending...' : 'Send Invoice'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* WhatsApp Modal */}
+      {isWhatsAppModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center z-50 p-md transition-opacity">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-lg border-b border-slate-100 flex justify-between items-center">
+              <h3 className="font-bold text-slate-800 text-sm">Send Tax Invoice via WhatsApp</h3>
+              <button 
+                onClick={() => setIsWhatsAppModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 bg-transparent border-none p-0 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+            <div className="p-lg space-y-md">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-xs">Recipient Phone Number (with Country Code)</label>
+                <input
+                  type="text"
+                  value={phoneInput}
+                  onChange={(e) => setPhoneInput(e.target.value)}
+                  placeholder="e.g. 919876543210"
+                  className="w-full h-10 px-sm border border-slate-200 rounded focus:border-primary focus:outline-none text-slate-800 text-sm font-sans"
+                />
+              </div>
+            </div>
+            <div className="px-lg py-md bg-slate-50 border-t border-slate-100 flex justify-end gap-sm">
+              <button
+                onClick={() => setIsWhatsAppModalOpen(false)}
+                className="px-md h-9 border border-slate-300 rounded text-slate-600 hover:text-slate-800 hover:border-slate-400 text-xs font-bold bg-white transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={isSendingWhatsApp || !phoneInput}
+                onClick={handleSendWhatsApp}
+                className="px-md h-9 bg-slate-900 text-white rounded hover:bg-slate-850 disabled:opacity-50 text-xs font-bold flex items-center gap-xs transition-all border-none"
+              >
+                {isSendingWhatsApp ? 'Sending...' : 'Send WhatsApp'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -774,6 +869,79 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
 
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
+  const [phoneInput, setPhoneInput] = useState('');
+
+  useEffect(() => {
+    setEmailInput(booking.email || '');
+    setPhoneInput(booking.phone || '');
+  }, [booking.id]);
+
+  const handleSendEmail = async () => {
+    if (!emailInput) return;
+    setIsSendingEmail(true);
+    try {
+      const response = await apiFetch(`/documents/deliver`, {
+        method: 'POST',
+        body: JSON.stringify({
+          type: 'booking',
+          id: booking.id,
+          method: 'email',
+          recipient: emailInput
+        })
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Server error');
+      }
+
+      const data = await response.json();
+      setIsEmailModalOpen(false);
+      if (data.previewUrl) {
+        window.open(data.previewUrl, '_blank');
+        alert('Service invoice email sent! Opened mock preview link in new tab.');
+      } else {
+        alert('Service invoice email sent successfully!');
+      }
+    } catch (err) {
+      console.error('Email send failed:', err);
+      alert('Unable to send email. Please try again.');
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
+  const handleSendWhatsApp = async () => {
+    if (!phoneInput) return;
+    setIsSendingWhatsApp(true);
+    try {
+      const response = await apiFetch(`/documents/deliver`, {
+        method: 'POST',
+        body: JSON.stringify({
+          type: 'booking',
+          id: booking.id,
+          method: 'whatsapp',
+          recipient: phoneInput
+        })
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Server error');
+      }
+
+      setIsWhatsAppModalOpen(false);
+      alert('Service invoice WhatsApp message sent successfully!');
+    } catch (err) {
+      console.error('WhatsApp send failed:', err);
+      alert('Unable to send WhatsApp message.');
+    } finally {
+      setIsSendingWhatsApp(false);
+    }
+  };
 
   return (
     <div className="space-y-lg text-left bg-white border border-slate-200 rounded p-lg shadow-sm">
@@ -928,89 +1096,110 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
                 Download
               </button>
               <button
-                disabled={isSendingEmail}
-                onClick={async () => {
-                  const defaultEmail = booking.email || '';
-                  const userEmail = window.prompt('Enter recipient email address to deliver service invoice PDF:', defaultEmail);
-                  if (!userEmail) return;
-
-                  setIsSendingEmail(true);
-                  try {
-                    const response = await apiFetch(`/documents/deliver`, {
-                      method: 'POST',
-                      body: JSON.stringify({
-                        type: 'booking',
-                        id: booking.id,
-                        method: 'email',
-                        recipient: userEmail
-                      })
-                    });
-
-                    if (!response.ok) {
-                      const data = await response.json().catch(() => ({}));
-                      throw new Error(data.error || 'Server error');
-                    }
-
-                    const data = await response.json();
-                    if (data.previewUrl) {
-                      window.open(data.previewUrl, '_blank');
-                      alert('Service invoice email sent! Opened mock preview link in new tab.');
-                    } else {
-                      alert('Service invoice email sent successfully!');
-                    }
-                  } catch (err) {
-                    console.error('Email send failed:', err);
-                    alert('Unable to send email. Please try again.');
-                  } finally {
-                    setIsSendingEmail(false);
-                  }
-                }}
-                className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs disabled:opacity-50"
+                onClick={() => setIsEmailModalOpen(true)}
+                className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
               >
                 <span className="material-symbols-outlined text-[16px]">mail</span>
-                {isSendingEmail ? 'Sending...' : 'Email'}
+                Email
               </button>
               <button
-                disabled={isSendingWhatsApp}
-                onClick={async () => {
-                  const defaultPhone = booking.phone || '';
-                  const userPhone = window.prompt('Enter recipient WhatsApp phone number (with country code):', defaultPhone);
-                  if (!userPhone) return;
-
-                  setIsSendingWhatsApp(true);
-                  try {
-                    const response = await apiFetch(`/documents/deliver`, {
-                      method: 'POST',
-                      body: JSON.stringify({
-                        type: 'booking',
-                        id: booking.id,
-                        method: 'whatsapp',
-                        recipient: userPhone
-                      })
-                    });
-
-                    if (!response.ok) {
-                      const data = await response.json().catch(() => ({}));
-                      throw new Error(data.error || 'Server error');
-                    }
-
-                    alert('Service invoice WhatsApp message sent successfully!');
-                  } catch (err) {
-                    console.error('WhatsApp send failed:', err);
-                    alert('Unable to send WhatsApp message.');
-                  } finally {
-                    setIsSendingWhatsApp(false);
-                  }
-                }}
-                className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs disabled:opacity-50"
+                onClick={() => setIsWhatsAppModalOpen(true)}
+                className="h-10 border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold rounded text-xs flex items-center justify-center gap-xs transition-all bg-white shadow-xs"
               >
                 <span className="material-symbols-outlined text-[16px]">chat</span>
-                {isSendingWhatsApp ? 'Sending...' : 'WhatsApp'}
+                WhatsApp
               </button>
             </div>
           </div>
         </div>
       </div>
+      {/* Email Modal */}
+      {isEmailModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center z-50 p-md transition-opacity">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-lg border-b border-slate-100 flex justify-between items-center">
+              <h3 className="font-bold text-slate-800 text-sm">Send Service Invoice via Email</h3>
+              <button 
+                onClick={() => setIsEmailModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 bg-transparent border-none p-0 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+            <div className="p-lg space-y-md">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-xs">Recipient Email</label>
+                <input
+                  type="email"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  placeholder="name@company.com"
+                  className="w-full h-10 px-sm border border-slate-200 rounded focus:border-primary focus:outline-none text-slate-800 text-sm font-sans"
+                />
+              </div>
+            </div>
+            <div className="px-lg py-md bg-slate-50 border-t border-slate-100 flex justify-end gap-sm">
+              <button
+                onClick={() => setIsEmailModalOpen(false)}
+                className="px-md h-9 border border-slate-300 rounded text-slate-600 hover:text-slate-800 hover:border-slate-400 text-xs font-bold bg-white transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={isSendingEmail || !emailInput}
+                onClick={handleSendEmail}
+                className="px-md h-9 bg-slate-900 text-white rounded hover:bg-slate-850 disabled:opacity-50 text-xs font-bold flex items-center gap-xs transition-all border-none"
+              >
+                {isSendingEmail ? 'Sending...' : 'Send Invoice'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* WhatsApp Modal */}
+      {isWhatsAppModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center z-50 p-md transition-opacity">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-lg border-b border-slate-100 flex justify-between items-center">
+              <h3 className="font-bold text-slate-800 text-sm">Send Service Invoice via WhatsApp</h3>
+              <button 
+                onClick={() => setIsWhatsAppModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 bg-transparent border-none p-0 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+            <div className="p-lg space-y-md">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-xs">Recipient Phone Number (with Country Code)</label>
+                <input
+                  type="text"
+                  value={phoneInput}
+                  onChange={(e) => setPhoneInput(e.target.value)}
+                  placeholder="e.g. 919876543210"
+                  className="w-full h-10 px-sm border border-slate-200 rounded focus:border-primary focus:outline-none text-slate-800 text-sm font-sans"
+                />
+              </div>
+            </div>
+            <div className="px-lg py-md bg-slate-50 border-t border-slate-100 flex justify-end gap-sm">
+              <button
+                onClick={() => setIsWhatsAppModalOpen(false)}
+                className="px-md h-9 border border-slate-300 rounded text-slate-600 hover:text-slate-800 hover:border-slate-400 text-xs font-bold bg-white transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={isSendingWhatsApp || !phoneInput}
+                onClick={handleSendWhatsApp}
+                className="px-md h-9 bg-slate-900 text-white rounded hover:bg-slate-850 disabled:opacity-50 text-xs font-bold flex items-center gap-xs transition-all border-none"
+              >
+                {isSendingWhatsApp ? 'Sending...' : 'Send WhatsApp'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
