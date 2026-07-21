@@ -252,13 +252,13 @@ export async function addUser(user: User): Promise<User> {
     const cleanGst = user.gstNumber?.trim().toUpperCase();
 
     if (db.users.some((u: any) => u.email.toLowerCase() === cleanEmail)) {
-      throw new Error('A user with this email already exists.');
+      throw new Error('Unable to process registration request with the provided details.');
     }
     if (db.users.some((u: any) => u.phone === cleanPhone)) {
-      throw new Error('A user with this phone number already exists.');
+      throw new Error('Unable to process registration request with the provided details.');
     }
     if (cleanGst && db.business_profiles?.some((p: any) => p.gstNumber?.toUpperCase() === cleanGst)) {
-      throw new Error('An account with this GST number already exists. One GSTIN can only be linked to one ARCUS account.');
+      throw new Error('Unable to process registration request with the provided details.');
     }
 
     const newUser: User = {
