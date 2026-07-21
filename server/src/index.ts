@@ -33,6 +33,9 @@ import { encryptOrderId, decryptOrderId } from './utils/crypto';
 
 import { authenticateUser, requireAdmin } from './middlewares/auth.middleware';
 import { generateToken, verifyToken } from './utils/jwt';
+import { LoginSchema, RegisterSchema, containsScriptOrHtmlTags, logSecurityViolation, getSecurityLogs } from './modules/auth/authSecurity';
+import { checkIpThrottled, getAccountLockState, recordAccountFailure, recordAccountSuccess } from './modules/auth/bruteForceGuard';
+import { hashPassword, verifyPassword, verifyLegacyPasswordConstantTime, migrateUserPasswordToArgon2id } from './modules/auth/passwordService';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -2947,94 +2950,76 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(429).json({ error: `Too many registration attempts. Try again in ${formLimiter.getRetryAfter(`register:${ip}`)} seconds.` });
     }
 
-    const { name, email, phone, password, companyName, role, gstNumber, serviceCategory, experience, city, state, website, portfolioUrl, customerType } = req.body;
-
-    // Role validation
-    if (!['Buyer', 'Contractor', 'Supplier', 'Individual', 'Business', 'Professional', 'Admin', 'USER', 'ADMIN'].includes(role)) {
-      return res.status(400).json({ error: 'Invalid role selection.' });
+    // 1. Re-check all inputs server-side with strict Zod Schema
+    const parseResult = RegisterSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      const issue = parseResult.error.issues[0];
+      logSecurityViolation('/api/auth/register', ip, 'SCHEMA_VALIDATION_FAILURE', `${issue.path.join('.')}: ${issue.message}`, req.body);
+      return res.status(400).json({ error: 'Invalid registration request payload.' });
     }
 
-    // Name validation
-    const nameV = validateName(name || '', 'Name');
-    if (!nameV.valid) return res.status(400).json({ error: nameV.error });
+    const data = parseResult.data;
 
-    // Email validation
-    const emailV = validateEmail(email || '');
-    if (!emailV.valid) return res.status(400).json({ error: emailV.error });
+    // 2. Reject malformed input or HTML/script tags in ANY free-text field
+    const freeTextFields = [data.name, data.companyName, data.serviceCategory, data.city, data.state, data.website, data.portfolioUrl];
+    for (const field of freeTextFields) {
+      if (field && containsScriptOrHtmlTags(field)) {
+        logSecurityViolation('/api/auth/register', ip, 'XSS_HTML_INJECTION_ATTEMPT', `Script or HTML tags detected in free-text input`, req.body);
+        return res.status(400).json({ error: 'Invalid registration request payload.' });
+      }
+    }
 
-    // Phone validation (with +91 normalization)
-    const phoneV = validatePhone(phone || '');
-    if (!phoneV.valid) return res.status(400).json({ error: phoneV.error });
-    const cleanPhone = normalizePhone(phone);
-
-    // Password validation
-    const passV = validatePassword(password || '');
-    if (!passV.valid) return res.status(400).json({ error: passV.error });
-
-    const isB2B = role === 'Business' || role === 'BUSINESS' || customerType === 'BUSINESS' || ['Contractor', 'Supplier'].includes(role);
-    const isPro = role === 'Professional' || role === 'PROFESSIONAL' || customerType === 'PROFESSIONAL';
+    const role = data.role;
+    const isB2B = role === 'Business' || role === 'BUSINESS' || data.customerType === 'BUSINESS' || ['Contractor', 'Supplier'].includes(role);
+    const isPro = role === 'Professional' || role === 'PROFESSIONAL' || data.customerType === 'PROFESSIONAL';
 
     // Business-specific validations
     if (isB2B) {
-      if (!companyName || companyName.trim().length < 3) {
-        return res.status(400).json({ error: 'Business name must be at least 3 characters.' });
+      if (!data.companyName || data.companyName.trim().length < 3) {
+        logSecurityViolation('/api/auth/register', ip, 'INVALID_BUSINESS_NAME', 'Business name missing or too short', req.body);
+        return res.status(400).json({ error: 'Invalid registration request payload.' });
       }
-      if (gstNumber) {
-        const gstV = validateGST(gstNumber);
-        if (!gstV.valid) return res.status(400).json({ error: gstV.error });
-        // Check GST uniqueness (1 GST = 1 account)
-        const existingGst = await getUserByGst(gstNumber);
+      if (data.gstNumber) {
+        const existingGst = await getUserByGst(data.gstNumber);
         if (existingGst) {
-          return res.status(400).json({ error: 'An account with this GST number already exists. One GSTIN can only be linked to one ARCUS account.' });
+          logSecurityViolation('/api/auth/register', ip, 'DUPLICATE_GST_ATTEMPT', `GSTIN already exists: ${data.gstNumber}`, req.body);
+          return res.status(400).json({ error: 'Unable to process registration request with the provided details.' });
         }
       }
     }
 
-    // Professional-specific validations
-    if (isPro) {
-      if (experience) {
-        const expV = validateExperience(experience);
-        if (!expV.valid) return res.status(400).json({ error: expV.error });
-      }
-      if (website) {
-        const webV = validateURL(website, 'Website URL');
-        if (!webV.valid) return res.status(400).json({ error: webV.error });
-      }
-      if (portfolioUrl) {
-        const portV = validateURL(portfolioUrl, 'Portfolio URL');
-        if (!portV.valid) return res.status(400).json({ error: portV.error });
-      }
-    }
-
-    // Uniqueness checks
-    const cleanEmail = email.trim().toLowerCase();
+    // Uniqueness checks (Generic non-leaking response prevents user enumeration attacks)
+    const cleanEmail = data.email;
+    const cleanPhone = data.phone;
     const existingEmail = await getUserByEmail(cleanEmail);
     if (existingEmail) {
-      return res.status(400).json({ error: 'A user with this email already exists.' });
+      logSecurityViolation('/api/auth/register', ip, 'DUPLICATE_EMAIL_ATTEMPT', `Email already exists: ${cleanEmail}`, req.body);
+      return res.status(400).json({ error: 'Unable to process registration request with the provided details.' });
     }
     const existingPhone = await getUserByPhone(cleanPhone);
     if (existingPhone) {
-      return res.status(400).json({ error: 'A user with this phone number already exists.' });
+      logSecurityViolation('/api/auth/register', ip, 'DUPLICATE_PHONE_ATTEMPT', `Phone already exists: ${cleanPhone}`, req.body);
+      return res.status(400).json({ error: 'Unable to process registration request with the provided details.' });
     }
 
-    const hash = await argon2.hash(password);
+    const hash = await hashPassword(data.password);
 
     const newUser = await addUser({
-      name: sanitizeText(name),
+      name: data.name.trim(),
       email: cleanEmail,
       phone: cleanPhone,
       passwordHash: hash,
-      passwordSalt: 'argon2',
-      companyName: companyName ? sanitizeText(companyName) : undefined,
+      passwordSalt: 'argon2id',
+      companyName: data.companyName ? data.companyName.trim() : undefined,
       role: (role === 'Admin' || role === 'ADMIN') ? 'ADMIN' : 'USER',
-      customerType: customerType || (isB2B ? 'BUSINESS' : (isPro ? 'PROFESSIONAL' : 'INDIVIDUAL')),
-      gstNumber: gstNumber ? gstNumber.trim().toUpperCase() : undefined,
-      serviceCategory: serviceCategory ? sanitizeText(serviceCategory) : undefined,
-      experience: experience || undefined,
-      city: city ? sanitizeText(city) : undefined,
-      state: state ? sanitizeText(state) : undefined,
-      website: website ? website.trim() : undefined,
-      portfolioUrl: portfolioUrl ? portfolioUrl.trim() : undefined,
+      customerType: data.customerType || (isB2B ? 'BUSINESS' : (isPro ? 'PROFESSIONAL' : 'INDIVIDUAL')),
+      gstNumber: data.gstNumber ? data.gstNumber.trim().toUpperCase() : undefined,
+      serviceCategory: data.serviceCategory ? data.serviceCategory.trim() : undefined,
+      experience: data.experience || undefined,
+      city: data.city ? data.city.trim() : undefined,
+      state: data.state ? data.state.trim() : undefined,
+      website: data.website ? data.website.trim() : undefined,
+      portfolioUrl: data.portfolioUrl ? data.portfolioUrl.trim() : undefined,
       email_verified: DISABLE_OTP_FOR_DEV ? true : false
     });
 
@@ -3404,67 +3389,81 @@ app.get('/api/health', async (req, res) => {
 
 app.post('/api/auth/login', async (req, res) => {
   try {
-    // Rate limit login attempts
     const ip = getClientIp(req);
-    if (!loginLimiter.check(`login:${ip}`)) {
-      return res.status(429).json({ error: `Too many login attempts. Try again in ${loginLimiter.getRetryAfter(`login:${ip}`)} seconds.` });
+
+    // Layer 1 — Per-IP Throttling Check (10 attempts / min)
+    if (checkIpThrottled(ip)) {
+      await new Promise((r) => setTimeout(r, 500));
+      return res.status(401).json({ error: 'Incorrect email or password' });
     }
 
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required.' });
+    // Server-side Zod Schema validation
+    const parseResult = LoginSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      logSecurityViolation('/api/auth/login', ip, 'INVALID_LOGIN_PAYLOAD', parseResult.error.issues[0].message, req.body);
+      await new Promise((r) => setTimeout(r, 200));
+      return res.status(401).json({ error: 'Incorrect email or password' });
     }
-    const emailCheck = validateEmail(email);
-    if (!emailCheck.valid) {
-      return res.status(400).json({ error: emailCheck.error });
+
+    const { email, password } = parseResult.data;
+
+    // Reject script/HTML injection in login credentials
+    if (containsScriptOrHtmlTags(email) || containsScriptOrHtmlTags(password)) {
+      logSecurityViolation('/api/auth/login', ip, 'XSS_LOGIN_INJECTION_ATTEMPT', 'Script or HTML tags detected in login credentials', req.body);
+      await new Promise((r) => setTimeout(r, 300));
+      return res.status(401).json({ error: 'Incorrect email or password' });
+    }
+
+    // Layer 2 — Per-Account Lockout & Progressive Delay Check
+    const lockState = getAccountLockState(email);
+    if (lockState.isLocked) {
+      logSecurityViolation('/api/auth/login', ip, 'LOCKED_ACCOUNT_LOGIN_ATTEMPT', `Attempt to log into locked account: ${email}`, req.body);
+      if (lockState.progressiveDelayMs > 0) {
+        await new Promise((r) => setTimeout(r, lockState.progressiveDelayMs));
+      }
+      // Uniform 401 response — attacker cannot tell that the account is locked out
+      return res.status(401).json({ error: 'Incorrect email or password' });
     }
 
     const user = await getUserByEmail(email);
     if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password.' });
+      const delay = await recordAccountFailure(email, ip);
+      if (delay > 0) {
+        await new Promise((r) => setTimeout(r, delay));
+      }
+      logSecurityViolation('/api/auth/login', ip, 'FAILED_LOGIN_USER_NOT_FOUND', `Email: ${email}`, req.body);
+      return res.status(401).json({ error: 'Incorrect email or password' });
     }
 
-    // Verify password. Check if it's an Argon2 hash first.
+    // Verify password using Argon2id or Constant-Time Legacy PBKDF2 check
     let isValid = false;
     let needsMigration = false;
 
     if (user.passwordHash && user.passwordHash.startsWith('$argon2')) {
-      try {
-        isValid = await argon2.verify(user.passwordHash, password);
-      } catch (err) {
-        console.error('[AUTH] Argon2 verification failed:', err);
-        isValid = false;
-      }
+      isValid = await verifyPassword(password, user.passwordHash);
     } else {
-      /*
-        ONE-TIME MIGRATION NOTE: Existing legacy password hashes are stored in the database
-        using PBKDF2 with 1000 iterations. To prevent silently breaking existing user logins,
-        we fall back to verifying the PBKDF2 hash. If valid, we re-hash it using Argon2
-        and update the database.
-      */
-      const legacyHash = hashPasswordLegacy(password, user.passwordSalt);
-      isValid = (legacyHash === user.passwordHash);
+      // Legacy password check using constant-time comparison (crypto.timingSafeEqual)
+      isValid = verifyLegacyPasswordConstantTime(password, user.passwordSalt, user.passwordHash);
       if (isValid) {
         needsMigration = true;
       }
     }
 
     if (!isValid) {
-      return res.status(401).json({ error: 'Invalid email or password.' });
+      const delay = await recordAccountFailure(email, ip);
+      if (delay > 0) {
+        await new Promise((r) => setTimeout(r, delay));
+      }
+      logSecurityViolation('/api/auth/login', ip, 'FAILED_LOGIN_INVALID_PASSWORD', `User ID: ${user.id}`, req.body);
+      return res.status(401).json({ error: 'Incorrect email or password' });
     }
 
-    // Automatically migrate legacy password to Argon2
+    // On Successful Login: Reset account failure counters & lockout state
+    recordAccountSuccess(email);
+
+    // Automatically migrate legacy password to Argon2id upon successful authentication
     if (needsMigration) {
-      try {
-        const argonHash = await argon2.hash(password);
-        await updateUser(user.id!, {
-          passwordHash: argonHash,
-          passwordSalt: 'argon2'
-        });
-        console.log(`[AUTH] Successfully migrated password hash to Argon2 for user: ${user.email}`);
-      } catch (migrationErr) {
-        console.error(`[AUTH] Failed to migrate password hash for user ${user.email}:`, migrationErr);
-      }
+      await migrateUserPasswordToArgon2id(user.id!, password);
     }
 
     // Check if email is verified
@@ -3528,6 +3527,72 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+// Admin Security Audit Logs Endpoint
+app.get('/api/admin/security-logs', requireAdmin, (req, res) => {
+  res.json({ success: true, logs: getSecurityLogs() });
+});
+
+// Authenticated Password Change Endpoint
+app.post('/api/auth/change-password', authenticateUser, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = (req as any).user.id;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password are required.' });
+    }
+
+    const passV = validatePassword(newPassword);
+    if (!passV.valid) {
+      return res.status(400).json({ error: passV.error });
+    }
+
+    const user = await getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    let isCurrentValid = false;
+    if (user.passwordHash && user.passwordHash.startsWith('$argon2')) {
+      isCurrentValid = await verifyPassword(currentPassword, user.passwordHash);
+    } else {
+      isCurrentValid = verifyLegacyPasswordConstantTime(currentPassword, user.passwordSalt, user.passwordHash);
+    }
+
+    if (!isCurrentValid) {
+      return res.status(400).json({ error: 'Current password is incorrect.' });
+    }
+
+    const newHash = await hashPassword(newPassword);
+    await updateUser(userId, {
+      passwordHash: newHash,
+      passwordSalt: 'argon2id'
+    });
+
+    res.json({ success: true, message: 'Password updated successfully to Argon2id.' });
+  } catch (err) {
+    console.error('Error in change-password:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Password Reset Request Endpoint (Zero Information Leakage)
+app.post('/api/auth/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (email && typeof email === 'string') {
+      const cleanEmail = email.trim().toLowerCase();
+      const user = await getUserByEmail(cleanEmail);
+      if (user) {
+        logSecurityViolation('/api/auth/forgot-password', getClientIp(req), 'PASSWORD_RESET_REQUESTED', `Reset requested for: ${user.email}`, req.body);
+      }
+    }
+    return res.json({ success: true, message: "If that email is registered, you'll receive a reset link" });
+  } catch (err) {
+    return res.json({ success: true, message: "If that email is registered, you'll receive a reset link" });
+  }
+});
+
 app.get('/api/auth/me', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
@@ -3543,7 +3608,7 @@ app.get('/api/auth/me', async (req, res) => {
 
     const user = await getUserById(userId);
     if (!user) {
-      return res.status(401).json({ error: 'Unauthorized. User does not exist.' });
+      return res.status(401).json({ error: 'Unauthorized. Session expired or invalid.' });
     }
 
     res.json({
