@@ -579,9 +579,35 @@ const OrderInvoiceView: React.FC<OrderInvoiceViewProps> = ({
         </span>
       </div>
 
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          .printable-invoice-sheet, .printable-invoice-sheet * {
+            visibility: visible;
+          }
+          .printable-invoice-sheet {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100% !important;
+            max-width: 100% !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+          @page {
+            size: A4;
+            margin: 15mm;
+          }
+        }
+      `}</style>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-lg items-start">
         {/* Left Column: Invoice Sheet */}
-        <div className="lg:col-span-2 border border-slate-200 rounded p-xl space-y-xl bg-white shadow-xs">
+        <div className="lg:col-span-2 border border-slate-200 rounded p-xl space-y-xl bg-white shadow-xs printable-invoice-sheet">
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start gap-md">
             <div>
@@ -958,9 +984,35 @@ const BookingJobSheetView: React.FC<BookingJobSheetViewProps> = ({
         </span>
       </div>
 
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          .printable-invoice-sheet, .printable-invoice-sheet * {
+            visibility: visible;
+          }
+          .printable-invoice-sheet {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100% !important;
+            max-width: 100% !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+          @page {
+            size: A4;
+            margin: 15mm;
+          }
+        }
+      `}</style>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-lg items-start">
         {/* Left Column: Invoice Sheet */}
-        <div className="lg:col-span-2 border border-slate-200 rounded p-xl space-y-xl bg-white shadow-xs">
+        <div className="lg:col-span-2 border border-slate-200 rounded p-xl space-y-xl bg-white shadow-xs printable-invoice-sheet">
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start gap-md">
             <div>

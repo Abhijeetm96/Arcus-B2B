@@ -5,37 +5,56 @@ import { SignatureBlock } from '../../shared/SignatureBlock';
 
 export class InvoiceRenderer implements DocumentRenderer<any> {
   public async render(order: any): Promise<string> {
-    const items = order.items || [];
-    const invoiceNumber = `INV-${order.id.split('-').pop()?.toUpperCase() || 'INVOICE'}`;
+    const isBooking = !!(order.serviceName || order.service_name);
+    
+    const items = isBooking
+      ? [{
+          name: order.serviceName || order.service_name,
+          quantity: 1,
+          amount: 1499,
+          rate: 1499,
+          notes: order.notes
+        }]
+      : (order.items || []);
+
+    const invoiceNumber = isBooking
+      ? `INV-SRV-${order.id.slice(-6).toUpperCase()}`
+      : `INV-${order.id.split('-').pop()?.toUpperCase() || 'INVOICE'}`;
+      
     const invoiceDate = new Date(order.timestamp || order.date || Date.now()).toLocaleDateString('en-IN');
 
     // Parse state from shipping address
     let customerState = 'Karnataka';
-    const states = ['Maharashtra', 'Tamil Nadu', 'Karnataka', 'Delhi', 'Telangana', 'Gujarat'];
-    for (const state of states) {
-      if (order.shippingAddress?.toLowerCase().includes(state.toLowerCase())) {
-        customerState = state;
-        break;
+    if (!isBooking && order.shippingAddress) {
+      const states = ['Maharashtra', 'Tamil Nadu', 'Karnataka', 'Delhi', 'Telangana', 'Gujarat'];
+      for (const state of states) {
+        if (order.shippingAddress.toLowerCase().includes(state.toLowerCase())) {
+          customerState = state;
+          break;
+        }
       }
     }
     const isInterstate = customerState.toLowerCase() !== 'karnataka';
 
     // GST computations (18% inclusive GST for B2B portal orders)
-    const subtotal = order.amount / 1.18;
-    const gstAmount = order.amount - subtotal;
+    const amountVal = isBooking ? 1499 : (order.amount || 0);
+    const subtotal = amountVal / 1.18;
+    const gstAmount = amountVal - subtotal;
 
     const itemsRowsHtml = items.map((it: any, idx: number) => {
       const qty = Number(it.quantity || it.qty || 1);
       const finalAmount = Number(it.amount || (qty * (it.rate || it.price || 0)));
       const rate = finalAmount / qty;
+      const hsnSac = isBooking ? '9987' : '2523';
 
       return `
         <tr>
           <td style="text-align: center; font-family: monospace; border-right: 1px solid #e2e8f0;">${String(idx + 1).padStart(2, '0')}</td>
           <td style="border-right: 1px solid #e2e8f0;">
             <span class="item-desc">${it.name || it.productName || 'Building Material'}</span>
+            ${it.notes ? `<span class="item-subdesc">Instructions: ${it.notes}</span>` : ''}
           </td>
-          <td style="text-align: center; font-family: monospace; border-right: 1px solid #e2e8f0;">2523</td>
+          <td style="text-align: center; font-family: monospace; border-right: 1px solid #e2e8f0;">${hsnSac}</td>
           <td style="text-align: right; border-right: 1px solid #e2e8f0;">${qty.toFixed(2)} Nos</td>
           <td style="text-align: right; font-family: monospace; border-right: 1px solid #e2e8f0;">${(rate / 1.18).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
           <td style="text-align: right; border-right: 1px solid #e2e8f0;">—</td>
@@ -46,7 +65,7 @@ export class InvoiceRenderer implements DocumentRenderer<any> {
     }).join('');
 
     const headerHtml = Header({
-      documentTitle: 'Tax Invoice',
+      documentTitle: isBooking ? 'Service Invoice' : 'Tax Invoice',
       metaFields: [
         { label: 'Invoice Number', value: invoiceNumber },
         { label: 'Invoice Date', value: invoiceDate },
@@ -54,25 +73,36 @@ export class InvoiceRenderer implements DocumentRenderer<any> {
       ]
     });
 
+    const billingAddressHtml = isBooking
+      ? `<strong>${order.name}</strong><br/>Phone: ${order.phone}`
+      : `<strong>Customer Client Entity</strong><br/>${order.billingAddress || order.shippingAddress || 'No Billing Address'}`;
+
+    const shippingAddressHtml = isBooking
+      ? `<strong>Service Appointment Date &amp; Time</strong><br/>${order.date}`
+      : `<strong>Customer Client Entity</strong><br/>${order.shippingAddress || 'No Shipping Address'}`;
+
+    const billLabel = 'Bill To';
+    const shipLabel = isBooking ? 'Service Schedule' : 'Ship To';
+
     const contentHtml = `
       ${headerHtml}
 
       <!-- Billing Info -->
       <table class="party-section">
         <tr class="party-header">
-          <th>Bill To</th>
-          <th>Ship To</th>
+          <th>${billLabel}</th>
+          <th>${shipLabel}</th>
         </tr>
         <tr class="party-body">
           <td>
-            <div class="party-name">Customer Client Entity</div>
-            <div>${order.billingAddress || order.shippingAddress || 'No Billing Address'}</div>
-            <div class="party-gst">GSTIN: Unregistered (URD)</div>
+            <div class="party-name">${isBooking ? '' : 'Customer Client Entity'}</div>
+            <div>${billingAddressHtml}</div>
+            <div class="party-gst">${isBooking ? '' : 'GSTIN: Unregistered (URD)'}</div>
           </td>
           <td>
-            <div class="party-name">Customer Client Entity</div>
-            <div>${order.shippingAddress || 'No Shipping Address'}</div>
-            <div class="party-gst">GSTIN: Unregistered (URD)</div>
+            <div class="party-name">${isBooking ? '' : 'Customer Client Entity'}</div>
+            <div>${shippingAddressHtml}</div>
+            <div class="party-gst">${isBooking ? '' : 'GSTIN: Unregistered (URD)'}</div>
           </td>
         </tr>
       </table>
@@ -135,14 +165,14 @@ export class InvoiceRenderer implements DocumentRenderer<any> {
               }
               <tr class="grand-total">
                 <td class="label" style="text-align: right; border: 0;">Total</td>
-                <td class="value" style="border: 0;">₹${order.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td class="value" style="border: 0;">₹${amountVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
               </tr>
             </table>
 
             <!-- Authorized Signature Box -->
             <div style="margin-top: 20px;">
               ${SignatureBlock({
-                companyName: 'Arcus Groups'
+                companyName: isBooking ? 'Arcus Services' : 'Arcus Groups'
               })}
             </div>
           </td>
@@ -151,7 +181,7 @@ export class InvoiceRenderer implements DocumentRenderer<any> {
     `;
 
     return DocumentLayout({
-      title: `Tax Invoice - ${invoiceNumber}`,
+      title: isBooking ? `Service Invoice - ${invoiceNumber}` : `Tax Invoice - ${invoiceNumber}`,
       contentHtml
     });
   }
